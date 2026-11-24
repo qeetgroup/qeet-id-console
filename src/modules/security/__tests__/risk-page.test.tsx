@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -68,8 +68,10 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/security/risk-settings" && method === "GET") return SETTINGS;
-    if (path === "/v1/tenants/t-1/security/risk-settings" && method === "PUT") return options?.body;
+    if (path === "/v1/organizations/t-1/security/risk-settings" && method === "GET")
+      return SETTINGS;
+    if (path === "/v1/organizations/t-1/security/risk-settings" && method === "PUT")
+      return options?.body;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -105,7 +107,9 @@ describe("Threats › Risk", () => {
   it("turns a signal on with the rest of the settings unchanged, as a sensitive action", async () => {
     renderWith(<RiskPage />);
     fireEvent.click(await screen.findByRole("switch", { name: "Impossible travel" }));
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/security/risk-settings"]));
+    await waitFor(() =>
+      expect(changes()).toEqual(["PUT /v1/organizations/t-1/security/risk-settings"]),
+    );
     const put = vi.mocked(api).mock.calls.find(([, o]) => o?.method === "PUT");
     expect(put?.[1]?.body).toEqual({ ...SETTINGS, impossible_travel_enabled: true });
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Change risk settings");

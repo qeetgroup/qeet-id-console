@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
@@ -31,7 +31,7 @@ import { api } from "@/platform/api/client";
 import { Route } from "./magic-links";
 
 const MagicLinksPage = Route.options.component as () => React.JSX.Element;
-const POLICY_PATH = "/v1/tenants/tenant-1/auth-policy";
+const POLICY_PATH = "/v1/organizations/tenant-1/auth-policy";
 
 let ttl: number;
 let saved: Record<string, unknown> | undefined;
@@ -54,7 +54,7 @@ beforeEach(() => {
       saved = options.body as Record<string, unknown>;
       return { ...policy, ...saved };
     }
-    if (path === "/v1/tenants/tenant-1/email-templates")
+    if (path === "/v1/organizations/tenant-1/email-templates")
       return { items: [{ key: "magic_link", name: "Magic link", custom: false }] };
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });

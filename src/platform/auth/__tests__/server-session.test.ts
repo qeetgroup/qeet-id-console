@@ -14,7 +14,7 @@ describe("public server session", () => {
       expiresAt: "2030-01-01T00:00:00Z",
       sessionId: "session-1",
       userId: "user-1",
-      tenantId: "tenant-1",
+      organizationId: "tenant-1",
     });
 
     expect(session).toEqual({
@@ -22,7 +22,7 @@ describe("public server session", () => {
       expiresAt: "2030-01-01T00:00:00Z",
       sessionId: "session-1",
       userId: "user-1",
-      tenantId: "tenant-1",
+      organizationId: "tenant-1",
       version: 0,
       organizationSelectionRequired: false,
       impersonationActor: null,

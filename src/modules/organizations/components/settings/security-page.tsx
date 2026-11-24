@@ -1,5 +1,5 @@
 import { KeyRoundIcon, NetworkIcon } from "@qeetrix/icons";
-import { Badge, Button, formatDate, Link } from "@qeetrix/react";
+import { Badge, formatDate, Link, LinkButton } from "@qeetrix/react";
 import { PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useState } from "react";
@@ -165,9 +165,9 @@ function PolicyRules({ saved, name }: { saved: SecurityPolicy; name: string }) {
             name={t("settings.security.passwords.rules")}
             line={<PasswordRulesLine />}
             actions={
-              <Button variant="ghost" render={<RouterLink to="/auth/login-methods/password" />}>
+              <LinkButton variant="ghost" render={<RouterLink to="/auth/login-methods/password" />}>
                 {t("settings.security.passwords.open")}
-              </Button>
+              </LinkButton>
             }
           />
         </ul>
@@ -293,9 +293,12 @@ function PolicyRules({ saved, name }: { saved: SecurityPolicy; name: string }) {
             name={t("settings.security.network.rules")}
             line={t("settings.security.network.line", { name })}
             actions={
-              <Button variant="ghost" render={<RouterLink to="/security/threats/ip-allowlist" />}>
+              <LinkButton
+                variant="ghost"
+                render={<RouterLink to="/security/threats/ip-allowlist" />}
+              >
                 {t("settings.security.network.open")}
-              </Button>
+              </LinkButton>
             }
           />
         </ul>

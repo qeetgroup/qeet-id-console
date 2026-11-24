@@ -1,4 +1,4 @@
-// Browser storage for one person's data in one tenant, keyed `<base>:<userId>:<tenantId>` so a
+// Browser storage for one person's data in one tenant, keyed `<base>:<userId>:<organizationId>` so a
 // shared browser never loads it for someone else. Signing out, in any tab, removes the outgoing
 // person's values; an unscoped `<base>` key can't be attributed to anyone, so it is deleted.
 import { useSyncExternalStore } from "react";
@@ -20,7 +20,7 @@ const registered = new Map<string, ScopedStorageOptions>();
 
 function scopeOf(session: PublicSession): string | null {
   if (!session.isAuthenticated || !session.userId) return null;
-  return `${session.userId}:${session.tenantId ?? "-"}`;
+  return `${session.userId}:${session.organizationId ?? "-"}`;
 }
 
 function browserStorage(): Storage | null {

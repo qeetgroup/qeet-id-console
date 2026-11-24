@@ -1,8 +1,9 @@
 import { Meter } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { Sparkline, SplitBar } from "@/modules/dashboard";
+import { SplitBar } from "@/modules/dashboard";
 import { growth } from "@/modules/users";
 import type { RoleAccessView } from "@/modules/authorization/api/role-access";
 import {

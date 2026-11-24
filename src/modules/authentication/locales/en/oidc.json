@@ -20,7 +20,7 @@
     "exchange": "Token exchange",
     "exchangeHint": "Swap one token for another, for a service acting for a person",
     "ciba": "Sign-in on another device",
-    "cibaHint": "Ask the person to approve on their phone (CIBA)"
+    "cibaHint": "The person approves the request in their Qeet ID account (CIBA, poll mode)"
   },
   "status": {
     "active": "Active",

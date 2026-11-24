@@ -1,9 +1,9 @@
 import { Badge, formatNumber } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline } from "@/modules/dashboard";
 import type { DirectoryEvent } from "@/modules/directory/api/directory";
 import type { DirectoryEventPage } from "@/modules/directory/api/events";
 import { dailyColumns } from "@/modules/directory/connections-model";
@@ -131,12 +131,7 @@ export function ActivityBand({
         </dd>
         {columns.some((d) => d.changes) ? (
           <dd className="ppl-chart" aria-hidden="true">
-            <Sparkline
-              values={columns.map((d) => d.changes)}
-              color="var(--ppl-month)"
-              width={160}
-              height={32}
-            />
+            <Sparkline values={columns.map((d) => d.changes)} width={160} height={32} />
           </dd>
         ) : null}
         <dd className="ppl-note">{t("activity.band.syncedHow")}</dd>

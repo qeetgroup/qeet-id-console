@@ -4,6 +4,7 @@
 import { Store } from "@tanstack/react-store";
 
 import { scopedStorage } from "@/platform/auth/scoped-storage";
+import { randomHex } from "@/shared/utils/random-hex";
 
 import { maskPII, redactPII } from "../redact";
 import type { ToolExecution } from "../tools/types/tool.types";
@@ -49,7 +50,7 @@ function uid(prefix: string): string {
   } catch {
     // fall through to the time-based id
   }
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}_${Date.now().toString(36)}_${randomHex(4)}`;
 }
 
 /** Returns a title for a conversation from its first user message; empty for a blank one. */

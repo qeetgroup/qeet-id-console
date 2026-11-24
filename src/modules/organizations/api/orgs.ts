@@ -1,9 +1,10 @@
-// `GET /v1/tenants` lists only the caller's orgs. The server locks per-org detail (its record,
+// `GET /v1/organizations` lists only the caller's orgs. The server locks per-org detail (its record,
 // history, members, billing) to the active org, and changes or deletes only that one.
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Body } from "@/platform/api/contract";
 import {
   type EligibleOrganization,
   organizationSelectionPageSchema,
@@ -11,24 +12,10 @@ import {
 
 import { orgKeys } from "./keys";
 
-export type OrgStatus = "active" | "suspended" | "deleted";
-
-export interface Org {
-  id: string;
-  slug: string;
-  name: string;
-  status: OrgStatus;
-  plan: string;
-  region: string;
-  logo_url: string;
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-  updated_at?: string;
-  /** When a scheduled deletion takes effect; the single GET only, until QTID-963. */
-  deletion_due_at?: string | null;
-  member_count?: number; // list responses only
-  mfa_enabled_count?: number; // list responses only
-}
+/** One of the caller's organisations, as the list has it (with member and MFA counts). */
+export type Org = Answer<"/v1/organizations">["items"][number];
+/** The current organisation's own record, with its logo. */
+export type OrgRecord = Answer<"/v1/organizations/{organizationID}">;
 
 const PAGE = 200; // the server's most per page
 
@@ -55,9 +42,9 @@ export const orgQueries = {
     queryOptions({
       queryKey: orgKeys.list(),
       queryFn: async ({ signal }) => ({
-        items: await everyPage((cursor) =>
-          api<{ items: Org[]; next_cursor?: string }>("/v1/tenants", {
-            query: { limit: PAGE, cursor },
+        items: await everyPage<Org>((cursor) =>
+          backend.get("/v1/organizations", {
+            query: { limit: PAGE, cursor: cursor || undefined },
             signal,
           }),
         ),
@@ -70,8 +57,8 @@ export const orgQueries = {
       queryKey: orgKeys.memberships(),
       queryFn: ({ signal }) =>
         everyPage<EligibleOrganization>((cursor) =>
-          api("/v1/me/organizations", {
-            query: { limit: PAGE, cursor },
+          backend.get("/v1/me/organizations", {
+            query: { limit: PAGE, cursor: cursor || undefined },
             signal,
             schema: organizationSelectionPageSchema,
           }),
@@ -82,16 +69,20 @@ export const orgQueries = {
   record: (orgId: string | null) =>
     queryOptions({
       queryKey: orgKeys.record(orgId),
-      queryFn: () => api<Org>(`/v1/tenants/${orgId}`),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}", {
+          path: { organizationID: orgId ?? "" },
+        }),
       enabled: !!orgId,
     }),
-  /** The changes to the active org itself (audit events on the tenant), newest first. */
+  /** The changes to the active org itself (audit events on the organization), newest first. */
   history: (orgId: string | null) =>
     queryOptions({
       queryKey: orgKeys.history(orgId),
       queryFn: ({ signal }) =>
-        api<{ items: OrgAuditEvent[]; next_cursor?: string }>(`/v1/tenants/${orgId}/audit`, {
-          query: { resource_type: "tenant", limit: 100 },
+        backend.get("/v1/organizations/{organizationID}/audit", {
+          path: { organizationID: orgId ?? "" },
+          query: { resource_type: "organization", limit: 100 },
           signal,
         }),
       enabled: !!orgId,
@@ -103,36 +94,25 @@ export function useOrgs(enabled = true) {
   return useQuery({ ...orgQueries.list(), enabled });
 }
 
-export interface OrgAuditEvent {
-  id: string;
-  actor_user_id?: string | null;
-  actor_type?: string | null;
-  action: string;
-  resource_type: string;
-  resource_id?: string | null;
-  ip?: string | null;
-  user_agent?: string | null;
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-}
+/** One change to the organisation itself, from its audit log. */
+export type OrgAuditEvent = Answer<"/v1/organizations/{organizationID}/audit">["items"][number];
 
 /**
  * What Settings › General changes. No status: the server always refuses suspending the
  * organisation you're in. No region: it's read-only after creation. `metadata` replaces the whole
  * object, so send every key you keep.
  */
-export interface UpdateOrgBody {
-  name?: string;
-  logo_url?: string;
-  metadata?: Record<string, unknown>;
-}
+export type UpdateOrgBody = Pick<
+  Body<"/v1/organizations/{organizationID}", "patch">,
+  "name" | "logo_url" | "metadata"
+>;
 
 /** Updates an org. `silentError` drops the error toast, for a form that shows it itself. */
 export function useUpdateOrg({ silentError = false }: { silentError?: boolean } = {}) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateOrgBody }) =>
-      api<Org>(`/v1/tenants/${id}`, { method: "PATCH", body }),
+      backend.patch("/v1/organizations/{organizationID}", { path: { organizationID: id }, body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
     meta: { successMessage: "organizations:toast.organizationUpdated", silentError },
   });
@@ -146,9 +126,7 @@ export function useScheduleOrgDeletion() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<{ tenant_id: string; deletion_due_at: string }>(`/v1/tenants/${id}`, {
-        method: "DELETE",
-      }),
+      backend.delete("/v1/organizations/{organizationID}", { path: { organizationID: id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
     meta: { successMessage: "organizations:toast.deletionScheduled" },
   });
@@ -158,7 +136,10 @@ export function useScheduleOrgDeletion() {
 export function useCancelOrgDeletion() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<Org>(`/v1/tenants/${id}/deletion/cancel`, { method: "POST" }),
+    mutationFn: (id: string) =>
+      backend.post("/v1/organizations/{organizationID}/deletion/cancel", {
+        path: { organizationID: id },
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
     meta: { successMessage: "organizations:toast.deletionCancelled" },
   });

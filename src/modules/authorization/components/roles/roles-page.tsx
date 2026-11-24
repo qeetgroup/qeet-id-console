@@ -37,7 +37,7 @@ import { useTranslation } from "react-i18next";
 
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
@@ -50,6 +50,7 @@ import { RoleDrawer } from "./role-drawer";
 import { RolesBand } from "./roles-band";
 import { matchesRole, ROLE_TYPES, type RoleFilters, sortRoles } from "./roles-model";
 import "../lists/authz-lists.css";
+import { roleDescription, roleDisplayName } from "@/shared/utils/role-name";
 
 const PAGE_SIZE = 25;
 const ANY = "";
@@ -81,8 +82,8 @@ export function RolesPage({ filters, onFiltersChange, roleId, onRoleChange }: Ro
   const n = useCount();
   const caps = useCapabilities();
   const canWrite = caps.can("role.write");
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const view = useRoleAccess();
   const { roles, access, catalogue, rolesQuery } = view;
   const [creating, setCreating] = useCreateIntent(canWrite);
@@ -118,11 +119,11 @@ export function RolesPage({ filters, onFiltersChange, roleId, onRoleChange }: Ro
         <Two
           main={
             <span className="authz-inline">
-              {a.role.name}
+              {roleDisplayName(a.role.name)}
               {a.role.is_system ? <Badge size="sm">{t("lists.common.builtIn")}</Badge> : null}
             </span>
           }
-          sub={a.role.description || undefined}
+          sub={roleDescription(a.role) || undefined}
         />
       ),
     },
@@ -294,7 +295,8 @@ export function RolesPage({ filters, onFiltersChange, roleId, onRoleChange }: Ro
                         ]}
                       />
                     </div>
-                    {/* Only once something narrows the list (QTRX-15). */}
+                    {/* Only once something narrows the list: Qeetrix's FilterTags shows its
+                        summary even with no tags. */}
                     {filters.type || filters.look || filters.q ? (
                       <FilterTags
                         filters={[

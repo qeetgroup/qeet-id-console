@@ -74,6 +74,5 @@ export const page = (items: unknown[], extra: Record<string, unknown> = {}) => (
   items,
   total: items.length,
   limit: 25,
-  offset: 0,
   ...extra,
 });

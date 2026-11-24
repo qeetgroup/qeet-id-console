@@ -24,7 +24,7 @@ vi.mock("@/platform/auth/session", () => ({
   }),
   meKeys: { all: ["me"] },
   useSessionId: () => "session-1",
-  useTenantId: () => "org-1",
+  useOrganizationId: () => "org-1",
   useUserId: () => "user-1",
 }));
 vi.mock("@tanstack/react-router", async (importOriginal) => ({

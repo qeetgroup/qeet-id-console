@@ -11,10 +11,11 @@ const c = (id: string, status: ControlResult["status"]): ControlResult => ({
   criteria: id.split("-")[0] ?? id,
   status,
   detail: "",
+  detail_code: "",
 });
 const run = (at: string, controls: ControlResult[]): EvidenceRun => ({
   id: at,
-  tenant_id: "t",
+  organization_id: "t",
   framework: "soc2",
   generated_at: at,
   pass_count: 0,
@@ -92,6 +93,7 @@ describe("retention due dates", () => {
       email: "a@x",
       display_name: "A",
       deleted_at: "2026-10-18T00:00:00Z",
+      deleted_by: null,
       created_at: "",
     },
     {
@@ -99,6 +101,7 @@ describe("retention due dates", () => {
       email: "b@x",
       display_name: "B",
       deleted_at: "2026-09-18T00:00:00Z",
+      deleted_by: null,
       created_at: "",
     },
   ];

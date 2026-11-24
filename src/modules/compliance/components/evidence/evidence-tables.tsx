@@ -27,7 +27,7 @@ import {
   type Framework,
 } from "@/modules/compliance/api/evidence";
 import type { Person } from "@/modules/compliance/use-people";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { exportToJson } from "@/shared/utils/data-export";
 import { Code, ControlBadge, Section, When } from "../compliance-parts";
 
@@ -148,14 +148,14 @@ export function RunsSection({
   const { t } = useTranslation("compliance");
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   const [offset, setOffset] = useState(Math.floor(index / PAGE) * PAGE);
   const label = t("evidence.runs.label", { framework: t(`frameworks.${framework}.name`) });
   const first = runs.at(-1);
   const open = (run: EvidenceRun) => onRunChange(run.id === runs[0]?.id ? undefined : run.id);
   const downloadRun = async (run: EvidenceRun) =>
-    download(framework, await qc.fetchQuery(evidenceRunQuery(tenantId, run.id)));
+    download(framework, await qc.fetchQuery(evidenceRunQuery(organizationId, run.id)));
   const by = (run: EvidenceRun) =>
     !run.generated_by
       ? t("evidence.facts.byQeetId")

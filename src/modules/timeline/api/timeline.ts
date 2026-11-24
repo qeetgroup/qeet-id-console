@@ -3,12 +3,10 @@
 
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
-import type { ActivityEvent, ActivitySummary } from "@/modules/activity";
-import { api } from "@/platform/api/client";
+import type { ActivityEvent } from "@/modules/activity";
 import type { Kind } from "../timeline-model";
 import { timelineKeys } from "./keys";
-
-type EventsPage = { events: ActivityEvent[]; next_cursor?: string };
+import { backend } from "@/platform/api/backend";
 
 /** What the list asks for: the period's start, a kind (a server category) and failures only. */
 export type EventsQuery = { from: string; kind?: Kind; failed?: boolean };
@@ -43,16 +41,16 @@ export async function fetchEvents(
   limit = EVENTS_PAGE,
   signal?: AbortSignal,
 ) {
-  return api<EventsPage>("/v1/activity", { query: eventsParams(userId, q, cursor, limit), signal });
+  return backend.get("/v1/activity", { query: eventsParams(userId, q, cursor, limit), signal });
 }
 
 export const timelineQueries = {
   /** The period's totals and its series (the window from `from` to now, capped at 90 days). */
-  summary: (tenantId: string | null, userId: string, from: string) =>
+  summary: (organizationId: string | null, userId: string, from: string) =>
     queryOptions({
-      queryKey: timelineKeys.period(tenantId, userId, "summary", { from }),
+      queryKey: timelineKeys.period(organizationId, userId, "summary", { from }),
       queryFn: ({ signal }) =>
-        api<ActivitySummary>("/v1/activity/summary", {
+        backend.get("/v1/activity/summary", {
           query: { subject: userId, from, bucket: SUMMARY_BUCKET },
           signal,
         }),
@@ -61,14 +59,14 @@ export const timelineQueries = {
     }),
 
   /** The period's sign-ins and failed sign-ins, newest first, up to SIGN_IN_CAP. */
-  signIns: (tenantId: string | null, userId: string, from: string) =>
+  signIns: (organizationId: string | null, userId: string, from: string) =>
     queryOptions({
-      queryKey: timelineKeys.period(tenantId, userId, "sign-ins", { from }),
+      queryKey: timelineKeys.period(organizationId, userId, "sign-ins", { from }),
       queryFn: async ({ signal }) => {
         const events: ActivityEvent[] = [];
         let cursor = "";
         do {
-          const page = await api<EventsPage>("/v1/activity", {
+          const page = await backend.get("/v1/activity", {
             query: { subject: userId, from, types: SIGN_IN_TYPES, limit: SIGN_IN_PAGE, cursor },
             signal,
           });
@@ -82,9 +80,9 @@ export const timelineQueries = {
     }),
 
   /** The events themselves, a page at a time, newest first. */
-  events: (tenantId: string | null, userId: string, q: EventsQuery) =>
+  events: (organizationId: string | null, userId: string, q: EventsQuery) =>
     infiniteQueryOptions({
-      queryKey: timelineKeys.period(tenantId, userId, "events", q),
+      queryKey: timelineKeys.period(organizationId, userId, "events", q),
       queryFn: ({ pageParam, signal }) => fetchEvents(userId, q, pageParam, EVENTS_PAGE, signal),
       initialPageParam: "",
       getNextPageParam: (page) => page.next_cursor || undefined,

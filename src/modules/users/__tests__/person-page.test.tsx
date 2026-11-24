@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -62,12 +62,15 @@ const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 
 const ananya: UserDetail = {
   id: "u1",
-  tenant_id: "t1",
+  organization_id: "t1",
   email: "ananya@qeet.in",
   email_verified_at: "2026-04-08T10:23:58Z",
   display_name: "Ananya Iyer",
   status: "active",
   metadata: { title: "Senior Software Engineer", team: "Frontend", employee_id: "QEE-1038" },
+  phone: null,
+  phone_verified_at: null,
+  avatar_url: null,
   created_at: "2026-04-08T10:23:58Z",
   updated_at: "2026-04-08T10:23:58Z",
 };
@@ -277,7 +280,7 @@ describe("the person's page", () => {
   });
 
   it("offers removing someone another organisation manages, and no whole-account action", async () => {
-    user = { ...ananya, tenant_id: "t-other", metadata: {} };
+    user = { ...ananya, organization_id: "t-other", metadata: {} };
     renderPage();
 
     expect(await screen.findByText("Another organisation manages Ananya's account")).toBeTruthy();
@@ -332,7 +335,9 @@ describe("the person's page", () => {
     expect(dialog.textContent).toContain("Take Developer away from Ananya Iyer?");
     fireEvent.click(within(dialog).getByRole("button", { name: "Take away" }));
 
-    await waitFor(() => expect(sent("/v1/users/u1/tenants/t1/roles/r-dev", "DELETE")).toBeTruthy());
+    await waitFor(() =>
+      expect(sent("/v1/users/u1/organizations/t1/roles/r-dev", "DELETE")).toBeTruthy(),
+    );
   });
 
   it("lists how they prove who they are, with a reset for their second steps", async () => {

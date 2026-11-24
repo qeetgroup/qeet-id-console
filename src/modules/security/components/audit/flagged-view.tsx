@@ -160,9 +160,8 @@ export function FlaggedView({
                   items={[
                     {
                       value: "open",
-                      label: summary
-                        ? `${t("audit.flagged.open")} · ${n(summary.open)}`
-                        : t("audit.flagged.open"),
+                      label: t("audit.flagged.open"),
+                      meta: summary ? n(summary.open) : undefined,
                     },
                     { value: "resolved", label: t("audit.flagged.resolved") },
                   ]}

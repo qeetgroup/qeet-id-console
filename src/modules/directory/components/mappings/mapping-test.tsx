@@ -1,6 +1,6 @@
 import { PlayIcon } from "@qeetrix/icons";
-import { Badge, Button, Field, Heading, Text, Textarea } from "@qeetrix/react";
-import { Alert, DescriptionItem, DescriptionList } from "@qeetrix/react/experimental";
+import { Badge, Button, Field, Heading, Text } from "@qeetrix/react";
+import { Alert, CodeField, DescriptionItem, DescriptionList } from "@qeetrix/react/experimental";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -91,17 +91,15 @@ export function MappingTest({
       }
     >
       <div className="map-test">
-        {/* Library gap: an editable code field (findings §5); a Textarea set in the code face. */}
         <Field
           label={t("mappings.test.entry")}
           error={invalid ? t("mappings.test.invalid") : undefined}
         >
-          <Textarea
-            className="map-entry"
+          <CodeField
+            language="json"
             rows={9}
             maxRows={18}
             value={text}
-            spellCheck={false}
             onValueChange={(value) => {
               setText(value);
               setInvalid(false);

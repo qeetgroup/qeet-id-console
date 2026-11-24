@@ -286,7 +286,7 @@ function SamlForm({ connection, onDone }: { connection?: SamlConnection; onDone:
               <TextField
                 label={t("drawer.entityId")}
                 description={t("drawer.entityIdHint")}
-                placeholder="http://www.okta.com/exk1abc"
+                placeholder="https://sts.windows.net/00000000-0000-0000-0000-000000000000/"
                 value={field.state.value}
                 onValueChange={(v) => field.handleChange(v)}
                 onBlur={field.handleBlur}

@@ -1,16 +1,8 @@
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FolderPlusIcon,
-  PencilIcon,
-  TrashIcon,
-  UserPlusIcon,
-} from "@qeetrix/icons";
+import { FolderPlusIcon, PencilIcon, TrashIcon, UserPlusIcon } from "@qeetrix/icons";
 import {
   Badge,
   formatDate,
   formatNumber,
-  IconButton,
   MenuItem,
   MenuSeparator,
   type TableColumn,
@@ -23,19 +15,15 @@ import { formatLocale } from "@/i18n";
 import { describedAs, type GroupRow, type RolesByGroup } from "@/modules/groups/groups-model";
 
 /**
- * The list's columns: the group (its fold button, its name as a link, one line about it), its
- * members, the roles it grants and when it was made. The table has no tree rows of its own yet
- * (QTRX-25), so the name is the row's link and the fold button sits beside it.
+ * The list's columns: the group (its name as a link, one line about it), its members, the roles it
+ * grants and when it was made. The tree is Table's (its indent, fold button and "Continued" path);
+ * the name stays the cell's own link, so the row's link isn't named for the whole cell.
  */
 export function useGroupColumns({
   flat,
-  open,
-  onToggle,
   roles,
 }: {
   flat: boolean;
-  open: ReadonlySet<string>;
-  onToggle: (id: string) => void;
   roles: RolesByGroup;
 }): TableColumn<GroupRow>[] {
   const { t } = useTranslation("groups");
@@ -47,44 +35,16 @@ export function useGroupColumns({
       header: t("list.columns.group"),
       sortable: true,
       cell: (g) => {
-        const inside = g.children.length;
         let line = describedAs(g);
-        if (flat || g.continued) line = g.path.length ? g.path.join(" › ") : t("list.row.atTheTop");
-        else if (inside) line = t("list.row.groupsInside", { count: g.inside, n: n(g.inside) });
+        if (flat) line = g.path.length ? g.path.join(" › ") : t("list.row.atTheTop");
+        else if (g.children.length)
+          line = t("list.row.groupsInside", { count: g.inside, n: n(g.inside) });
         return (
-          <span
-            className="grp-cell"
-            style={
-              flat ? undefined : { paddingInlineStart: `calc(${g.depth} * var(--grp-indent))` }
-            }
-          >
-            {flat ? null : inside ? (
-              <IconButton
-                icon={open.has(g.id) ? ChevronDownIcon : ChevronRightIcon}
-                aria-label={
-                  open.has(g.id)
-                    ? t("list.row.hide", { name: g.name })
-                    : t("list.row.show", { count: g.inside, n: n(g.inside), name: g.name })
-                }
-                aria-expanded={open.has(g.id)}
-                variant="ghost"
-                tone="neutral"
-                size="sm"
-                onClick={() => onToggle(g.id)}
-              />
-            ) : (
-              <span className="grp-leaf" aria-hidden="true" />
-            )}
-            <span className="grp-two">
-              <Link className="grp-name" to="/groups/$groupId" params={{ groupId: g.id }}>
-                {g.name}
-              </Link>
-              {line ? (
-                <small className={g.continued ? "is-continued" : undefined}>
-                  {g.continued ? t("list.row.continued", { path: line }) : line}
-                </small>
-              ) : null}
-            </span>
+          <span className="grp-two">
+            <Link className="grp-name" to="/groups/$groupId" params={{ groupId: g.id }}>
+              {g.name}
+            </Link>
+            {line ? <small>{line}</small> : null}
           </span>
         );
       },

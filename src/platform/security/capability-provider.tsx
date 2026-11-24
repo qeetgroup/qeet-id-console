@@ -11,7 +11,7 @@ import {
 import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
 import { sessionStore } from "@/platform/auth/session-store";
 import { ApiError } from "@/platform/errors/api-error";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useEffectivePermissions } from "@/platform/security/effective-permissions";
 import {
   type AccessMode,
@@ -29,7 +29,7 @@ type CapabilityContextValue = {
   state: AccessResolution;
   mode: AccessMode;
   permissions: CapabilitySet;
-  tenantId: string | null;
+  organizationId: string | null;
   userId: string | null;
   error: unknown;
   isRefreshing: boolean;
@@ -44,9 +44,9 @@ const CapabilityContext = createContext<CapabilityContextValue | null>(null);
 
 export function CapabilityProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const userId = sessionStore.getUserId();
-  const effective = useEffectivePermissions(tenantId ? userId : null);
+  const effective = useEffectivePermissions(organizationId ? userId : null);
 
   useEffect(() => setHydrated(true), []);
 
@@ -59,7 +59,7 @@ export function CapabilityProvider({ children }: { children: ReactNode }) {
     effective.error instanceof ApiError && effective.error.status === 403;
   const state: AccessResolution = !hydrated
     ? "resolving"
-    : !tenantId
+    : !organizationId
       ? "ready"
       : capabilityRequestForbidden
         ? "error"
@@ -91,9 +91,9 @@ export function CapabilityProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CapabilityContextValue>(
     () => ({
       state,
-      mode: state === "error" ? "unknown" : classifyAccessMode(permissions, !!tenantId),
+      mode: state === "error" ? "unknown" : classifyAccessMode(permissions, !!organizationId),
       permissions,
-      tenantId,
+      organizationId,
       userId,
       error: effective.error,
       isRefreshing: effective.isFetching && effective.data !== undefined,
@@ -116,7 +116,7 @@ export function CapabilityProvider({ children }: { children: ReactNode }) {
       effective.refetch,
       permissions,
       state,
-      tenantId,
+      organizationId,
       userId,
     ],
   );

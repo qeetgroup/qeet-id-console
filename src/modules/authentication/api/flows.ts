@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
 
 import {
   isMfaChallenge,
@@ -32,18 +32,14 @@ export function useLogin() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (in_: LoginInput) =>
-      api<LoginResponse>("/v1/auth/login", {
-        method: "POST",
-        body: in_,
-        anonymous: true,
-      }),
+    mutationFn: async (in_: LoginInput): Promise<LoginResponse> =>
+      backend.post("/v1/auth/login", { body: in_, anonymous: true }),
 
     onSuccess: (res) => {
       // No session yet: the sign-in page renders the second-factor step from this mutation's data.
       if (isMfaChallenge(res)) return;
 
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
@@ -58,16 +54,14 @@ export function useCompleteMfaLogin() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (in_: { mfa_token: string } & MfaProof) =>
-      api<SessionResponse & { recovery_codes?: string[] }>("/v1/auth/mfa", {
-        method: "POST",
-        body: in_,
-        anonymous: true,
-      }),
+    mutationFn: async (
+      in_: { mfa_token: string } & MfaProof,
+    ): Promise<SessionResponse & { recovery_codes?: string[] }> =>
+      backend.post("/v1/auth/mfa", { body: in_, anonymous: true }),
 
     onSuccess: (res) => {
       if (res.recovery_codes?.length) return;
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
@@ -80,11 +74,7 @@ export function useCompleteMfaLogin() {
 export function useRequestMagicLink() {
   return useMutation({
     mutationFn: (email: string) =>
-      api<{ message: string }>("/v1/auth/magic-link/start", {
-        method: "POST",
-        body: { email },
-        anonymous: true,
-      }),
+      backend.post("/v1/auth/magic-link/start", { body: { email }, anonymous: true }),
     meta: { silent: true },
   });
 }
@@ -93,11 +83,7 @@ export function useRequestMagicLink() {
 export function useResendMagicLink() {
   return useMutation({
     mutationFn: (token: string) =>
-      api<{ message: string }>("/v1/auth/magic-link/resend", {
-        method: "POST",
-        body: { token },
-        anonymous: true,
-      }),
+      backend.post("/v1/auth/magic-link/resend", { body: { token }, anonymous: true }),
     meta: { silent: true },
   });
 }
@@ -110,15 +96,11 @@ export function useResendMagicLink() {
 export function useConsumeMagicLink() {
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (token: string) =>
-      api<LoginResponse>("/v1/auth/magic-link/consume", {
-        method: "POST",
-        body: { token },
-        anonymous: true,
-      }),
+    mutationFn: async (token: string): Promise<LoginResponse> =>
+      backend.post("/v1/auth/magic-link/consume", { body: { token }, anonymous: true }),
     onSuccess: (res) => {
       if (isMfaChallenge(res)) return;
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     // The /magic page renders the failure inline, so the global error toast is off.
     meta: { successMessage: "authentication:toast.signedInSuccessfully", silentError: true },
@@ -132,12 +114,8 @@ export function useConsumeMagicLink() {
 export function useConsumeSamlCode() {
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (code: string) =>
-      api<SessionResponse>("/saml/exchange", {
-        method: "POST",
-        body: { code },
-        anonymous: true,
-      }),
+    mutationFn: async (code: string): Promise<SessionResponse> =>
+      backend.post("/saml/exchange", { body: { code }, anonymous: true }),
     onSuccess: () => navigate({ to: "/" }),
     // /sso/callback shows the failure itself, so the global error toast is off.
     meta: { successMessage: "authentication:toast.signedInSuccessfully", silentError: true },
@@ -151,13 +129,8 @@ export function useConsumeSamlCode() {
  */
 export function useForgotPassword() {
   return useMutation({
-    // Only a dev backend returns dev_reset_token, so a reset works without an email provider.
     mutationFn: (in_: { email: string }) =>
-      api<{ message: string; dev_reset_token?: string }>("/v1/auth/forgot-password", {
-        method: "POST",
-        body: in_,
-        anonymous: true,
-      }),
+      backend.post("/v1/auth/forgot-password", { body: in_, anonymous: true }),
     meta: { silent: true },
   });
 }
@@ -171,29 +144,24 @@ export function useResetPassword() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (in_: { token: string; new_password: string }) =>
-      api<{ message: string }>("/v1/auth/reset-password", {
-        method: "POST",
-        body: in_,
-        anonymous: true,
-      }),
+      backend.post("/v1/auth/reset-password", { body: in_, anonymous: true }),
     onSuccess: () => navigate({ href: "/sign-in?reset=done" }),
     meta: { silentError: true },
   });
 }
 
 // The session metadata the BFF passes on once it has kept the new token pair server-side.
-const switchedTenantSchema = z.object({
-  session_id: z.string(),
-  user_id: z.string(),
-  tenant_id: z.string(),
-});
+// The contract leaves organization_id out of a pair that belongs to no organization; a switch
+// must land in one, so an answer without it fails closed.
+const switchedOrganizationSchema = z
+  .object({ session_id: z.string(), user_id: z.string(), organization_id: z.string().optional() })
+  .refine((pair) => !!pair.organization_id);
 
 /** Switches organization: the BFF replaces the encrypted session, then the page reloads. */
-export async function switchToTenant(tenantId: string): Promise<void> {
-  await api("/v1/auth/switch-tenant", {
-    method: "POST",
-    body: { tenant_id: tenantId },
-    schema: switchedTenantSchema,
+export async function switchToOrganization(organizationId: string): Promise<void> {
+  await backend.post("/v1/auth/switch-organization", {
+    body: { organization_id: organizationId },
+    schema: switchedOrganizationSchema,
   });
   if (typeof window !== "undefined") window.location.assign("/");
 }

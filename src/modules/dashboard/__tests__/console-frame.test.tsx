@@ -14,8 +14,9 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     children,
+    activeOptions: _activeOptions,
     ...props
-  }: ComponentProps<"a"> & { to: string; children?: ReactNode }) => (
+  }: ComponentProps<"a"> & { to: string; children?: ReactNode; activeOptions?: unknown }) => (
     <a {...props} href={to}>
       {children}
     </a>
@@ -25,18 +26,18 @@ vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
     mode: "full",
-    tenantId: "t1",
+    organizationId: "t1",
     permissions: new Set(["users:read"]),
     can: () => true,
     canAccessPath: () => true,
     retry: vi.fn(),
   }),
 }));
-const session = vi.hoisted(() => ({ logout: vi.fn(), tenantId: "t1" as string | null }));
+const session = vi.hoisted(() => ({ logout: vi.fn(), organizationId: "t1" as string | null }));
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: { id: "u1", email: "alan@example.com", display_name: "Alan Admin" } }),
   useLogout: () => ({ mutate: session.logout, isPending: false }),
-  useTenantId: () => session.tenantId,
+  useOrganizationId: () => session.organizationId,
 }));
 const orgs = vi.hoisted(() => ({ items: [] as { id: string; name: string }[] }));
 vi.mock("@/modules/organizations", () => ({
@@ -48,7 +49,8 @@ const notes = vi.hoisted(() => ({
   data: { unread_count: 0, items: [] as Record<string, unknown>[] },
   markAll: vi.fn(),
 }));
-vi.mock("@/modules/developer", () => ({
+vi.mock("@/modules/developer", async (importOriginal) => ({
+  notificationKind: (await importOriginal<typeof import("@/modules/developer")>()).notificationKind,
   useNotifications: () => ({ isPending: false, isError: false, data: notes.data }),
   useMarkAllRead: () => ({ mutate: notes.markAll, isPending: false }),
 }));
@@ -57,7 +59,7 @@ import { AccountMenu } from "../components/frame/account-menu";
 import { ConsoleSidebar } from "../components/frame/console-sidebar";
 import { currentNavItemUrl } from "../components/frame/current-page";
 import { NotificationsPanel } from "../components/frame/notifications-panel";
-import { PageBreadcrumb, PageTabList, PageTabs } from "../components/frame/page-place";
+import { PageBreadcrumb, PageTabList } from "../components/frame/page-place";
 import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 
 function renderInApp(node: ReactNode) {
@@ -70,7 +72,7 @@ function renderInApp(node: ReactNode) {
 
 beforeEach(() => {
   route.pathname = "/users";
-  session.tenantId = "t1";
+  session.organizationId = "t1";
   orgs.items = [];
   notes.data = { unread_count: 0, items: [] };
 });
@@ -107,7 +109,7 @@ describe("the navigation", () => {
   });
 
   it("without an organisation, lists only My account and the way to choose one", () => {
-    session.tenantId = null;
+    session.organizationId = null;
     route.pathname = "/account/profile";
     renderInApp(<ConsoleSidebar />);
     const nav = screen.getByRole("navigation", { name: "Qeet ID" });
@@ -135,29 +137,37 @@ describe("a page's breadcrumb and sub-page tabs", () => {
     renderInApp(
       <>
         <PageBreadcrumb />
-        <PageTabs>
-          <PageTabList />
-        </PageTabs>
+        <PageTabList />
       </>,
     );
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(within(crumbs).getByText("Directory")).toBeTruthy();
     expect(within(crumbs).getByRole("link", { name: "Users" }).getAttribute("href")).toBe("/users");
-    const tabs = screen.getByRole("tablist", { name: "Users views" });
+    // Sub-pages are routes, so they're links in a navigation; the current one is marked.
+    const views = screen.getByRole("navigation", { name: "Users views" });
     expect(
-      within(tabs).getByRole("tab", { name: "Invitations" }).getAttribute("aria-selected"),
-    ).toBe("true");
-    // Suspended is a filter on All users, not a tab.
-    expect(within(tabs).queryByRole("tab", { name: "Suspended" })).toBeNull();
-    fireEvent.click(within(tabs).getByRole("tab", { name: "Deleted" }));
-    expect(route.navigate).toHaveBeenCalledWith({ to: "/users/deleted" });
+      within(views).getByRole("link", { name: "Invitations" }).getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      within(views).getByRole("link", { name: "All users" }).getAttribute("aria-current"),
+    ).toBe(null);
+    // Suspended is a filter on All users, not a sub-page.
+    expect(within(views).queryByRole("link", { name: "Suspended" })).toBeNull();
+    expect(within(views).getByRole("link", { name: "Deleted" }).getAttribute("href")).toBe(
+      "/users/deleted",
+    );
   });
 });
 
 describe("the account menu", () => {
+  it("is named starting with the initials it shows (label in name)", () => {
+    renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "AA, Alan Admin, account menu" })).toBeTruthy();
+  });
+
   it("holds only what's personal, and signs out", async () => {
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const menu = await screen.findByRole("menu");
     expect(within(menu).getByText("alan@example.com")).toBeTruthy();
     expect(within(menu).getByRole("menuitem", { name: "My account" })).toBeTruthy();
@@ -173,7 +183,7 @@ describe("the account menu", () => {
       { id: "t2", name: "Org Two" },
     ];
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const item = await screen.findByRole("menuitem", { name: /Switch organisation/ });
     expect(item.textContent).toContain("You're in Org One");
     expect(item.getAttribute("href")).toBe("/select-organization");
@@ -221,7 +231,7 @@ describe("the Notifications panel", () => {
 describe("the account menu's theme", () => {
   it("chooses a theme without closing the menu", async () => {
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const dark = await screen.findByRole("menuitemradio", { name: "Dark" });
     fireEvent.click(dark);
     await waitFor(() => expect(dark.getAttribute("aria-checked")).toBe("true"));

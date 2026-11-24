@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -21,14 +21,14 @@ vi.mock("@/platform/api/client", () => ({
     return env.status;
   }),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: (c?: string) => !c || env.permissions.has(c) }),
 }));
 vi.mock("@/modules/qeetai/context/use-console-context", () => ({
   useConsoleContext: () => ({
     route: { pathname: "/users", title: "Users" },
-    tenantId: "tenant-a",
+    organizationId: "tenant-a",
     userId: "operator-1",
     capabilities: [],
   }),
@@ -77,22 +77,15 @@ afterEach(() => {
 });
 
 describe("Qeet AI panel", () => {
-  it("renders nothing while closed", () => {
-    const { container } = render(<QeetAIPanel />, { wrapper });
-    expect(container.innerHTML).toBe("");
-  });
-
-  it("is a labelled panel with New conversation, History and Close", async () => {
+  // The frame's AppShell panel draws its edge, header, Close and resizing; this is its content.
+  it("starts with New conversation and History, compact as the frame", async () => {
     openPanel();
-    const panel = screen.getByRole("complementary", { name: "Qeet AI" });
-    expect(panel.getAttribute("data-qx-density")).toBe("compact");
+    const tools = screen.getByRole("toolbar", { name: "Qeet AI" });
+    expect(tools.closest("[data-qx-density]")?.getAttribute("data-qx-density")).toBe("compact");
     expect(screen.getByRole("button", { name: "New conversation" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Conversation history" }));
     expect(workspaceStore.state.historyOpen).toBe(true);
     expect(await screen.findByRole("region", { name: "Conversation history" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Close Qeet AI" }));
-    expect(workspaceStore.state.open).toBe(false);
-    expect(screen.queryByRole("complementary")).toBeNull();
   });
 
   it("says Qeet AI is off and why, with the way to connect a provider, and no composer", async () => {
@@ -148,41 +141,5 @@ describe("Qeet AI panel", () => {
     expect(env.send).not.toHaveBeenCalled();
     fireEvent.keyDown(composer, { key: "Enter" });
     expect(env.send).toHaveBeenCalledWith("Who is suspended?");
-  });
-
-  it("resizes from the keyboard within its bounds", () => {
-    openPanel();
-    const handle = screen.getByRole("separator", { name: "Resize the Qeet AI panel" });
-    const before = workspaceStore.state.dockWidth;
-    fireEvent.keyDown(handle, { key: "ArrowLeft" });
-    expect(workspaceStore.state.dockWidth).toBe(before + 24);
-    for (let i = 0; i < 40; i++) fireEvent.keyDown(handle, { key: "ArrowLeft" });
-    expect(workspaceStore.state.dockWidth).toBe(720);
-  });
-
-  it("keeps one end-edge panel open: it closes the frame's, and gives way to it", async () => {
-    const shell = document.createElement("div");
-    shell.setAttribute("data-slot", "app-shell");
-    shell.setAttribute("data-drawer-open", "");
-    shell.innerHTML = '<div data-slot="app-shell-panel-header"><button>Close panel</button></div>';
-    const closeFramePanel = vi.fn(() => shell.removeAttribute("data-drawer-open"));
-    shell.querySelector("button")?.addEventListener("click", closeFramePanel);
-    document.body.append(shell);
-
-    openPanel();
-    expect(closeFramePanel).toHaveBeenCalledOnce();
-
-    shell.setAttribute("data-drawer-open", "");
-    await waitFor(() => expect(workspaceStore.state.open).toBe(false));
-  });
-
-  it("gives focus back to where it was when it closes", async () => {
-    const trigger = document.createElement("button");
-    document.body.append(trigger);
-    trigger.focus();
-    openPanel();
-    expect(document.activeElement).not.toBe(trigger);
-    fireEvent.click(screen.getByRole("button", { name: "Close Qeet AI" }));
-    expect(document.activeElement).toBe(trigger);
   });
 });

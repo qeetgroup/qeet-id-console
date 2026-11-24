@@ -44,7 +44,7 @@ export function AccessModeIndicator() {
   const label = t(`accessModeIndicator.mode.${access.mode}.label`);
   const description = t(`accessModeIndicator.mode.${access.mode}.description`);
   const count =
-    access.state === "ready" && access.tenantId
+    access.state === "ready" && access.organizationId
       ? t("accessModeIndicator.effectiveCapabilities", { count: access.permissions.size })
       : null;
 

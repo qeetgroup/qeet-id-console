@@ -16,7 +16,7 @@ vi.mock("@/platform/api/server-proxy", () => ({
   proxyApiRequest,
   refreshServerSessionNow: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 
 import { useCreateAgent } from "../agents";
 import { createApiKey } from "../api-key-actions";
@@ -30,7 +30,7 @@ const SIGNED_OUT: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
@@ -75,7 +75,7 @@ describe("tenant secrets", () => {
       value: "postgres://app:pw@db.internal/app",
     });
     expect(proxyApiRequest.mock.calls[0]?.[0].data).toMatchObject({
-      path: "/v1/tenants/tenant-a/secrets/secret-1/reveal",
+      path: "/v1/organizations/tenant-a/secrets/secret-1/reveal",
       method: "POST",
     });
 
@@ -141,7 +141,7 @@ describe("agents", () => {
 describe("API keys", () => {
   const key = {
     id: "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     user_id: null,
     name: "CI deploys",
     prefix: "qk_ab12cd34",
@@ -157,7 +157,9 @@ describe("API keys", () => {
       items: [key, { ...key, id: "k2", scopes: null, revoked_at: "2026-10-23T10:00:00Z" }],
     });
     await expect(listApiKeys("tenant-a")).resolves.toMatchObject({ items: [key, { id: "k2" }] });
-    expect(proxyApiRequest.mock.calls[0]?.[0].data.path).toBe("/v1/tenants/tenant-a/api-keys");
+    expect(proxyApiRequest.mock.calls[0]?.[0].data.path).toBe(
+      "/v1/organizations/tenant-a/api-keys",
+    );
   });
 
   it("fails closed when a key has no prefix to show", async () => {
@@ -169,33 +171,35 @@ describe("API keys", () => {
   it("creates a key with its one-time secret, passing a missing secret on for the page to report", async () => {
     const created = { api_key: key, secret: "qk_ab12cd34.s3cr3t", warning: "Store it now." };
     respond(created, 201);
-    await expect(createApiKey({ tenant_id: "tenant-a", name: "CI deploys" })).resolves.toEqual(
-      created,
-    );
+    await expect(
+      createApiKey({ organization_id: "tenant-a", name: "CI deploys" }),
+    ).resolves.toEqual(created);
 
     respond({ api_key: key, warning: "Store it now." }, 201);
-    await expect(createApiKey({ tenant_id: "tenant-a", name: "CI deploys" })).resolves.toEqual({
+    await expect(
+      createApiKey({ organization_id: "tenant-a", name: "CI deploys" }),
+    ).resolves.toEqual({
       api_key: key,
       warning: "Store it now.",
     });
 
     respond({ api_key: { ...key, id: 7 }, secret: "x" }, 201);
-    await expect(createApiKey({ tenant_id: "tenant-a", name: "CI deploys" })).rejects.toMatchObject(
-      MISMATCH,
-    );
+    await expect(
+      createApiKey({ organization_id: "tenant-a", name: "CI deploys" }),
+    ).rejects.toMatchObject(MISMATCH);
   });
 });
 
 describe("service principals", () => {
   const principal = {
     id: "6c7d8e9f-0a1b-4c2d-9e3f-4a5b6c7d8e9f",
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     name: "Payroll sync",
     scopes: SCOPES,
     disabled_at: null,
     created_at: "2026-10-23T09:00:00Z",
   };
-  const input = { tenant_id: "tenant-a", name: "Payroll sync" };
+  const input = { organization_id: "tenant-a", name: "Payroll sync" };
 
   it("creates a machine identity with its one-time client secret", async () => {
     const created = {

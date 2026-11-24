@@ -7,7 +7,7 @@ import {
   MessageSquareIcon,
   SmartphoneIcon,
 } from "@qeetrix/icons";
-import { Button, Field, Heading, Link, Spinner, Text, TextField } from "@qeetrix/react";
+import { Button, Field, Heading, Link, Text, TextField } from "@qeetrix/react";
 import { Alert, Form, OTPInput } from "@qeetrix/react/experimental";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +21,8 @@ import {
   type MfaProof,
   useCompleteMfaLogin,
 } from "../api/flows";
-import { completeWithPush, mfaPasskeyProof, sendMfaCode } from "../api/mfa-sign-in";
+import { mfaPasskeyProof, sendMfaCode } from "../api/mfa-sign-in";
+import { ApproveOnPhoneStep } from "./approve-on-phone-step";
 import { EntryPanel, useEntrySteps } from "./entry-panel";
 import { EntryOr, EntryShell } from "./entry-shell";
 import { MfaEnrollmentStep, RecoveryCodesStep } from "./mfa-enrollment-step";
@@ -100,16 +101,15 @@ export function MfaStep({
   const [code, setCode] = useState("");
   const [recovery, setRecovery] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [pending, setPending] = useState<"passkey" | "push" | "send" | null>(null);
+  const [pending, setPending] = useState<"passkey" | "send" | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
-  const pushAbort = useRef<AbortController | null>(null);
-  // Focus the code from an effect, since the a11y lint rule forbids autoFocus. Unmounting also
-  // stops waiting for a push approval.
+  const [pushing, setPushing] = useState(false);
+  // Focus the code from an effect, since the a11y lint rule forbids autoFocus; also on coming back
+  // from approving on the phone.
   const codeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    codeRef.current?.querySelector("input")?.focus();
-  }, []);
-  useEffect(() => () => pushAbort.current?.abort(), []);
+    if (!pushing) codeRef.current?.querySelector("input")?.focus();
+  }, [pushing]);
   // A refused code clears the field, so the next attempt starts empty.
   useEffect(() => {
     if (submitError) setCode("");
@@ -125,7 +125,7 @@ export function MfaStep({
   const busy = isLoading || pending !== null;
   const ready = recovery ? code.trim().length > 0 : code.length === CODE_LENGTH;
 
-  async function run(kind: "passkey" | "push" | "send", fn: () => Promise<void>) {
+  async function run(kind: "passkey" | "send", fn: () => Promise<void>) {
     setStepError(null);
     setPending(kind);
     try {
@@ -137,6 +137,26 @@ export function MfaStep({
     } finally {
       setPending(null);
     }
+  }
+
+  const backToSignIn = (
+    <div className="entry-links">
+      {/* A full load: the challenge lives in this page's state, and going back starts over. */}
+      <Link href="/sign-in">{t("forgotPassword.backToSignIn")}</Link>
+    </div>
+  );
+
+  if (pushing) {
+    return (
+      <>
+        <ApproveOnPhoneStep
+          mfaToken={mfaToken}
+          onSignedIn={onSignedIn}
+          onAnother={() => setPushing(false)}
+        />
+        {backToSignIn}
+      </>
+    );
   }
 
   return (
@@ -262,42 +282,22 @@ export function MfaStep({
             <ul className="entry-options" aria-label={t("signIn.mfa.otherWays")}>
               {hasPush && (
                 <li>
-                  {pending === "push" ? (
-                    <div className="entry-option" data-waiting="" role="status">
-                      <Spinner size="sm" />
-                      <span className="entry-option-text">
-                        <strong>{t("signIn.mfa.pushWaitingTitle")}</strong>
-                        <small>{t("signIn.mfa.pushWaitingText")}</small>
-                      </span>
-                      <button
-                        type="button"
-                        className="entry-text-button"
-                        onClick={() => pushAbort.current?.abort()}
-                      >
-                        {t("signIn.mfa.cancel")}
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="entry-option"
-                      disabled={busy}
-                      onClick={() =>
-                        run("push", async () => {
-                          pushAbort.current = new AbortController();
-                          if (await completeWithPush(mfaToken, pushAbort.current.signal))
-                            onSignedIn();
-                        })
-                      }
-                    >
-                      <SmartphoneIcon shape="sharp" size={20} aria-hidden="true" />
-                      <span className="entry-option-text">
-                        <strong>{t("signIn.mfa.pushTitle")}</strong>
-                        <small>{t("signIn.mfa.pushText")}</small>
-                      </span>
-                      <ChevronRightIcon shape="sharp" size={16} aria-hidden="true" />
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="entry-option"
+                    disabled={busy}
+                    onClick={() => {
+                      setStepError(null);
+                      setPushing(true);
+                    }}
+                  >
+                    <SmartphoneIcon shape="sharp" size={20} aria-hidden="true" />
+                    <span className="entry-option-text">
+                      <strong>{t("signIn.mfa.pushTitle")}</strong>
+                      <small>{t("signIn.mfa.pushText")}</small>
+                    </span>
+                    <ChevronRightIcon shape="sharp" size={16} aria-hidden="true" />
+                  </button>
                 </li>
               )}
               {codeFactors.map((factor) => {
@@ -337,10 +337,7 @@ export function MfaStep({
         </>
       )}
 
-      <div className="entry-links">
-        {/* A full load: the challenge lives in this page's state, and going back starts over. */}
-        <Link href="/sign-in">{t("forgotPassword.backToSignIn")}</Link>
-      </div>
+      {backToSignIn}
     </>
   );
 }

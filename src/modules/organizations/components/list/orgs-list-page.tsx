@@ -33,9 +33,8 @@ import {
   visibleOrgs,
 } from "@/modules/organizations/orgs-model";
 import { TWO_STEP_TARGET } from "@/modules/users";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
-import { useCapabilities } from "@/platform/security/capability-provider";
+import { backend } from "@/platform/api/backend";
+import { useOrganizationId } from "@/platform/auth/session";
 import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { OrgsBand } from "./orgs-band";
@@ -75,8 +74,7 @@ export type OrgsListPageProps = {
 export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
   const { t } = useTranslation("organizations");
   const navigate = useNavigate();
-  const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const [sort, setSort] = useState<TableSort | null>(null);
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZES[0]);
   const [offset, setOffset] = useState(0);
@@ -84,15 +82,9 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
 
   const listQ = useOrgs();
   const mineQ = useQuery(orgQueries.memberships());
-  // The organisation you're in: its record carries a scheduled deletion (the list doesn't yet,
-  // QTID-963).
-  const recordQ = useQuery({
-    ...orgQueries.record(tenantId),
-    enabled: !!tenantId && access.can("tenant.read"),
-  });
   const invitesQ = useQuery({
     queryKey: orgKeys.invitations(),
-    queryFn: ({ signal }) => api<{ items: unknown[] }>("/v1/me/invites", { signal }),
+    queryFn: ({ signal }) => backend.get("/v1/me/invites", { signal }),
     staleTime: 30_000,
     meta: { silent: true },
   });
@@ -100,8 +92,8 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
   const now = listQ.dataUpdatedAt || Date.now();
   const reading = useMemo(() => ({ now, target: TWO_STEP_TARGET }), [now]);
   const rows = useMemo(
-    () => orgRows(listQ.data?.items ?? [], mineQ.data, tenantId, recordQ.data),
-    [listQ.data, mineQ.data, tenantId, recordQ.data],
+    () => orgRows(listQ.data?.items ?? [], mineQ.data, organizationId),
+    [listQ.data, mineQ.data, organizationId],
   );
   const shown = useMemo(
     () => visibleOrgs(rows, filters, sort, reading),
@@ -119,8 +111,8 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
   const onSwitch = async (row: OrgRow) => {
     setSwitching(row.id);
     try {
-      const { switchToTenant } = await import("@/modules/authentication");
-      await switchToTenant(row.id);
+      const { switchToOrganization } = await import("@/modules/authentication");
+      await switchToOrganization(row.id);
     } catch (err) {
       setSwitching(null);
       toastSwitchFailure(err);

@@ -58,6 +58,12 @@ describe("signInMethod", () => {
 
 describe("signInMix", () => {
   it("leaves out moves between organisations, which the server records as sign-ins too", () => {
+    const mix = signInMix(["organization_switch", "password", "organization_create"].map(event));
+    expect(mix.total).toBe(1);
+    expect(mix.methods).toEqual([{ method: "password", count: 1 }]);
+  });
+
+  it("leaves out moves recorded before the server named them organization_*", () => {
     const mix = signInMix(["tenant_switch", "password", "tenant_create"].map(event));
     expect(mix.total).toBe(1);
     expect(mix.methods).toEqual([{ method: "password", count: 1 }]);
@@ -77,14 +83,21 @@ describe("signInMix", () => {
 
 describe("permissionAreas", () => {
   it("groups permissions by what they reach, and says whether they can change it", () => {
-    expect(permissionAreas(["user.read", "apikey.write", "apikey.read", "tenant.read"])).toEqual([
+    expect(
+      permissionAreas(["user.read", "apikey.write", "apikey.read", "organization.read"]),
+    ).toEqual([
       {
         resource: "apikey",
         permissions: ["apikey.read", "apikey.write"],
         changes: true,
         everything: false,
       },
-      { resource: "tenant", permissions: ["tenant.read"], changes: false, everything: false },
+      {
+        resource: "organization",
+        permissions: ["organization.read"],
+        changes: false,
+        everything: false,
+      },
       { resource: "user", permissions: ["user.read"], changes: false, everything: false },
     ]);
   });
@@ -100,6 +113,8 @@ describe("sessionSpans", () => {
     id,
     ip: null,
     user_agent: null,
+    device: "",
+    device_kind: "unknown" as const,
     created_at: new Date(now - openedDaysAgo * DAY).toISOString(),
     last_seen_at: new Date(now - seenDaysAgo * DAY).toISOString(),
   });

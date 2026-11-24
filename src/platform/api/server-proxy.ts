@@ -51,7 +51,10 @@ const requestSchema = z.object({
     ),
   method: z.enum(["GET", "POST", "PATCH", "PUT", "DELETE"]),
   body: z.unknown().optional(),
-  query: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+  // A list is a repeated parameter, bounded as the server bounds one (200 values).
+  query: z
+    .record(z.string(), z.union([z.string(), z.number(), z.array(z.string().max(320)).max(200)]))
+    .optional(),
   anonymous: z.boolean(),
   requestId: z.string().min(1).max(200),
 });
@@ -326,11 +329,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       isSessionIssuingRequest(pathname, input.method) &&
       isBackendTokenResponse(responseData)
     ) {
-      if (
-        sessionData.accessToken &&
-        pathname !== "/v1/admin/impersonate" &&
-        pathname !== "/v1/admin/impersonate/exit"
-      ) {
+      if (sessionData.accessToken) {
         await fetch(`${getServerApiBaseUrl()}/v1/auth/logout`, {
           method: "POST",
           headers: {

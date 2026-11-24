@@ -111,13 +111,9 @@ export function OrgsBand({
         <dd className="ppl-meter">
           <Meter
             value={share}
+            target={reading.target}
             tone={share < reading.target ? "warning" : "success"}
             aria-label={t("list.band.twoStepLabel", { n: share, target: reading.target })}
-          />
-          <span
-            className="ppl-target"
-            style={{ insetInlineStart: `${reading.target}%` }}
-            aria-hidden="true"
           />
         </dd>
         {counts["below-target"] ? (

@@ -1,46 +1,50 @@
 import { formatNumber, Meter } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline, SplitBar } from "@/modules/dashboard";
-import type { User, UserStats } from "@/modules/users/api/users";
+import { SplitBar } from "@/modules/dashboard";
+import type { UserStats, UserTrends } from "@/modules/users/api/users";
 import {
-  growth,
+  type Look,
   LOOKS,
-  needsLook,
   type PeopleFilters,
   RECENCY,
-  recency,
   TWO_STEP_TARGET,
 } from "@/modules/users/people-model";
 
-const GROWTH_MONTHS = 15;
+const TREND_DAYS = 30;
+
+/** How many are on each "Needs a look" list, as the server counts them. */
+function lookCount(stats: UserStats, look: Look): number {
+  switch (look) {
+    case "admins-no-two-step":
+      return stats.admins_without_mfa;
+    case "dormant":
+      return stats.last_seen.older ?? 0;
+    case "never":
+      return stats.last_seen.never ?? 0;
+    case "unverified":
+      return stats.email_unverified;
+    case "suspended":
+      return stats.suspended;
+  }
+}
 
 /**
- * The list's key numbers, in its header above the tabs: people over time, two-step coverage
- * against its target, when people were last active, and what needs a look. Each part opens the
- * list filtered to it.
+ * The list's key numbers, in its header above the tabs: people over the last 30 days, two-step
+ * coverage against its target, when people were last active, and what needs a look, each as the
+ * server counts the whole organisation. Each part opens the list filtered to it.
  */
-export function PeopleBand({
-  stats,
-  users,
-  now,
-}: {
-  stats: UserStats;
-  users: User[];
-  now: number;
-}) {
+export function PeopleBand({ stats, trends }: { stats: UserStats; trends?: UserTrends }) {
   const { t } = useTranslation("users");
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const total = stats.total || users.length;
+  const total = stats.total;
   const share = total ? Math.round((stats.mfa_enabled / total) * 100) : 0;
-  const months = growth(users, now, GROWTH_MONTHS);
-  const seen = RECENCY.map((id) => ({
-    id,
-    count: users.filter((u) => recency(u, now) === id).length,
-  }));
+  const days = trends?.total ?? [];
+  const seen = RECENCY.map((id) => ({ id, count: stats.last_seen[id] ?? 0 }));
   const to = (search: PeopleFilters) => ({ to: "/users" as const, search });
 
   return (
@@ -53,21 +57,23 @@ export function PeopleBand({
             ? t("people.band.activeAndNew", { active: n(stats.active), n: n(stats.new_last_30d) })
             : t("people.band.activeNoneNew", { active: n(stats.active) })}
         </dd>
-        <dd className="ppl-chart">
-          <span
-            role="img"
-            aria-label={t("people.band.growthLabel", {
-              from: n(months[0] ?? 0),
-              to: n(months[months.length - 1] ?? 0),
-              months: GROWTH_MONTHS,
-            })}
-          >
-            <Sparkline values={months} width={132} height={40} />
-          </span>
-          <span className="ppl-chart-caption" aria-hidden="true">
-            {t("people.band.months", { months: GROWTH_MONTHS })}
-          </span>
-        </dd>
+        {days.length > 1 ? (
+          <dd className="ppl-chart">
+            <span
+              role="img"
+              aria-label={t("people.band.growthLabel", {
+                from: n(days[0] ?? 0),
+                to: n(days[days.length - 1] ?? 0),
+                days: TREND_DAYS,
+              })}
+            >
+              <Sparkline values={days} width={132} height={40} />
+            </span>
+            <span className="ppl-chart-caption" aria-hidden="true">
+              {t("people.band.days", { days: TREND_DAYS })}
+            </span>
+          </dd>
+        ) : null}
       </div>
 
       <div className="ppl-cell">
@@ -83,13 +89,9 @@ export function PeopleBand({
         <dd className="ppl-meter">
           <Meter
             value={share}
+            target={TWO_STEP_TARGET}
             tone={share < TWO_STEP_TARGET ? "warning" : "success"}
             aria-label={t("people.band.twoStepLabel", { n: share, target: TWO_STEP_TARGET })}
-          />
-          <span
-            className="ppl-target"
-            style={{ insetInlineStart: `${TWO_STEP_TARGET}%` }}
-            aria-hidden="true"
           />
         </dd>
         {stats.mfa_missing ? (
@@ -128,7 +130,7 @@ export function PeopleBand({
         <dd className="ppl-looks">
           <ul>
             {LOOKS.map((look) => {
-              const count = users.filter((u) => needsLook(u, look, now)).length;
+              const count = lookCount(stats, look);
               const tone = count && look === "admins-no-two-step" ? "is-danger" : undefined;
               return (
                 <li key={look} className={count ? undefined : "is-zero"}>

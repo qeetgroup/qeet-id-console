@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { formatLocale } from "@/i18n";
 import { formatEventTitle } from "@/modules/activity";
 import { useEntitlements } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { parseUserAgent } from "@/modules/users";
 import {
   type AuditAnomaly,
@@ -50,7 +50,7 @@ import {
 } from "@/modules/security/api/audit-log";
 import { useLogSinks } from "@/modules/security/api/log-sinks";
 import { type AuditSearch, auditFilters, isFiltered } from "@/modules/security/audit-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { toastError } from "@/platform/errors/error-toast";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -59,7 +59,7 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { BandPlaceholder } from "../band-placeholder";
-import { usePeople } from "../use-people";
+import { useEveryone } from "../use-people";
 import { When } from "../when";
 import { AuditBand, type ChainCheck } from "./audit-band";
 import { ActorName, EventCell, ResourceName } from "./audit-cells";
@@ -102,16 +102,16 @@ export type AuditLogPageProps = {
  */
 export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const { t } = useTranslation("security");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const people = usePeople();
+  const people = useEveryone();
   const runSensitive = useSensitiveAction();
   const flaggedView = search.view === "flagged";
   const flaggedStatus = search.status === "resolved" ? "resolved" : "open";
   const filters = useMemo(() => auditFilters(search), [search]);
 
-  // Library gap (new): Pagination for cursor paging. The cursors of the pages seen so far stand in
-  // for offsets, the first page's being undefined; the total is known only on the last page.
+  // Cursor paging: the cursors of the pages seen so far, the first page's being undefined, so
+  // Previous can go back without the server; the total is known only on the last page.
   const [pageSize, setPageSize] = useState<number>(AUDIT_PAGE_SIZES[0]);
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [pageKey, setPageKey] = useState("");
@@ -146,8 +146,7 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const byActor = (actorUserId: string) =>
     onSearchChange({ actor_user_id: actorUserId }, { replace: false });
 
-  const goTo = (offset: number) => {
-    const target = Math.round(offset / pageSize);
+  const goTo = (target: number) => {
     const base = pageKey === key ? cursors : [undefined];
     if (target > page && log.data?.next_cursor) {
       setCursors([...base.slice(0, page + 1), log.data.next_cursor]);
@@ -186,11 +185,11 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
     }).catch(settleSensitiveAction);
 
   async function exportAll(format: ExportFormat) {
-    if (!tenantId || exporting) return;
+    if (!organizationId || exporting) return;
     setExporting(format);
     try {
       // Starts at the newest matching event, not at the page on screen.
-      const { items, truncated } = await fetchAuditExport(tenantId, filters, EXPORT_ROW_CAP);
+      const { items, truncated } = await fetchAuditExport(organizationId, filters, EXPORT_ROW_CAP);
       const stamp = new Date().toISOString().replace(/[:.]/g, "-");
       if (format === "csv") {
         downloadBlob(rowsToCsv(items, CSV_COLUMNS), "text/csv;charset=utf-8", `audit-${stamp}.csv`);
@@ -275,7 +274,7 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const openFlag = search.event ? flaggedByEvent.get(search.event) : undefined;
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("audit.title")}
@@ -433,13 +432,16 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
               />
               {rows.length && (page > 0 || log.data?.next_cursor) ? (
                 <Pagination
+                  hasPrevious={page > 0}
+                  hasNext={!!log.data?.next_cursor}
+                  onPrevious={() => goTo(page - 1)}
+                  onNext={() => goTo(page + 1)}
                   offset={page * pageSize}
                   pageSize={pageSize}
                   itemsOnPage={rows.length}
                   // No total from the server: on the last page, what's been seen is the total.
                   total={log.data?.next_cursor ? undefined : page * pageSize + rows.length}
                   loading={log.isFetching}
-                  onOffsetChange={goTo}
                   pageSizes={AUDIT_PAGE_SIZES}
                   onPageSizeChange={(size) => {
                     setPageSize(size);
@@ -462,6 +464,6 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
         onResolve={onResolve}
         resolving={resolve.isPending}
       />
-    </PageTabs>
+    </>
   );
 }

@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -29,16 +29,23 @@ import { userKeys } from "../api/keys";
 import type { User } from "../api/users";
 import { PeopleBulkActions } from "../components/people/people-bulk";
 
-const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25 });
 const USER_STATS: QueryKey = userKeys.stats("tenant-a");
 
 function user(id: string, overrides: Partial<User> = {}): User {
   return {
     id,
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     email: `${id}@example.test`,
     status: "active",
     created_at: "2026-09-01T00:00:00Z",
+    display_name: null,
+    phone: null,
+    metadata: null,
+    avatar_url: null,
+    email_verified_at: null,
+    phone_verified_at: null,
+    updated_at: "2026-09-01T00:00:00Z",
     ...overrides,
   };
 }
@@ -49,10 +56,10 @@ function users(count: number) {
 
 function renderBulk(
   selected: User[],
-  tenantId: string | null = "tenant-a",
+  organizationId: string | null = "tenant-a",
   currentUserId: string | null = "someone-else",
 ) {
-  context.tenantId = tenantId;
+  context.organizationId = organizationId;
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -87,7 +94,7 @@ let failure: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path) =>
-    path === "/v1/tenants/tenant-a/groups"
+    path === "/v1/organizations/tenant-a/groups"
       ? { items: [{ id: "grp-eng", name: "Engineering" }] }
       : undefined,
   );
@@ -216,8 +223,8 @@ describe("PeopleBulkActions", () => {
 
     await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
     expect(actionCalls()).toEqual([
-      ["/v1/users/user-1/tenants/tenant-a/roles/role-viewer", { method: "POST" }],
-      ["/v1/users/user-2/tenants/tenant-a/roles/role-viewer", { method: "POST" }],
+      ["/v1/users/user-1/organizations/tenant-a/roles/role-viewer", { method: "POST" }],
+      ["/v1/users/user-2/organizations/tenant-a/roles/role-viewer", { method: "POST" }],
     ]);
     expect(success).toHaveBeenCalledWith("Updated 2 users");
   });
@@ -251,10 +258,10 @@ describe("PeopleBulkActions", () => {
 
   it("reads the tenant's groups when the group picker opens, not before", async () => {
     renderBulk(users(1));
-    expect(api).not.toHaveBeenCalledWith("/v1/tenants/tenant-a/groups");
+    expect(api).not.toHaveBeenCalledWith("/v1/organizations/tenant-a/groups");
 
     fireEvent.click(screen.getByRole("button", { name: "Add to a group" }));
-    await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/groups"));
+    await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/groups"));
   });
 
   it("deletes the selected users only after confirmation", async () => {
@@ -284,7 +291,7 @@ describe("PeopleBulkActions", () => {
         mfa_enabled: true,
         last_seen_at: "2026-10-20T00:00:00Z",
       }),
-      user("user-2", { roles: null, mfa_enabled: undefined, last_seen_at: null }),
+      user("user-2", { roles: undefined, mfa_enabled: undefined, last_seen_at: null }),
     ];
     renderBulk(selected);
 

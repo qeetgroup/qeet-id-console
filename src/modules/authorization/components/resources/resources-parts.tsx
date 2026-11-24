@@ -7,6 +7,7 @@ import {
   DrawerContent,
   DrawerFooter,
   Heading,
+  LinkButton,
   Table,
   Text,
 } from "@qeetrix/react";
@@ -248,13 +249,13 @@ export function ResourceDrawerContent({
       </DrawerBody>
       <DrawerFooter>
         <DrawerClose render={<Button variant="ghost">{t("lists.common.close")}</Button>} />
-        <Button
+        <LinkButton
           variant="soft"
           icon={FlaskConicalIcon}
           render={<Link to="/authorization/access-tester" />}
         >
           {t("lists.resources.drawer.testAccess")}
-        </Button>
+        </LinkButton>
       </DrawerFooter>
     </DrawerContent>
   );

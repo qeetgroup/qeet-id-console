@@ -10,7 +10,7 @@ import {
   WorkflowIcon,
 } from "@qeetrix/icons";
 import type { QeetrixIcon } from "@qeetrix/react";
-import { Button, formatDateTime, formatRelativeTime } from "@qeetrix/react";
+import { formatDateTime, formatRelativeTime, LinkButton } from "@qeetrix/react";
 import {
   EmptyState,
   Timeline,
@@ -78,9 +78,14 @@ export function RecentActivityPanel() {
     <Panel
       title={t("overview.activity.title")}
       action={
-        <Button variant="ghost" size="sm" icon={ArrowRightIcon} render={<Link to="/activity" />}>
+        <LinkButton
+          variant="ghost"
+          size="sm"
+          icon={ArrowRightIcon}
+          render={<Link to="/activity" />}
+        >
           {t("overview.activity.action")}
-        </Button>
+        </LinkButton>
       }
     >
       {connecting ? (

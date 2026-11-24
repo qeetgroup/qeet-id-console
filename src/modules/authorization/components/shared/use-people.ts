@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { type User, userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 /** A person's name as the console shows it: their display name, else their email. */
@@ -20,13 +20,13 @@ const NO_ONE: User[] = [];
  */
 export function usePeople() {
   const canRead = useCapabilities().can("user.read");
-  const options = userQueries.directory(useTenantId());
+  const options = userQueries.directory(useOrganizationId());
   const directory = useQuery({ ...options, enabled: options.enabled && canRead });
   const people = directory.data?.items ?? NO_ONE;
   return useMemo(() => {
     const byId = new Map(people.map((u) => [u.id, u]));
+    // The members list never holds a deleted account.
     const items: ComboboxItem<string>[] = people
-      .filter((u) => u.status !== "deleted")
       .map((u) => ({ value: u.id, label: nameOf(u), description: u.email }))
       .sort((a, b) => a.label.localeCompare(b.label));
     return {

@@ -1,25 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
+import { isOneOf } from "@/shared/utils/one-of";
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export type NotificationKind = "info" | "warning" | "alert" | "success";
+const KINDS = ["info", "warning", "alert", "success"] as const;
+export type NotificationKind = (typeof KINDS)[number];
 
-export interface Notification {
-  id: string;
-  kind: NotificationKind;
-  title: string;
-  description?: string;
-  created_at: string;
-  read_at?: string | null; // set once the user has read it
-  href?: string | null; // in-app link the notification opens
-}
+/** A notification's kind as the console knows it, else plain information. */
+export const notificationKind = (kind: string): NotificationKind =>
+  isOneOf(KINDS, kind) ? kind : "info";
 
-interface NotificationsResponse {
-  items: Notification[];
-  unread_count: number;
-}
+// A notification's `href` is the in-app link it opens; `read_at` is set once the person has read it.
+type NotificationsResponse = Answer<"/v1/notifications">;
+export type Notification = NotificationsResponse["items"][number];
 
 const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
 
@@ -29,11 +26,11 @@ const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
  */
 export function useNotifications(enabled = true) {
   return useQuery({
-    queryKey: developerKeys.notifications(useTenantId()),
+    queryKey: developerKeys.notifications(useOrganizationId()),
     enabled,
     queryFn: async (): Promise<NotificationsResponse> => {
       try {
-        return await api<NotificationsResponse>("/v1/notifications");
+        return await backend.get("/v1/notifications");
       } catch (err) {
         // Only a missing endpoint reads as empty; auth and server errors still surface.
         if (err instanceof ApiError && err.status === 404) return EMPTY;
@@ -49,15 +46,16 @@ export function useNotifications(enabled = true) {
 
 /** Marks all in-app notifications read; a backend without the endpoint (404) is a no-op. */
 export function useMarkAllRead() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      api<void>("/v1/notifications/mark-all-read", { method: "POST" }).catch((err) => {
+      backend.post("/v1/notifications/mark-all-read").catch((err) => {
         if (err instanceof ApiError && err.status === 404) return;
         throw err;
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.notifications(tenantId) }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: developerKeys.notifications(organizationId) }),
     meta: { silent: true },
   });
 }

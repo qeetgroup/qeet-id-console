@@ -13,7 +13,7 @@ import {
 import { Failure, OpenDetail, Panel } from "./account-parts";
 
 const CODE_LENGTH = 6;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 
 /**
  * Changing the sign-in email, opened under its row at full width: the new address first, then the

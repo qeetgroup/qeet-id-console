@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -34,9 +34,6 @@ vi.mock("@tanstack/react-router", () => ({
       {children}
     </a>
   ),
-}));
-vi.mock("@/modules/authorization/components/shared/monaco-panel", () => ({
-  MonacoPanel: () => null,
 }));
 // A native select stands in for the searchable combobox, which jsdom can't drive reliably.
 vi.mock("@qeetrix/react/experimental", async (importOriginal) => ({
@@ -180,7 +177,12 @@ describe("Testing › a permission", () => {
         at: new Date().toISOString(),
         durationMs: 3,
         input: { user_id: AARAV, permission: "user.write" },
-        rbac: { allowed: false, paths: [], reason_code: "authz.no_role_grant" },
+        rbac: {
+          allowed: false,
+          decided_by: { model: "none" },
+          paths: [],
+          reason_code: "authz.no_role_grant",
+        },
       }),
     );
     renderPage();

@@ -298,7 +298,7 @@ export function ImportGroupsDrawer({
                   <Table<Result & { line: number }>
                     label={t("importDrawer.notMadeTable")}
                     rows={[
-                      ...skippedHere.map((r) => ({
+                      ...skippedHere.map((r): Result & { line: number } => ({
                         line: r.line,
                         name: r.name,
                         status: r.outcome === "exists" ? ("skipped" as const) : ("failed" as const),

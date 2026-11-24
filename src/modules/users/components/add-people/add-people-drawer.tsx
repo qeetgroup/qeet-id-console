@@ -1,11 +1,4 @@
-import {
-  CircleCheckIcon,
-  CircleMinusIcon,
-  InfoIcon,
-  SendIcon,
-  UploadIcon,
-  UserPlusIcon,
-} from "@qeetrix/icons";
+import { SendIcon, UploadIcon, UserPlusIcon } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -18,10 +11,14 @@ import {
   Radio,
   RadioGroup,
   Select,
-  Textarea,
   TextField,
 } from "@qeetrix/react";
-import { Alert, PasswordInput } from "@qeetrix/react/experimental";
+import {
+  Alert,
+  type EmailEntryState,
+  MultiEmailField,
+  PasswordInput,
+} from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,7 +26,6 @@ import { useTranslation } from "react-i18next";
 import { useRoles } from "@/modules/authorization";
 import { useOrgs } from "@/modules/organizations";
 import {
-  type AddressCheck,
   checkAddresses,
   isEmail,
   MAX_INVITES,
@@ -39,10 +35,9 @@ import {
 } from "@/modules/users/add-people-model";
 import { inviteCalls, useInvitations } from "@/modules/users/api/invitations";
 import { useCreateUser, useUserDirectory } from "@/modules/users/api/users";
-import { roleLabel } from "@/modules/users/components/people/people-table";
 import { usePeopleRun } from "@/modules/users/components/people/people-bulk";
 import "@/modules/users/components/people/people.css";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference } from "@/platform/components/error-reference";
 import { errorMessage, fieldErrorMessages } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -50,6 +45,7 @@ import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 type Mode = "invite" | "create";
 type Errors = {
@@ -59,43 +55,6 @@ type Errors = {
   addresses?: string;
   form?: string;
 };
-const CHECK_ICON = {
-  new: CircleCheckIcon,
-  invited: InfoIcon,
-  member: CircleMinusIcon,
-  invalid: CircleMinusIcon,
-};
-
-/** What happens to each address: a ruled row per address, under the field (until QTRX-22). */
-function AddressChecks({ checks }: { checks: AddressCheck[] }) {
-  const { t } = useTranslation("users");
-  if (!checks.length) return null;
-  return (
-    <section className="add-checks" aria-label={t("addPeople.checksLabel")}>
-      <ul>
-        {checks.map((c) => {
-          const Icon = CHECK_ICON[c.kind];
-          return (
-            <li key={c.email} className={`add-check is-${c.kind}`}>
-              <Icon className="add-check-icon" aria-hidden="true" />
-              <span className="add-check-email">{c.email}</span>
-              <span className="add-check-note">
-                {c.kind === "invited"
-                  ? t("addPeople.checks.invited")
-                  : c.kind === "member"
-                    ? t("addPeople.checks.member")
-                    : c.kind === "invalid"
-                      ? t("addPeople.checks.invalid")
-                      : t("addPeople.checks.new")}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
 /**
  * Add people, the Users list's one main action: an email invitation (recommended — they choose
  * their own password) or an account created now with a first password. An invitation takes
@@ -114,10 +73,10 @@ export function AddPeopleDrawer({
   const { t } = useTranslation("users");
   const access = useCapabilities();
   const canCreate = access.canAll(["user.write", "role.read", "role.write"]);
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const roles = useRoles().data?.items ?? [];
-  const members = useUserDirectory().data?.items ?? [];
+  const members = useUserDirectory(open).data?.items ?? [];
   const invites = useInvitations(open).data?.items ?? [];
   const createUser = useCreateUser();
   const runSensitive = useSensitiveAction();
@@ -128,7 +87,7 @@ export function AddPeopleDrawer({
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [roleId, setRoleId] = useState("");
-  const [text, setText] = useState("");
+  const [addresses, setAddresses] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -141,7 +100,7 @@ export function AddPeopleDrawer({
     if (!open) return;
     setMode(canCreate ? initialMode : "invite");
     setRoleId("");
-    setText("");
+    setAddresses([]);
     setEmail("");
     setName("");
     setPhone("");
@@ -153,12 +112,20 @@ export function AddPeopleDrawer({
   // A member-type role by default, else the last (least-privileged) one, so they join as members.
   const role = roleId || roles.find((r) => /member/i.test(r.name))?.id || roles.at(-1)?.id || "";
   const chosen = roles.find((r) => r.id === role);
-  const checks = checkAddresses(parseAddresses(text), members, invites);
+  const checks = checkAddresses(addresses, members, invites);
+  const outcome = (email: string): EmailEntryState | undefined => {
+    const check = checks.find((c) => c.email === email);
+    if (!check) return undefined;
+    if (check.kind === "invited") return { tone: "info", note: t("addPeople.checks.invited") };
+    if (check.kind === "member") return { tone: "skipped", note: t("addPeople.checks.member") };
+    if (check.kind === "invalid") return { tone: "danger", note: t("addPeople.checks.invalid") };
+    return { tone: "success", note: t("addPeople.checks.new") };
+  };
   const targets = sendable(checks);
   const busy = !!running || createUser.isPending;
 
   function sendInvitations() {
-    if (!tenantId) return;
+    if (!organizationId) return;
     if (targets.length === 0) return setErrors({ addresses: t("addPeople.errors.noAddresses") });
     if (targets.length > MAX_INVITES)
       return setErrors({ addresses: t("addPeople.errors.tooMany", { n: MAX_INVITES }) });
@@ -171,13 +138,17 @@ export function AddPeopleDrawer({
         const target = byEmail.get(address);
         return target?.kind === "invited"
           ? inviteCalls.resend(target.invite.id)
-          : inviteCalls.create({ tenant_id: tenantId, email: address, role_id: role || undefined });
+          : inviteCalls.create({
+              organization_id: organizationId,
+              email: address,
+              role_id: role || undefined,
+            });
       },
     );
   }
 
   function createAccount() {
-    if (!tenantId) return;
+    if (!organizationId) return;
     const address = email.trim();
     const e164 = phone.trim() ? toE164(phone) : undefined;
     const next: Errors = {};
@@ -192,7 +163,7 @@ export function AddPeopleDrawer({
       actionLabel: t("create.actionLabel"),
       run: () =>
         createUser.mutateAsync({
-          tenant_id: tenantId,
+          organization_id: organizationId,
           email: address,
           password,
           display_name: name.trim() || undefined,
@@ -218,7 +189,7 @@ export function AddPeopleDrawer({
     <Field
       label={t("create.role")}
       description={
-        chosen?.description ? `${roleLabel(t, chosen.name)}: ${chosen.description}` : undefined
+        chosen?.description ? `${roleDisplayName(chosen.name)}: ${chosen.description}` : undefined
       }
     >
       <Select
@@ -226,7 +197,7 @@ export function AddPeopleDrawer({
         onValueChange={(value) => setRoleId(String(value ?? ""))}
         items={roles.map((r): { value: string; label: string } => ({
           value: r.id,
-          label: roleLabel(t, r.name),
+          label: roleDisplayName(r.name),
         }))}
       />
     </Field>
@@ -292,18 +263,19 @@ export function AddPeopleDrawer({
                   description={t("addPeople.addressesHelp", { n: MAX_INVITES })}
                   error={errors.addresses}
                 >
-                  <Textarea
-                    rows={3}
-                    maxRows={8}
-                    value={text}
-                    onValueChange={(value) => {
-                      setText(value);
+                  <MultiEmailField
+                    value={addresses}
+                    onValueChange={(next) => {
+                      // "<name@org.in>" from a mail client reads as the address itself.
+                      setAddresses(parseAddresses(next.join(" ")));
                       if (errors.addresses) setErrors({});
                     }}
+                    check={outcome}
+                    max={MAX_INVITES}
                     placeholder={t("addPeople.addressesPlaceholder")}
+                    messages={{ entries: t("addPeople.checksLabel") }}
                   />
                 </Field>
-                <AddressChecks checks={checks} />
                 {roleField}
               </>
             ) : (
@@ -350,11 +322,14 @@ export function AddPeopleDrawer({
             )}
           </form>
         </DrawerBody>
-        <DrawerFooter>
-          <Link className="add-import" render={<RouterLink to="/users/import" />}>
-            <UploadIcon className="add-import-icon" aria-hidden="true" />
-            {t("addPeople.import")}
-          </Link>
+        <DrawerFooter
+          start={
+            <Link className="add-import" render={<RouterLink to="/users/import" />}>
+              <UploadIcon className="add-import-icon" aria-hidden="true" />
+              {t("addPeople.import")}
+            </Link>
+          }
+        >
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             {t("addPeople.cancel")}
           </Button>

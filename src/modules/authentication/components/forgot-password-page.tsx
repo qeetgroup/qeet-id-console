@@ -44,7 +44,6 @@ export function ForgotPasswordPage() {
     content = (
       <SentPanel
         email={sentTo}
-        devToken={forgot.data?.dev_reset_token}
         onAgain={() => {
           forgot.reset();
           setSentTo(null);
@@ -191,15 +190,7 @@ function RequestPanel({
 }
 
 /** Sent: the same words whether or not the account exists, so the page can't find accounts. */
-function SentPanel({
-  email,
-  devToken,
-  onAgain,
-}: {
-  email: string;
-  devToken?: string;
-  onAgain: () => void;
-}) {
+function SentPanel({ email, onAgain }: { email: string; onAgain: () => void }) {
   const { t } = useTranslation("auth-flow");
   return (
     <>
@@ -216,21 +207,6 @@ function SentPanel({
           />
         </Text>
       </div>
-
-      {/* Dev only: the backend hands back the token so the reset link works without email. */}
-      {devToken ? (
-        <Alert
-          tone="warning"
-          title={t("forgotPassword.devLinkTitle")}
-          actions={
-            <Link href={`/forgot-password?token=${encodeURIComponent(devToken)}`}>
-              {t("forgotPassword.devLinkButton")}
-            </Link>
-          }
-        >
-          {t("forgotPassword.devLinkText")}
-        </Alert>
-      ) : null}
 
       <EntryInboxLinks />
 

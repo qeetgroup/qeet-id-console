@@ -1,6 +1,7 @@
 import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
 import { Button } from "@qeetrix/react";
 import type { ErrorComponentProps } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ErrorReference } from "@/platform/components/error-reference";
@@ -17,7 +18,8 @@ import { captureError } from "@/platform/telemetry/errors";
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   const { t } = useTranslation("common");
   const appError = normalizeError(error);
-  captureError(error, { source: "error-boundary" });
+  // Once per error, not on every render of the fallback.
+  useEffect(() => captureError(error, { source: "error-boundary" }), [error]);
 
   return (
     <StatePage

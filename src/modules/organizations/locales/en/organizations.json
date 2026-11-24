@@ -170,12 +170,12 @@
       "someone": "A member",
       "qeetId": "Qeet ID",
       "kinds": {
-        "tenant-created": "Organisation created",
-        "tenant-updated": "Details changed",
-        "tenant-deletion-scheduled": "Deletion scheduled for {{date}}",
-        "tenant-deletion-cancelled": "Deletion called off",
-        "tenant-suspended": "Suspended",
-        "tenant-reactivated": "Reactivated",
+        "organization-created": "Organisation created",
+        "organization-updated": "Details changed",
+        "organization-deletion-scheduled": "Deletion scheduled for {{date}}",
+        "organization-deletion-cancelled": "Deletion called off",
+        "organization-suspended": "Suspended",
+        "organization-reactivated": "Reactivated",
         "branding-updated": "Branding changed",
         "security-policy-updated": "Sign-in rules changed",
         "rate-limits-updated": "Rate limits changed",
@@ -237,7 +237,7 @@
     "noChanges": "No unsaved changes",
     "reset": "Reset to default",
     "resetTitle": "Reset {{template}} to Qeet ID's default?",
-    "resetDescriptionTenant": "Its saved text, design and translations are removed, and {{name}}'s emails of this kind go back to Qeet ID's wording.",
+    "resetDescriptionOrganization": "Its saved text, design and translations are removed, and {{name}}'s emails of this kind go back to Qeet ID's wording.",
     "resetDescriptionPlatform": "Its saved text, design and translations are removed. Qeet ID sends this email with its own wording either way.",
     "resetDone": "Template reset to the default.",
     "save": "Save template",
@@ -264,7 +264,7 @@
     "preheaderHint": "Shown after the subject in most inboxes.",
     "variables": "Insert variable",
     "variableSample": "Sample: {{sample}}",
-    "tenantNameSample": "the sender name, from Branding",
+    "organizationNameSample": "the sender name, from Branding",
     "characters_one": "{{count}} character",
     "characters_other": "{{count}} characters",
     "toolbar": {
@@ -350,7 +350,7 @@
       "noLinks": "No links."
     },
     "delivery": {
-      "tenant": "Once it's saved, this is what {{name}}'s people get.",
+      "organization": "Once it's saved, this is what {{name}}'s people get.",
       "platform": "Qeet ID sends this one with its own wording for now. You can still save, preview and test yours."
     },
     "leave": {
@@ -361,7 +361,7 @@
     },
     "sample": {
       "ttl": "10 minutes",
-      "tenantName": "Your organisation"
+      "organizationName": "Your organisation"
     },
     "catalogue": {
       "verify_email": {
@@ -433,7 +433,7 @@
       "configureStrictMfa": "Configure strict MFA",
       "explainSecurity": "Explain security settings",
       "createOrganization": "Create an organization",
-      "terraformTenant": "Generate Terraform for tenant"
+      "terraformOrganization": "Generate Terraform for this organisation"
     },
     "prompts": {
       "explainSecurity": "Explain the current authentication policy and its security implications."

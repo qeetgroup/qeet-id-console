@@ -45,8 +45,8 @@
   opacity: 0.5;
 }
 
-/* In the page header's summary: edge to edge between its rules, inset to the page gutter
-   (until the library has a summary band, QTRX-18). */
+/* In the page header's summary: edge to edge between its rules, inset to the page gutter. The band
+   stays the console's while Qeetrix's StatGroup can't hold its "Needs a look" cell. */
 .qx-page-header-summary .ppl-band {
   border: 0;
   border-radius: 0;
@@ -109,16 +109,7 @@
 }
 
 .ppl-cell > .ppl-meter {
-  position: relative;
   margin-block-start: var(--qx-space-gap-sm);
-}
-
-/* The Meter's target tick (QTRX-14). */
-.ppl-target {
-  position: absolute;
-  inset-block: -3px;
-  inline-size: 2px;
-  background: var(--qx-color-text-default);
 }
 
 .ppl-link a {
@@ -244,10 +235,8 @@ b.is-danger {
 
 /* ── The table's cells ────────────────────────────────────────────────────────────────────── */
 
-/* Fills the table's bar (a flex row), so the filters use its whole width before they wrap
-   (QTRX-17). */
+/* In the table's toolbar slot: the filters, and under them what's applied. */
 .ppl-toolbar {
-  flex: 1 1 auto;
   display: grid;
   gap: var(--qx-space-gap-md);
 }
@@ -403,73 +392,11 @@ b.is-danger {
   gap: var(--qx-space-gap-lg);
 }
 
-/* Add people: what happens to each address, ruled rows under the field (until QTRX-22). */
-.add-checks ul {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-}
-
-.add-check {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-  padding-block: 8px;
-  font: var(--qx-typography-body-sm);
-}
-
-.add-check + .add-check {
-  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-}
-
-.add-check-icon {
-  inline-size: 16px;
-  block-size: 16px;
-}
-
-.add-check-email {
-  overflow: hidden;
-  color: var(--qx-color-text-default);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.add-check-note {
-  color: var(--qx-color-text-subtle);
-  white-space: nowrap;
-}
-
-.add-check.is-new .add-check-icon {
-  color: var(--qx-color-icon-success);
-}
-
-.add-check.is-invited .add-check-icon {
-  color: var(--qx-color-icon-info);
-}
-
-.add-check.is-member .add-check-icon,
-.add-check.is-invalid .add-check-icon {
-  color: var(--qx-color-icon-subtle);
-}
-
-.add-check.is-member .add-check-email {
-  color: var(--qx-color-text-subtle);
-  text-decoration: line-through;
-}
-
-.add-check.is-invalid .add-check-note {
-  color: var(--qx-color-text-danger);
-}
-
-/* The footer: the import link at the start, the buttons at the end (until QTRX-23). */
+/* A footer's start link (DrawerFooter's `start`): its icon beside the words. */
 .add-import {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-inline-end: auto;
 }
 
 .add-import-icon {
@@ -479,22 +406,24 @@ b.is-danger {
 
 /* ── Narrow screens ───────────────────────────────────────────────────────────────────────── */
 
+/* Four cells go two by two; three stay in a row until a phone stacks them all. */
 @media (max-width: 1180px) {
   .ppl-band {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .ppl-cell:nth-child(3) {
+  .ppl-band:not(.is-three) > .ppl-cell:nth-child(3) {
     border-inline-start: 0;
   }
 
-  .ppl-cell:nth-child(n + 3) {
+  .ppl-band:not(.is-three) > .ppl-cell:nth-child(n + 3) {
     border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
   }
 }
 
 @media (max-width: 640px) {
-  .ppl-band {
+  .ppl-band,
+  .ppl-band.is-three {
     grid-template-columns: minmax(0, 1fr);
   }
 

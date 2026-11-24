@@ -3,6 +3,7 @@ import {
   Button,
   formatNumber,
   Link,
+  LinkButton,
   Select,
   Skeleton,
   Table,
@@ -26,9 +27,8 @@ import {
   useUserPermissions,
 } from "@/modules/users/api/user360";
 import { useAssignRole } from "@/modules/users/api/users";
-import { roleLabel } from "@/modules/users/components/people/people-table";
 import { type PermissionArea, permissionAreas, personNames } from "@/modules/users/person-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { toastError } from "@/platform/errors/error-toast";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -36,6 +36,7 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { Fact, Facts, Row, Rows, Section } from "./person-parts";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 /** What a permission area is called: Users, API keys, Organisation… or its name in words. */
 function areaName(resource: string) {
@@ -148,9 +149,13 @@ export function PersonAccess({
             hint={t("person.access.policiesNote")}
             action={
               can.can("policy.read") ? (
-                <Button variant="ghost" size="sm" render={<RouterLink to="/authorization/abac" />}>
+                <LinkButton
+                  variant="ghost"
+                  size="sm"
+                  render={<RouterLink to="/authorization/abac" />}
+                >
                   {t("person.access.seePolicies")}
-                </Button>
+                </LinkButton>
               ) : undefined
             }
           >
@@ -202,8 +207,8 @@ function RolesSection({
   const take = (role: { id: string; name: string }) =>
     void runSensitive({
       confirm: {
-        title: t("person.confirm.takeRole.title", { role: roleLabel(t, role.name), name: full }),
-        description: t("person.confirm.takeRole.description", { role: roleLabel(t, role.name) }),
+        title: t("person.confirm.takeRole.title", { role: roleDisplayName(role.name), name: full }),
+        description: t("person.confirm.takeRole.description", { role: roleDisplayName(role.name) }),
         confirmLabel: t("person.confirm.takeRole.button"),
         tone: "destructive",
       },
@@ -231,7 +236,7 @@ function RolesSection({
                     ? t("person.access.chooseRole")
                     : t("person.access.allRoles"),
                 },
-                ...grantable.map((r) => ({ value: r.id, label: roleLabel(t, r.name) })),
+                ...grantable.map((r) => ({ value: r.id, label: roleDisplayName(r.name) })),
               ]}
             />
             <Button
@@ -254,14 +259,14 @@ function RolesSection({
             <Row
               key={r.id}
               icon={KeyRoundIcon}
-              name={roleLabel(t, r.name)}
+              name={roleDisplayName(r.name)}
               line={r.description || undefined}
               end={
                 canGrant ? (
                   <Button
                     variant="ghost"
                     size="sm"
-                    aria-label={t("person.access.takeLabel", { role: roleLabel(t, r.name) })}
+                    aria-label={t("person.access.takeLabel", { role: roleDisplayName(r.name) })}
                     disabled={unassignM.isPending}
                     onClick={() => take(r)}
                   >
@@ -283,7 +288,7 @@ function RolesSection({
 function GroupsSection({ user, access }: { user: UserDetail; access: AccessSummary }) {
   const { t } = useTranslation("users");
   const can = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const canChange = can.can("group.write");
   const canReadRoles = can.can("role.read");
   const runSensitive = useSensitiveAction();
@@ -298,7 +303,9 @@ function GroupsSection({ user, access }: { user: UserDetail; access: AccessSumma
   const inIds = new Set(access.groups.map((g) => g.id));
   const joinable = all.filter((g) => !inIds.has(g.id)).sort((a, b) => a.name.localeCompare(b.name));
   const roleQs = useQueries({
-    queries: canReadRoles ? access.groups.map((g) => groupRoleQueries.list(tenantId, g.id)) : [],
+    queries: canReadRoles
+      ? access.groups.map((g) => groupRoleQueries.list(organizationId, g.id))
+      : [],
   });
 
   const pathOf = (id: string) => {
@@ -314,7 +321,8 @@ function GroupsSection({ user, access }: { user: UserDetail; access: AccessSumma
   };
 
   // The group hooks refresh the group; the person's own views need it too.
-  const refresh = () => void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, user.id) });
+  const refresh = () =>
+    void qc.invalidateQueries({ queryKey: userKeys.user(organizationId, user.id) });
   const add = () => {
     const group = joinable.find((g) => g.id === groupId);
     if (!group) return;
@@ -413,7 +421,7 @@ function GroupsSection({ user, access }: { user: UserDetail; access: AccessSumma
                   gives
                     ? gives.length
                       ? t("person.access.gives", {
-                          roles: gives.map((r) => roleLabel(t, r.name)).join(", "),
+                          roles: gives.map((r) => roleDisplayName(r.name)).join(", "),
                         })
                       : t("person.access.givesNothing")
                     : null,

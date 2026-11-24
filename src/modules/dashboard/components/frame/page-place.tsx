@@ -1,7 +1,6 @@
-import { Tab, Tabs, TabsList } from "@qeetrix/react";
+import { TabNav, TabNavLink } from "@qeetrix/react";
 import { Breadcrumb, BreadcrumbItem } from "@qeetrix/react/experimental";
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { filterNavigation, safeNavigation, useNavGroups } from "@/platform/config/navigation";
@@ -40,35 +39,26 @@ export function PageBreadcrumb() {
 }
 
 /**
- * Wraps a rebuilt page that has sub-pages, so its PageHeader's `tabs` can take PageTabList (the
- * header's rule needs the list itself there). Sub-pages are separate routes, so a tab navigates;
- * links in a nav would be right, once the library has them (QTRX-19).
+ * The page's sub-pages, for its PageHeader's `tabs`: each is a route of its own, so they're links in
+ * a TabNav, each with an optional count (`badges`, by URL). The current one is the deepest sub-page
+ * holding the path; links match exactly, so a parent's link isn't marked on a child's page.
  */
-export function PageTabs({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
-  const { current } = usePagePlace();
-  return (
-    <Tabs
-      value={current ?? null}
-      onValueChange={(url) => void navigate({ to: String(url) as never })}
-    >
-      {children}
-    </Tabs>
-  );
-}
-
-/** The page's sub-pages as tabs, each with an optional count (`badges`, by URL). */
 export function PageTabList({ badges }: { badges?: Readonly<Record<string, number | undefined>> }) {
   const { t } = useTranslation("dashboard");
-  const { found, subPages } = usePagePlace();
+  const { found, subPages, current } = usePagePlace();
   if (!found || subPages.length < 2) return null;
   return (
-    <TabsList activateOnFocus={false} aria-label={t("frame.pageViews", { page: found.item.title })}>
+    <TabNav aria-label={t("frame.pageViews", { page: found.item.title })}>
       {subPages.map((sub) => (
-        <Tab key={sub.url} value={sub.url} badge={badges?.[sub.url] || undefined}>
+        <TabNavLink
+          key={sub.url}
+          current={sub.url === current}
+          badge={badges?.[sub.url] || undefined}
+          render={<Link to={sub.url as never} activeOptions={{ exact: true }} />}
+        >
           {sub.title}
-        </Tab>
+        </TabNavLink>
       ))}
-    </TabsList>
+    </TabNav>
   );
 }

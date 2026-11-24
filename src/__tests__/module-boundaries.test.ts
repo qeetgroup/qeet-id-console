@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 // Every source file, tests included, as text.
-const sources = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/routeTree.gen.ts"], {
+const sources = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/**/*.gen.ts"], {
   query: "?raw",
   import: "default",
   eager: true,

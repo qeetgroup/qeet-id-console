@@ -126,11 +126,6 @@
   background: var(--qx-color-text-default);
 }
 
-.overview-spark {
-  display: block;
-  overflow: visible;
-}
-
 /* ── Groups, sheets and panels ────────────────────────────────────────────────────────────── */
 
 .overview-group {

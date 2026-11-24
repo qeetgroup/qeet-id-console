@@ -1,5 +1,5 @@
-import { Button, Input, Text } from "@qeetrix/react";
-import { Alert } from "@qeetrix/react/experimental";
+import { Button, Text } from "@qeetrix/react";
+import { Alert, ColorField } from "@qeetrix/react/experimental";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -109,47 +109,26 @@ export function BrandingColours(props: BrandingColoursProps) {
             void save();
           }}
         >
-          <Input
+          <ColorField
             aria-label={label}
             aria-invalid={invalid || undefined}
             value={draft}
-            onValueChange={change}
+            onValueChange={(value) => change(value.toUpperCase())}
             maxLength={7}
             autoFocus
             placeholder={t(key === "brand" ? "colours.brandDefault" : "colours.backgroundDefault")}
             className="brand-hex"
-            startAdornment={
-              // Library gap (new): a colour field (swatch, hex and picker). The swatch is the
-              // native picker; the tenant's colour is data, hence the inline style.
-              <label
-                className="brand-swatch brand-swatch-pick"
-                style={{ background: typed ?? undefined }}
-              >
-                <input
-                  type="color"
-                  value={typed ?? (key === "brand" ? BRAND_PRESETS[0] : CARD)}
-                  aria-label={t("colours.pick", { what: label.toLowerCase() })}
-                  onChange={(event) => change(event.target.value.toUpperCase())}
-                />
-              </label>
-            }
+            // Tenant brand colours are data, so the suggestions are raw hex.
+            suggestions={presets.map((hex) => ({
+              value: hex.toUpperCase(),
+              label: t("colours.preset", { hex: hex.toUpperCase() }),
+            }))}
+            resetLabel={t(key === "brand" ? "colours.useDefault" : "colours.useAutomatic")}
+            messages={{
+              pick: t("colours.pick", { what: label.toLowerCase() }),
+              suggestions: t("colours.presets"),
+            }}
           />
-          <fieldset className="brand-presets" aria-label={t("colours.presets")}>
-            {presets.map((hex) => (
-              <button
-                key={hex}
-                type="button"
-                className="brand-preset"
-                style={{ background: hex }}
-                aria-label={t("colours.preset", { hex: hex.toUpperCase() })}
-                aria-pressed={typed === hex}
-                onClick={() => change(hex.toUpperCase())}
-              />
-            ))}
-            <Button variant="ghost" size="sm" onClick={() => change("")}>
-              {t(key === "brand" ? "colours.useDefault" : "colours.useAutomatic")}
-            </Button>
-          </fieldset>
           {invalid && (
             <Text size="sm" tone="danger" role="alert">
               {t("colours.invalid")}

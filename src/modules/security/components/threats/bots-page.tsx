@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useBotOverview, useBotSettings, useUpdateBotSettings } from "@/modules/security/api/bots";
 import { useIpRules } from "@/modules/security/api/ip-allowlist";
 import {
@@ -51,7 +51,6 @@ import { useDenyAddress } from "./use-deny-address";
 import "../security.css";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
 const VERDICT_TONE = { blocked: "danger", challenged: "warning", allowed: "neutral" } as const;
 
 export type BotsPageProps = {
@@ -163,7 +162,7 @@ export function BotsPage({ filters, onFiltersChange }: BotsPageProps) {
     );
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("bots.title")}
@@ -263,7 +262,7 @@ export function BotsPage({ filters, onFiltersChange }: BotsPageProps) {
           <Detection canWrite={canWrite} />
         </div>
       </PageContent>
-    </PageTabs>
+    </>
   );
 }
 
@@ -315,7 +314,8 @@ function BotsToolbar({
             { value: ANY, label: t("bots.filters.anyVerdict") },
             ...VERDICTS.map((v: Verdict) => ({
               value: v,
-              label: `${t(`bots.verdict.${v}`)} · ${n(clients.filter((c) => c.verdict === v).length)}`,
+              label: t(`bots.verdict.${v}`),
+              meta: n(clients.filter((c) => c.verdict === v).length),
             })),
           ]}
         />
@@ -323,8 +323,7 @@ function BotsToolbar({
           {t("bots.fromLatest")}
         </Text>
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with none,
-          QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

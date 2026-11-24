@@ -1,30 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 // Fails closed: a malformed payload throws rather than become a capability set that mis-gates
 // the whole UI.
-const effectivePermissionsSchema = z.object({
-  permissions: z.array(z.string()),
-});
+const effectivePermissionsSchema = strictly<Answer<"/v1/me/permissions">>()(
+  z.object({ permissions: z.array(z.string()) }),
+);
 
 /**
- * Returns the operator's own resolved permissions (direct, role and group) as opaque strings;
- * the query client invalidates this key on any 403. UX only: the backend authorizes.
+ * Returns the operator's own resolved permissions (direct, role and group) as opaque strings, in
+ * the organisation their session is for; someone who holds none reads an empty list. The query
+ * client invalidates this key on any 403. UX only: the backend authorizes.
  */
 export function useEffectivePermissions(userId: string | null) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: ["effective-permissions", tenantId, userId],
-    enabled: !!tenantId && !!userId,
+    queryKey: ["effective-permissions", organizationId, userId],
+    enabled: !!organizationId && !!userId,
     staleTime: 60_000,
     retry: false,
     meta: { silent: true },
-    queryFn: () =>
-      api(`/v1/users/${userId}/tenants/${tenantId}/permissions`, {
-        schema: effectivePermissionsSchema,
-      }),
+    queryFn: ({ signal }) =>
+      backend.get("/v1/me/permissions", { signal, schema: effectivePermissionsSchema }),
   });
 }

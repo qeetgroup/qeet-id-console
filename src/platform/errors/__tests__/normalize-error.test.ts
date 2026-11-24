@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../api-error";
 import { AppError } from "../app-error";
-import { normalizeError } from "../normalize-error";
+import { isTransientFailure, normalizeError } from "../normalize-error";
 import { userMessageForCode } from "../user-message";
 
 describe("normalizeError", () => {
@@ -38,6 +38,32 @@ describe("normalizeError", () => {
     const out = normalizeError(new TypeError("Failed to fetch"));
     expect(out.kind).toBe("network");
     expect(out.retryable).toBe(true);
+  });
+
+  it("reads a TypeError from the page's own code as unknown, not as the connection", () => {
+    const out = normalizeError(new TypeError("Cannot read properties of undefined (reading 'x')"));
+    expect(out.kind).toBe("unknown");
+    for (const message of [
+      "Load failed",
+      "fetch failed",
+      "NetworkError when attempting to fetch resource.",
+    ]) {
+      expect(normalizeError(new TypeError(message)).kind).toBe("network");
+    }
+  });
+
+  it("asks again only after a failure that may pass", () => {
+    expect(isTransientFailure(new TypeError("Failed to fetch"))).toBe(true);
+    expect(isTransientFailure(new ApiError(503, "unavailable", "down"))).toBe(true);
+    expect(isTransientFailure(new ApiError(409, "busy", "later", undefined, true))).toBe(true);
+    for (const final of [
+      new ApiError(403, "rbac.permission_denied", "no"),
+      new ApiError(404, "not_found", "no"),
+      new ApiError(0, "client.schema_mismatch", "bad shape"),
+      new TypeError("x is not a function"),
+    ]) {
+      expect(isTransientFailure(final)).toBe(false);
+    }
   });
 
   it("classifies unknown throwables", () => {
@@ -84,6 +110,20 @@ describe("userMessageForCode (leak stop)", () => {
       new ApiError(400, "oidc.grant_type_unsupported", "That grant type isn't supported."),
     );
     expect(userMessageForCode(app.code, app.kind)).toMatch(/service principal/i);
+  });
+
+  it("says who may make a change the target outranks, not that a permission is missing", () => {
+    const shown = (code: string) => {
+      const app = normalizeError(new ApiError(403, code, "backend copy"));
+      return userMessageForCode(app.code, app.kind);
+    };
+    expect(shown("rbac.target_is_owner")).toMatch(/only an owner/i);
+    expect(shown("rbac.target_outranks_caller")).toMatch(/holds permissions you don't/i);
+    expect(shown("rbac.trust_change_outranks_caller")).toMatch(/signs in through this connection/i);
+    expect(shown("verification.email_managed")).toMatch(/manages this address/i);
+    for (const code of ["rbac.target_outranks_caller", "verification.email_managed"]) {
+      expect(shown(code)).not.toMatch(/backend copy/);
+    }
   });
 
   it("returns curated copy for a known code", () => {
@@ -156,7 +196,7 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("names a taken org slug instead of saying 'try again'", () => {
-    const app = normalizeError(new ApiError(409, "tenant.slug_taken", "slug taken"));
+    const app = normalizeError(new ApiError(409, "organization.slug_taken", "slug taken"));
     expect(app.kind).toBe("api");
     const shown = userMessageForCode(app.code, app.kind);
     expect(shown).toMatch(/already taken/i);

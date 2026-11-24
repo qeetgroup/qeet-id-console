@@ -8,11 +8,6 @@
     "search": "Search organisations",
     "searchPlaceholder": "Search by name or domain",
     "clearSearch": "Clear search",
-    "roles": {
-      "owner": "Owner",
-      "admin": "Admin",
-      "member": "Member"
-    },
     "plans": {
       "free": "Free",
       "starter": "Starter",
@@ -89,15 +84,30 @@
       "otherWays": "Other ways to confirm",
       "pushTitle": "Approve on your phone",
       "pushText": "With Qeet ID on your phone",
-      "pushWaitingTitle": "Approve the sign-in on your phone",
-      "pushWaitingText": "We sent a request to Qeet ID on your phone.",
-      "cancel": "Cancel",
       "emailTitle": "Email a code",
       "smsTitle": "Text a code",
       "sendTo": "To {{destination}}",
       "codeSentTitle": "Code sent to {{destination}}",
       "codeSentText": "Enter it in the boxes above.",
-      "stepFailedTitle": "That didn’t work"
+      "stepFailedTitle": "That didn’t work",
+      "push": {
+        "title": "Approve on your phone",
+        "body": "We sent a request to Qeet ID on your phone. Open it, check it’s you, and type this number.",
+        "number": "Number to type",
+        "numberLabel": "Number to type: {{number}}",
+        "sending": "Sending a request to your phone…",
+        "waiting": "Waiting for your phone · ends in {{time}}",
+        "waitingNoTime": "Waiting for your phone",
+        "resend": "Send a new request",
+        "another": "Try another way",
+        "approvedTitle": "Approved",
+        "approvedBody": "Your phone approved this sign-in.",
+        "continuing": "Signing you in…",
+        "deniedTitle": "You denied this sign-in",
+        "deniedBody": "Nobody signed in. If it was you, send a new request. If it wasn’t, someone may know your password: change it soon.",
+        "endedTitle": "The request ended",
+        "endedBody": "Your phone didn’t answer in time. Send a new request, or use another way."
+      }
     },
     "enroll": {
       "title": "Set up two‑step verification",
@@ -187,9 +197,6 @@
     "successText": "If an account exists for <email>{{email}}</email>, we’ve sent a link to set a new password. It expires in 60 minutes.",
     "successResend": "Didn't get it? Check spam, or",
     "successResendLink": "send it again",
-    "devLinkTitle": "Dev mode — reset link",
-    "devLinkText": "Email isn't sent locally. Use this link to set a new password.",
-    "devLinkButton": "Open reset link",
     "reset": {
       "title": "Set a new password",
       "subtitle": "Choose a new password for your account. Saving it signs you out on every other device.",

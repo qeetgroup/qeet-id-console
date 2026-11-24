@@ -9,8 +9,7 @@ import {
   Toggle,
   ToggleGroup,
 } from "@qeetrix/react";
-import { NumberField } from "@qeetrix/react/experimental";
-import { useId } from "react";
+import { Combobox, NumberField } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
 import i18n from "@/i18n";
@@ -227,7 +226,7 @@ function LeafFields({
   attributes: readonly string[];
 }) {
   const { t } = useTranslation("authorization");
-  const listId = useId();
+  const attributeItems = attributes.map((a) => ({ value: a, label: a }));
   const nullary = NULLARY_OPERATORS.includes(node.op);
   const referable = REFERENCE_OPERATORS.includes(node.op);
   const leaf = (patch: Partial<Extract<CondNode, { kind: "leaf" }>>) =>
@@ -235,23 +234,18 @@ function LeafFields({
   const hint = VALUE_HINT[node.op];
   return (
     <div className="ws-form">
-      {/* Library gap (new): Combobox with free text, so an attribute not yet used can be typed. */}
-      <TextField
-        label={t("inspector.attribute")}
-        description={t("inspector.attributeHint")}
-        value={node.attr}
-        onChange={(e) => leaf({ attr: e.target.value })}
-        placeholder="subject.department"
-        list={listId}
-        readOnly={readOnly}
-        spellCheck={false}
-        className="ws-mono"
-      />
-      <datalist id={listId}>
-        {attributes.map((a) => (
-          <option key={a} value={a} />
-        ))}
-      </datalist>
+      {/* The attributes the policies use, or one not used yet, typed and chosen as "Use …". */}
+      <Field label={t("inspector.attribute")} description={t("inspector.attributeHint")}>
+        <Combobox<string>
+          items={attributeItems}
+          value={node.attr || null}
+          onValueChange={(attr) => leaf({ attr: attr ?? "" })}
+          allowCustom
+          placeholder="subject.department"
+          readOnly={readOnly}
+          className="ws-mono"
+        />
+      </Field>
       <Field label={t("inspector.operator")}>
         <Select<Operator>
           items={OPERATORS.map((op) => ({ value: op, label: i18n.t(OPERATOR_LABELS[op]) }))}
@@ -279,25 +273,35 @@ function LeafFields({
               <Toggle value="attribute">{t("inspector.anotherAttribute")}</Toggle>
             </ToggleGroup>
           </Field>
-          <TextField
-            label={node.ref ? t("inspector.otherAttribute") : t("inspector.value")}
-            description={
-              node.ref
-                ? t("inspector.attributeHint")
-                : hint === "list"
+          {node.ref ? (
+            <Field label={t("inspector.otherAttribute")} description={t("inspector.attributeHint")}>
+              <Combobox<string>
+                items={attributeItems}
+                value={node.value || null}
+                onValueChange={(value) => leaf({ value: value ?? "" })}
+                allowCustom
+                readOnly={readOnly}
+                className="ws-mono"
+              />
+            </Field>
+          ) : (
+            <TextField
+              label={t("inspector.value")}
+              description={
+                hint === "list"
                   ? t("inspector.valueListHint")
                   : hint === "pattern"
                     ? t("inspector.valuePatternHint")
                     : hint === "affix"
                       ? t("inspector.valueAffixHint")
                       : t("inspector.valueHint")
-            }
-            value={node.value}
-            onChange={(e) => leaf({ value: e.target.value })}
-            list={node.ref ? listId : undefined}
-            readOnly={readOnly}
-            spellCheck={false}
-          />
+              }
+              value={node.value}
+              onChange={(e) => leaf({ value: e.target.value })}
+              readOnly={readOnly}
+              spellCheck={false}
+            />
+          )}
         </>
       )}
     </div>

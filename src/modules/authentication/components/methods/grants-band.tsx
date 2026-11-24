@@ -11,10 +11,10 @@ import { ACCESS, type GrantRow } from "./grants-model";
 const SHADES = ["today", "week", "month", "older"] as const;
 
 /**
- * The list's key numbers, in its header, on the Users band's parts (until PageHeader has a band of
- * its own, QTRX-18; the share bar is the Dashboard's until QTRX-13): how many grants for how many
- * people, which applications hold them, and what they let the applications read. Each opens the
- * list filtered to it.
+ * The list's key numbers, in its header, on the Users band's parts (Qeetrix's StatGroup can't hold
+ * their "Needs a look" cell yet, nor its ShareBar take the ordered tones the share bar uses): how many
+ * grants for how many people, which applications hold them, and what they let the applications
+ * read. Each opens the list filtered to it.
  */
 export function GrantsBand({ rows }: { rows: GrantRow[] }) {
   const { t } = useTranslation("consent");
@@ -32,7 +32,7 @@ export function GrantsBand({ rows }: { rows: GrantRow[] }) {
   const other = ranked.slice(SHADES.length).reduce((sum, [, app]) => sum + app.count, 0);
 
   return (
-    <dl className="ppl-band is-three am-band">
+    <dl className="ppl-band is-three">
       <div className="ppl-cell">
         <dt className="ppl-label">{t("band.grants")}</dt>
         <dd className="ppl-value">{n(rows.length)}</dd>

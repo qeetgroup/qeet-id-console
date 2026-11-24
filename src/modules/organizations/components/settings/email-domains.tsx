@@ -9,7 +9,7 @@ import {
   useRemoveDomain,
   useVerifyDomain,
 } from "@/modules/organizations/api/domain-changes";
-import { type TenantDomain, useDomains } from "@/modules/organizations/api/domains";
+import { type OrganizationDomain, useDomains } from "@/modules/organizations/api/domains";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -26,7 +26,7 @@ import { Failure, Item, LoadFailed, Loading, Panel, Section } from "./settings-p
  * sign-on and directories can create them, no other organisation can — and Qeet ID checks the TXT
  * record only when someone asks. A domain opens under its row, as on My account; adding one opens
  * a form at the end of the list, then the new domain with its record. The per-domain switches the
- * server stores (sso_enabled, jit_enabled, is_default) aren't shown: nothing reads them yet.
+ * server stores (sso_enabled, jit_enabled) aren't shown: nothing reads them yet.
  */
 export function EmailDomains({ name }: { name: string }) {
   const { t } = useTranslation("organizations");
@@ -90,7 +90,7 @@ export function EmailDomains({ name }: { name: string }) {
   );
 }
 
-function StatusBadge({ domain }: { domain: TenantDomain }) {
+function StatusBadge({ domain }: { domain: OrganizationDomain }) {
   const { t } = useTranslation("organizations");
   if (domain.status === "verified")
     return (
@@ -112,7 +112,7 @@ function StatusBadge({ domain }: { domain: TenantDomain }) {
 }
 
 /** One domain, closed: its state in a word and a line, and Manage. */
-function DomainRow({ domain, onOpen }: { domain: TenantDomain; onOpen: () => void }) {
+function DomainRow({ domain, onOpen }: { domain: OrganizationDomain; onOpen: () => void }) {
   const { t } = useTranslation("organizations");
   const locale = formatLocale();
   const line =
@@ -149,7 +149,7 @@ function DomainPanel({
   canWrite,
   onClose,
 }: {
-  domain: TenantDomain;
+  domain: OrganizationDomain;
   name: string;
   canWrite: boolean;
   onClose: () => void;
@@ -255,7 +255,7 @@ function AddDomainPanel({
 }: {
   name: string;
   onCancel: () => void;
-  onAdded: (domain: TenantDomain) => void;
+  onAdded: (domain: OrganizationDomain) => void;
 }) {
   const { t } = useTranslation("organizations");
   const runSensitive = useSensitiveAction();

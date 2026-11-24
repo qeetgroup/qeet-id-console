@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -80,8 +80,9 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (method === "GET" && path === "/v1/tenants/t-1/ip-rules") return { enabled, items: RULES };
-    if (method === "GET" && path === "/v1/tenants/t-1/audit") {
+    if (method === "GET" && path === "/v1/organizations/t-1/ip-rules")
+      return { enabled, items: RULES };
+    if (method === "GET" && path === "/v1/organizations/t-1/audit") {
       if (options?.query?.action === "ip_rules.enforcement_changed")
         return {
           items: [
@@ -121,10 +122,11 @@ beforeEach(() => {
           },
         ],
       };
-    if (method === "POST" && path === "/v1/tenants/t-1/ip-rules")
+    if (method === "POST" && path === "/v1/organizations/t-1/ip-rules")
       return { ...RULES[0], id: "r-new" };
-    if (method === "DELETE" && path.startsWith("/v1/tenants/t-1/ip-rules/")) return undefined;
-    if (method === "PUT" && path === "/v1/tenants/t-1/ip-rules/config") return { enabled: true };
+    if (method === "DELETE" && path.startsWith("/v1/organizations/t-1/ip-rules/")) return undefined;
+    if (method === "PUT" && path === "/v1/organizations/t-1/ip-rules/config")
+      return { enabled: true };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -159,6 +161,14 @@ describe("Threats › IP rules", () => {
     );
     expect(within(refusals).getByText("Not on an allow rule")).toBeTruthy();
     expect(within(refusals).getByText("Priya Nair")).toBeTruthy();
+    // Named by looking up the people it names, someone since deleted included, not by loading
+    // everyone.
+    const reads = vi
+      .mocked(api)
+      .mock.calls.filter(([path]) => path === "/v1/users")
+      .map(([, opts]) => (opts as { query?: Record<string, unknown> } | undefined)?.query);
+    expect(reads).toContainEqual({ id: ["u-priya"], limit: 200, include_deleted: "true" });
+    expect(reads.every((q) => Array.isArray(q?.id))).toBe(true);
   });
 
   it("judges an address against the rules itself while they're off, sending nothing", async () => {
@@ -183,7 +193,7 @@ describe("Threats › IP rules", () => {
 
     fireEvent.change(range, { target: { value: "198.51.100.0/24" } });
     fireEvent.submit(range.closest("form") as HTMLFormElement);
-    await waitFor(() => expect(changes()).toEqual(["POST /v1/tenants/t-1/ip-rules"]));
+    await waitFor(() => expect(changes()).toEqual(["POST /v1/organizations/t-1/ip-rules"]));
     expect(sensitiveCalls.at(-1)?.confirm).toBeUndefined();
   });
 
@@ -201,7 +211,7 @@ describe("Threats › IP rules", () => {
     fireEvent.click(
       within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Turn on" }),
     );
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/ip-rules/config"]));
+    await waitFor(() => expect(changes()).toEqual(["PUT /v1/organizations/t-1/ip-rules/config"]));
   });
 
   it("says that removing a rule changes nothing while the rules are off", async () => {
@@ -212,6 +222,6 @@ describe("Threats › IP rules", () => {
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText(/Nothing changes for anyone now/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove rule" }));
-    await waitFor(() => expect(changes()).toEqual(["DELETE /v1/tenants/t-1/ip-rules/r-bad"]));
+    await waitFor(() => expect(changes()).toEqual(["DELETE /v1/organizations/t-1/ip-rules/r-bad"]));
   });
 });

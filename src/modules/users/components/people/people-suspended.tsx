@@ -36,7 +36,7 @@ import {
   useReviewSuspension,
   useSuspendedUsers,
 } from "@/modules/users/api/suspended";
-import type { User } from "@/modules/users/api/users";
+import type { UserStats } from "@/modules/users/api/users";
 import { type PeopleFilters, RISKS } from "@/modules/users/people-model";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -66,7 +66,7 @@ function ReviewDialog({ user, onClose }: { user: SuspendedDirectoryUser; onClose
   const review = useReviewSuspension();
   const runSensitive = useSensitiveAction();
   const [input, setInput] = useState<SuspensionReview>({
-    reason: user.reason,
+    reason: isReason(user.reason) ? user.reason : "unspecified",
     risk: user.risk,
     review: user.review === "reviewed" ? "reviewed" : "pending",
   });
@@ -95,7 +95,10 @@ function ReviewDialog({ user, onClose }: { user: SuspendedDirectoryUser; onClose
             <Field label={t("people.suspended.reason")}>
               <Select
                 value={input.reason}
-                onValueChange={(value) => setInput({ ...input, reason: String(value) })}
+                onValueChange={(value) => {
+                  const reason = String(value);
+                  if (isReason(reason)) setInput({ ...input, reason });
+                }}
                 items={SUSPENSION_REASONS.map((key): { value: string; label: string } => ({
                   value: key,
                   label: t(`people.suspended.reasons.${key}`),
@@ -105,7 +108,10 @@ function ReviewDialog({ user, onClose }: { user: SuspendedDirectoryUser; onClose
             <Field label={t("people.suspended.risk")} description={t("people.suspended.riskHelp")}>
               <Select
                 value={input.risk}
-                onValueChange={(value) => setInput({ ...input, risk: String(value) })}
+                onValueChange={(value) => {
+                  const risk = String(value);
+                  if (isRisk(risk)) setInput({ ...input, risk });
+                }}
                 items={RISKS.map((key): { value: string; label: string } => ({
                   value: key,
                   label: t(`people.suspended.risks.${key}`),
@@ -221,12 +227,12 @@ function useSuspendedColumns(now: number): TableColumn<SuspendedDirectoryUser>[]
 export function SuspendedPeople({
   filters,
   onFiltersChange,
-  users,
+  stats,
   canWrite,
 }: {
   filters: PeopleFilters;
   onFiltersChange: (next: PeopleFilters) => void;
-  users: User[];
+  stats?: UserStats;
   canWrite: boolean;
 }) {
   const { t } = useTranslation("users");
@@ -242,12 +248,10 @@ export function SuspendedPeople({
     reason: filters.reason ?? "",
     risk: filters.risk ?? "",
     review: filters.review ?? "",
-    limit: pageSize,
-    offset,
   });
   const now = page.dataUpdatedAt || Date.now();
   const columns = useSuspendedColumns(now);
-  const items = page.data?.items ?? [];
+  const items = (page.data?.items ?? []).slice(offset, offset + pageSize);
   const byId = new Map(items.map((u) => [u.id, u]));
   const manageable = (ids: string[]) => ids.filter((id) => byId.get(id)?.can_manage);
   const reactivate = (ids: string[]) =>
@@ -256,7 +260,7 @@ export function SuspendedPeople({
     run(t("people.suspended.markReviewed"), manageable(ids), (id) => {
       const u = byId.get(id);
       return suspensionCalls.review(id, {
-        reason: u?.reason ?? "unspecified",
+        reason: u && isReason(u.reason) ? u.reason : "unspecified",
         risk: u?.risk ?? "unknown",
         review: "reviewed",
       });
@@ -293,7 +297,7 @@ export function SuspendedPeople({
           <PeopleToolbar
             filters={filters}
             onFiltersChange={onFiltersChange}
-            users={users}
+            stats={stats}
             shown={page.data?.total ?? 0}
             suspended={page.data}
           />

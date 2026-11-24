@@ -19,11 +19,12 @@ export default defineConfig({
       exclude: [
         "src/**/__tests__/**",
         "src/**/*.test.{ts,tsx}",
-        "src/routeTree.gen.ts",
+        "src/**/*.gen.ts",
         "src/test-setup.ts",
         "src/**/*.d.ts",
       ],
-      reporter: ["text-summary", "json-summary"],
+      // lcov for SonarQube (`bun run sonar`).
+      reporter: ["text-summary", "json-summary", "lcov"],
       // Floors at the measured coverage, so it can only go up; the security-critical platform
       // folders carry higher ones. CI runs the tests in shards (COVERAGE_SHARD=1), each covering a
       // slice, so the floors hold on the merged report (`vitest --merge-reports --coverage`).

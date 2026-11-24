@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
@@ -34,7 +34,7 @@ import { api } from "@/platform/api/client";
 import { Route } from "./passwordless";
 
 const PasswordlessPage = Route.options.component as () => React.JSX.Element;
-const POLICY_PATH = "/v1/tenants/tenant-1/auth-policy";
+const POLICY_PATH = "/v1/organizations/tenant-1/auth-policy";
 const POLICY = {
   password_enabled: true,
   password_min_length: 12,

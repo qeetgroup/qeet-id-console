@@ -1,4 +1,4 @@
-// The organisation's profile, as PATCH /v1/tenants/{id} takes it: three free-text keys in its
+// The organisation's profile, as PATCH /v1/organizations/{id} takes it: three free-text keys in its
 // `metadata`, which the organisation's page shows under its name. The server replaces the whole
 // object, so a change keeps every other key it holds.
 

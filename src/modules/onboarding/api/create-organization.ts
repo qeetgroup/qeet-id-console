@@ -1,22 +1,12 @@
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import type { Body } from "@/platform/api/contract";
 
-export interface CreateOrganizationBody {
-  slug: string;
-  name: string;
-  plan: string;
-  region: string;
-  logo_url?: string;
-}
-
-export interface CreateOrganizationResponse {
-  tenant: { id: string; slug: string; name: string; plan: string };
-  tenant_id: string;
-}
+export type CreateOrganizationBody = Body<"/v1/organizations", "post">;
 
 /**
  * Creates a Free organisation now; the BFF moves the session into it. Paid plans aren't created
  * here: billing's signup checkout creates them once the payment goes through.
  */
 export function createOrganization(body: CreateOrganizationBody) {
-  return api<CreateOrganizationResponse>("/v1/tenants", { method: "POST", body });
+  return backend.post("/v1/organizations", { body });
 }

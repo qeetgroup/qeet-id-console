@@ -2,75 +2,78 @@
 // sent on create and never returned.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
+import { isOneOf } from "@/shared/utils/one-of";
 import { securityKeys } from "./keys";
 
-export type SinkType = "splunk_hec" | "datadog" | "http";
+const SINK_TYPES = ["splunk_hec", "datadog", "http"] as const;
+export type SinkType = (typeof SINK_TYPES)[number];
 
-export interface LogSink {
-  id: string;
-  type: SinkType;
-  endpoint: string;
-  enabled: boolean;
-  last_forwarded_at?: string | null;
-  last_error?: string;
-  created_at: string;
-}
+export type LogSink = NonNullable<
+  Answer<"/v1/organizations/{organizationID}/log-sinks">["items"]
+>[number];
+
+/** A sink's type as the console knows it; the document leaves it a free string. */
+export const sinkType = (type: string): SinkType | undefined =>
+  isOneOf(SINK_TYPES, type) ? type : undefined;
 
 export function useLogSinks() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.logSinks(tenantId),
-    queryFn: () => api<{ items: LogSink[] }>(`/v1/tenants/${tenantId}/log-sinks`),
-    enabled: !!tenantId,
+    queryKey: securityKeys.logSinks(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/log-sinks", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useCreateLogSink() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { type: SinkType; endpoint: string; token: string }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<LogSink>(`/v1/tenants/${tenantId}/log-sinks`, {
-        method: "POST",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/log-sinks", {
+        path: { organizationID: organizationId },
         body,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(organizationId) }),
     meta: { successMessage: "security:toast.logSinkAdded", silentError: true }, // the form shows it
   });
 }
 
 export function useToggleLogSink() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/tenants/${tenantId}/log-sinks/${id}`, {
-        method: "PATCH",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.patch("/v1/organizations/{organizationID}/log-sinks/{id}", {
+        path: { organizationID: organizationId, id },
         body: { enabled },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(organizationId) }),
     meta: { successMessage: "security:toast.logSinkUpdated" },
   });
 }
 
 export function useDeleteLogSink() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/tenants/${tenantId}/log-sinks/${id}`, {
-        method: "DELETE",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.delete("/v1/organizations/{organizationID}/log-sinks/{id}", {
+        path: { organizationID: organizationId, id },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(organizationId) }),
     meta: { successMessage: "security:toast.logSinkDeleted" },
   });
 }

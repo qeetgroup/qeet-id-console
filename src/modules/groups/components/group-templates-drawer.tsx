@@ -402,17 +402,19 @@ export function GroupTemplatesDrawer({ open, onOpenChange, groups }: GroupTempla
                 )}
               </DataState>
             </DrawerBody>
-            <DrawerFooter>
-              {template ? (
-                // A start slot for the footer is QTRX-23; the Users drawer's class places it.
-                <Link
-                  className="add-import"
-                  render={<button type="button" onClick={() => setView("editor")} />}
-                >
-                  <PlusIcon className="add-import-icon" aria-hidden="true" />
-                  {t("templatesDrawer.saveNew")}
-                </Link>
-              ) : null}
+            <DrawerFooter
+              start={
+                template ? (
+                  <Link
+                    className="add-import"
+                    render={<button type="button" onClick={() => setView("editor")} />}
+                  >
+                    <PlusIcon className="add-import-icon" aria-hidden="true" />
+                    {t("templatesDrawer.saveNew")}
+                  </Link>
+                ) : undefined
+              }
+            >
               <Button variant="ghost" onClick={close} disabled={busy}>
                 {template ? t("drawer.cancel") : t("templatesDrawer.close")}
               </Button>

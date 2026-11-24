@@ -1,11 +1,10 @@
 import { Field, TextField } from "@qeetrix/react";
-import { Combobox } from "@qeetrix/react/experimental";
+import { CodeField, Combobox } from "@qeetrix/react/experimental";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BATCH_CAP } from "@/modules/authorization/api/simulate";
 import { usePermissions } from "@/modules/authorization/api/rbac";
-import { MonacoPanel } from "@/modules/authorization/components/shared/monaco-panel";
 import { usePeople } from "@/modules/authorization/components/shared/use-people";
 import type { Mode, TestForm } from "./testing-model";
 
@@ -102,13 +101,11 @@ export function RequestFields({ mode, batch, form, onChange, errors }: Props) {
         error={errors.request}
         invalid={!!errors.request}
       >
-        <MonacoPanel
-          value={form.request}
+        <CodeField
           language="json"
-          readOnly={false}
-          onChange={(request) => onChange({ request })}
-          height={240}
-          ariaLabel={t("testing.request")}
+          value={form.request}
+          onValueChange={(request) => onChange({ request })}
+          rows={12}
         />
       </Field>
     );

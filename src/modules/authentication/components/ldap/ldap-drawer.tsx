@@ -17,7 +17,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import type { LdapConnection, LdapStatus } from "@/modules/authentication/api/ldap";
+import {
+  type LdapConnection,
+  type LdapStatus,
+  ldapStatus,
+} from "@/modules/authentication/api/ldap";
 import {
   useCreateLdapConnection,
   useUpdateLdapConnection,
@@ -71,7 +75,7 @@ const valuesOf = (c: LdapConnection): Values => ({
   user_filter: c.user_filter,
   email_attribute: c.email_attribute,
   name_attribute: c.name_attribute,
-  status: c.status,
+  status: ldapStatus(c.status),
 });
 
 export type LdapDrawerProps = {
@@ -167,6 +171,7 @@ function LdapForm({ connection, onDone }: { connection?: LdapConnection; onDone:
         user_filter: trim(value.user_filter),
         email_attribute: trim(value.email_attribute),
         name_attribute: trim(value.name_attribute),
+        sync_interval_minutes: null, // the server's 15 on create, unchanged on update
       };
       await runSensitive({
         capability: "connection.write",

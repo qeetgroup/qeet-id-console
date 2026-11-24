@@ -21,7 +21,7 @@ const SIGNED_OUT: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
@@ -32,7 +32,7 @@ function session(userId: string): PublicSession {
     expiresAt: "2030-01-01T00:00:00Z",
     sessionId: `session-${userId}`,
     userId,
-    tenantId: "tenant-1",
+    organizationId: "tenant-1",
     version: 1,
     impersonationActor: null,
   };

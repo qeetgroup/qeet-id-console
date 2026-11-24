@@ -14,19 +14,20 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_ERROR_FILTERS,
   type DirectoryEvent,
   type ErrorFilters,
   useDirectoryConnections,
+  useDirectoryErrorList,
   useDirectoryErrors,
 } from "@/modules/directory/api/directory";
 import { ExportTooLargeError, fetchErrorsExport } from "@/modules/directory/api/sync";
 import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import { causeOf, problemsOf, runKey } from "@/modules/directory/sync-model";
 import { type ErrorsFilters, periodDays } from "@/modules/directory/sync-search";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { exportToCsv } from "@/shared/utils/data-export";
@@ -61,7 +62,7 @@ export type SyncErrorsPageProps = {
  */
 export function SyncErrorsPage({ filters, onFiltersChange }: SyncErrorsPageProps) {
   const { t } = useTranslation("directory");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const canWrite = useCapabilities().can("connection.write");
   const headingId = useId();
   const n = (value: number) => formatNumber(value, formatLocale());
@@ -95,7 +96,7 @@ export function SyncErrorsPage({ filters, onFiltersChange }: SyncErrorsPageProps
   const openQ = useDirectoryErrors(OPEN);
   // The 90 days unfiltered, on the list's first page: the same read as the list's, unfiltered.
   const allQ = useDirectoryErrors({ ...DEFAULT_ERROR_FILTERS, days: 90 });
-  const listQ = useDirectoryErrors({ ...listFilters, limit: pageSize, offset }, { keep: true });
+  const listQ = useDirectoryErrorList(listFilters, offset, pageSize);
 
   const now = openQ.dataUpdatedAt || Date.now();
   const nameOf = useConnectionNames(connections);
@@ -110,8 +111,8 @@ export function SyncErrorsPage({ filters, onFiltersChange }: SyncErrorsPageProps
 
   const exporting = useMutation({
     mutationFn: async () => {
-      if (!tenantId) return;
-      const records = await fetchErrorsExport(tenantId, listFilters);
+      if (!organizationId) return;
+      const records = await fetchErrorsExport(organizationId, listFilters);
       exportToCsv("directory-sync-errors", records, [
         { header: "failed_at", value: (e) => e.started_at },
         { header: "connection", value: (e) => nameOf(e.connection_id) },
@@ -172,11 +173,7 @@ export function SyncErrorsPage({ filters, onFiltersChange }: SyncErrorsPageProps
             <BandPlaceholder />
           )
         }
-        tabs={
-          <PageTabs>
-            <PageTabList badges={{ "/directory/sync-errors": openCount }} />
-          </PageTabs>
-        }
+        tabs={<PageTabList badges={{ "/directory/sync-errors": openCount }} />}
       />
       <PageContent>
         <div className="ppl sync">

@@ -188,10 +188,11 @@ export function CreateOrganizationPage({
           return;
         }
       } else {
+        // Only Free is created here; every priced plan starts at checkout above.
         await create.mutateAsync({
           slug,
           name,
-          plan: offer.tier,
+          plan: "free",
           region: details.region,
           logo_url: logo?.url,
         });

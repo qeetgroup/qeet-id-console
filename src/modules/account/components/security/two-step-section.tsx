@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   isStepUpRequired,
   type OtpFactor,
+  pushPlatform,
   type TotpEnrollment,
   useChallengeOtpFactor,
   useDeleteOtpFactor,
@@ -226,7 +227,8 @@ export function TwoStepSection() {
               />
             )}
             {phones.map((phone) => {
-              const name = phone.name || t(`security.phones.platform.${phone.platform}`);
+              const name =
+                phone.name || t(`security.phones.platform.${pushPlatform(phone.platform)}`);
               return (
                 <Item
                   key={phone.id}

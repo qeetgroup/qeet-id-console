@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 import { watchIdle } from "@/platform/auth/idle-activity";
 import { sessionStore } from "@/platform/auth/session-store";
 
@@ -12,11 +13,11 @@ export function useLogout() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => api<void>("/v1/auth/logout", { method: "POST" }).catch(() => undefined),
+    mutationFn: () => backend.post("/v1/auth/logout").catch(() => undefined),
     onSettled: () => {
       sessionStore.clear();
       qc.clear();
-      navigate({ to: "/sign-in" });
+      void navigate({ to: "/sign-in" });
     },
     meta: { successMessage: "common:toast.signedOutSuccessfully" },
   });
@@ -35,8 +36,8 @@ export function useIdleLogout(timeoutMs: number) {
 }
 
 /** Returns the active tenant id from the in-memory session store. */
-export function useTenantId(): string | null {
-  return useSyncExternalStore(sessionStore.subscribe, sessionStore.getTenantId, () => null);
+export function useOrganizationId(): string | null {
+  return useSyncExternalStore(sessionStore.subscribe, sessionStore.getOrganizationId, () => null);
 }
 
 export function useUserId(): string | null {
@@ -66,17 +67,8 @@ export function useSessionId(): string | null {
   return useSyncExternalStore(sessionStore.subscribe, sessionStore.getSessionId, () => null);
 }
 
-export type Me = {
-  id: string;
-  tenant_id: string;
-  email: string;
-  display_name?: string | null;
-  avatar_url?: string | null;
-  email_verified_at?: string | null;
-  status: string;
-  metadata?: Record<string, unknown> | null;
-  created_at?: string; // when the account was made
-};
+/** The signed-in person, as `GET /v1/me` answers. */
+export type Me = Answer<"/v1/me">;
 
 /**
  * Fetches the signed-in user from `GET /v1/me`, keyed by user id. The self endpoint resolves the
@@ -92,7 +84,7 @@ export function useMe() {
   const userId = useUserId();
   return useQuery({
     queryKey: meKeys.user(userId),
-    queryFn: () => api<Me>(`/v1/me`),
+    queryFn: () => backend.get("/v1/me"),
     enabled: !!userId,
     staleTime: 60_000,
   });

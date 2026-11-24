@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 import { type Group, type GroupMember, groupQueries } from "@/modules/groups";
 import { type User, userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { type RoleAccess, roleAccess } from "../role-model";
 import { type Permission, type Role, roleQueries, usePermissions, useRoles } from "./rbac";
@@ -54,7 +54,7 @@ export type RoleAccessView = {
 };
 
 export function useRoleAccess(): RoleAccessView {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = useCapabilities().can;
   const canPeople = can("user.read");
   const canGroups = can("group.read");
@@ -65,21 +65,21 @@ export function useRoleAccess(): RoleAccessView {
   const catalogue = catalogueQuery.data?.items ?? NO_PERMISSIONS;
 
   const perms = useQueries({
-    queries: roles.map((r) => roleQueries.permissions(tenantId, r.id)),
+    queries: roles.map((r) => roleQueries.permissions(organizationId, r.id)),
     combine: combinePermissions,
   });
   const peopleQuery = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: canPeople && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: canPeople && !!organizationId,
   });
   const groupsQuery = useQuery({
-    ...groupQueries.list(tenantId),
-    enabled: canGroups && !!tenantId,
+    ...groupQueries.list(organizationId),
+    enabled: canGroups && !!organizationId,
   });
   const groups = groupsQuery.data?.items ?? NO_GROUPS;
   const readGroups = groups.length <= GROUP_ROLES_UP_TO ? groups : NO_GROUPS;
   const groupRoles = useQueries({
-    queries: readGroups.map((g) => groupRoleQueries.list(tenantId, g.id)),
+    queries: readGroups.map((g) => groupRoleQueries.list(organizationId, g.id)),
     combine: combineGroupRoles,
   });
   // Members only of the groups that hold a role: the rest reach no one.
@@ -88,7 +88,7 @@ export function useRoleAccess(): RoleAccessView {
     [readGroups, groupRoles.items],
   );
   const members = useQueries({
-    queries: granting.map((g) => groupQueries.members(tenantId, g.id)),
+    queries: granting.map((g) => groupQueries.members(organizationId, g.id)),
     combine: combineMembers,
   });
 

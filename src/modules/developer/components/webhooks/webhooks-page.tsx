@@ -304,7 +304,8 @@ export function WebhooksPage({
                             { value: ANY, label: t("machine.filters.anyStatus") },
                             ...states.map((p) => ({
                               value: p.id,
-                              label: `${t(`webhooks.state.${p.id}`)} · ${n(p.count)}`,
+                              label: t(`webhooks.state.${p.id}`),
+                              meta: n(p.count),
                             })),
                           ]}
                         />

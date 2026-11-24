@@ -8,7 +8,7 @@ import { rankSuggestions } from "../suggestion-engine";
 function on(pathname: string, selection?: ConsoleContext["selection"]): ConsoleContext {
   return {
     route: { pathname, title: pathname },
-    tenantId: "tenant-a",
+    organizationId: "tenant-a",
     userId: "operator-1",
     capabilities: [],
     selection,

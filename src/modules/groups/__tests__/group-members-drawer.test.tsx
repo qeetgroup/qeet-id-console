@@ -9,7 +9,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -67,7 +67,7 @@ import {
 
 const group = (id: string, name: string, members: number): Group => ({
   id,
-  tenant_id: "t-1",
+  organization_id: "t-1",
   parent_id: null,
   name,
   description: "",

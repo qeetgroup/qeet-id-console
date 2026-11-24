@@ -1,25 +1,8 @@
 /*
  * Directory › Groups (groups-list-page.tsx). Placement and token values only (--qx-*). The band,
- * toolbar and filters are the Users page's (people.css, loaded with the console's styles); only the
- * tree rows are new.
+ * toolbar and filters are the Users page's (people.css, loaded with the console's styles); the tree
+ * rows are Table's.
  */
-
-.grp {
-  --grp-indent: 1.75rem;
-}
-
-/* A group: its fold button (or the room for one), then its name over one line about it. */
-.grp-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--qx-space-gap-xs);
-  min-inline-size: 0;
-}
-
-.grp-leaf {
-  flex: none;
-  inline-size: var(--qx-size-control-sm);
-}
 
 .grp-two {
   display: grid;
@@ -37,10 +20,6 @@
   font: var(--qx-typography-body-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.grp-two small.is-continued {
-  color: var(--qx-color-text-subtlest);
 }
 
 .grp-name {

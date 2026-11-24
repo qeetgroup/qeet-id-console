@@ -43,7 +43,7 @@ describe("An anomaly's severity and status", () => {
   it("shows an anomaly open until it is resolved, whatever its status says", () => {
     render(
       <>
-        <AnomalyStatusBadge anomaly={{ status: "rate-limited", resolved_at: null }} />
+        <AnomalyStatusBadge anomaly={{ status: "rate-limited" }} />
         <AnomalyStatusBadge anomaly={{ status: "open" }} />
         <AnomalyStatusBadge anomaly={{ status: "resolved", resolved_at: "2026-10-24T09:00:00Z" }} />
         <AnomalyStatusBadge

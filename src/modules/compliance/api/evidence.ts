@@ -10,65 +10,54 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 import { complianceKeys } from "./keys";
 
 export type Framework = "soc2" | "iso27001";
 
-export type ControlStatus = "pass" | "fail" | "na";
-
-export type ControlResult = {
-  id: string; // stable across runs, e.g. "CC6.1-MFA"
-  name: string;
-  category: string;
-  criteria: string; // the framework's reference, e.g. "CC6.1" or "A.9.4"
-  status: ControlStatus;
-  detail: string; // what was found; never empty
-};
-
-export type EvidenceRun = {
-  id: string;
-  tenant_id: string;
-  framework: string;
-  generated_at: string;
-  generated_by?: string | null;
-  pass_count: number;
-  fail_count: number;
-  na_count: number;
-  controls?: ControlResult[]; // sent by the detail endpoint, not the list
-};
+/** A run of the framework's checks: `controls` comes with the detail read, not the list. */
+export type EvidenceRun = Answer<"/v1/organizations/{organizationID}/compliance/evidence/{id}">;
+/** One check: its `id` stays the same across runs, and `detail` says what was found. */
+export type ControlResult = NonNullable<EvidenceRun["controls"]>[number];
+export type ControlStatus = ControlResult["status"];
 
 /** One run with its checks; shared by the run's view, the "since" lines and a download. */
-export const evidenceRunQuery = (tenantId: string | null, runId: string | null) =>
+export const evidenceRunQuery = (organizationId: string | null, runId: string | null) =>
   queryOptions({
-    queryKey: complianceKeys.evidenceRun(tenantId, runId),
-    queryFn: () => api<EvidenceRun>(`/v1/tenants/${tenantId}/compliance/evidence/${runId}`),
-    enabled: !!tenantId && !!runId,
+    queryKey: complianceKeys.evidenceRun(organizationId, runId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/compliance/evidence/{id}", {
+        path: { organizationID: organizationId ?? "", id: runId ?? "" },
+      }),
+    enabled: !!organizationId && !!runId,
     // A run never changes once generated.
     staleTime: Number.POSITIVE_INFINITY,
   });
 
 /** The framework's runs, newest first (the server keeps the 100 newest), without controls. */
 export function useEvidenceRuns(framework: Framework, enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: complianceKeys.evidenceRuns(tenantId, framework),
+    queryKey: complianceKeys.evidenceRuns(organizationId, framework),
     queryFn: () =>
-      api<{ items: EvidenceRun[] }>(`/v1/tenants/${tenantId}/compliance/${framework}/evidence`),
-    enabled: !!tenantId && enabled,
+      backend.get("/v1/organizations/{organizationID}/compliance/{framework}/evidence", {
+        path: { organizationID: organizationId ?? "", framework },
+      }),
+    enabled: !!organizationId && enabled,
   });
 }
 
 export function useEvidenceRun(runId: string | null) {
-  return useQuery(evidenceRunQuery(useTenantId(), runId));
+  return useQuery(evidenceRunQuery(useOrganizationId(), runId));
 }
 
 /** Several runs with their controls: how long each check has had its status. */
 export function useEvidenceRunDetails(runIds: readonly string[]) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQueries({
-    queries: runIds.map((id) => evidenceRunQuery(tenantId, id)),
+    queries: runIds.map((id) => evidenceRunQuery(organizationId, id)),
     combine: (results) => ({
       runs: results.map((r) => r.data),
       loading: results.some((r) => r.isLoading),
@@ -81,18 +70,20 @@ export function useEvidenceRunDetails(runIds: readonly string[]) {
 
 /** Runs the framework's checks now; the answer carries the controls, so it seeds the run's view. */
 export function useGenerateEvidence(framework: Framework) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<EvidenceRun>(`/v1/tenants/${tenantId}/compliance/${framework}/evidence`, {
-        method: "POST",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/compliance/{framework}/evidence", {
+        path: { organizationID: organizationId, framework },
       });
     },
     onSuccess: (run) => {
-      qc.setQueryData(complianceKeys.evidenceRun(tenantId, run.id), run);
-      void qc.invalidateQueries({ queryKey: complianceKeys.evidenceRuns(tenantId, framework) });
+      qc.setQueryData(complianceKeys.evidenceRun(organizationId, run.id), run);
+      void qc.invalidateQueries({
+        queryKey: complianceKeys.evidenceRuns(organizationId, framework),
+      });
     },
     meta: { successMessage: "compliance:toast.evidenceGenerated" },
   });

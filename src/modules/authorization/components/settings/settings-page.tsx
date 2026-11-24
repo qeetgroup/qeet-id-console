@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@qeetrix/icons";
-import { Badge, Button, Heading, Skeleton, Text } from "@qeetrix/react";
+import { Badge, Heading, LinkButton, Skeleton, Text } from "@qeetrix/react";
 import { PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -7,28 +7,19 @@ import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageBreadcrumb } from "@/modules/dashboard";
-import { orgKeys } from "@/modules/organizations";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { securityPolicyQueries } from "@/modules/organizations";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAbacPolicies } from "@/modules/authorization/api/abac";
 import { useCount } from "../lists/authz-parts";
 import "../lists/authz-lists.css";
 
-type StepUpMethod = "totp" | "recovery_code" | "otp" | "webauthn" | "push";
-type StepUpSettings = { step_up_window: string; step_up_methods: StepUpMethod[] | null };
-
-/**
- * The organisation's step-up settings, under the organisations module's own key so the cache is
- * shared with its Security policy page. Until that module's barrel exports its query options, the
- * read is repeated here (reported for the coordinator).
- */
+/** The organisation's step-up settings, shared with its Security policy page. */
 function useStepUpSettings(enabled: boolean) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: orgKeys.securityPolicy(tenantId),
-    queryFn: () => api<StepUpSettings>(`/v1/tenants/${tenantId}/policy`),
-    enabled: enabled && !!tenantId,
+    ...securityPolicyQueries.get(organizationId),
+    enabled: enabled && !!organizationId,
   });
 }
 
@@ -239,8 +230,8 @@ function Go({
   children: ReactNode;
 }) {
   return (
-    <Button variant="ghost" size="sm" icon={ArrowRightIcon} render={<Link to={to} />}>
+    <LinkButton variant="ghost" size="sm" icon={ArrowRightIcon} render={<Link to={to} />}>
       {children}
-    </Button>
+    </LinkButton>
   );
 }

@@ -119,11 +119,11 @@ export function AgentDrawer({
 
   // Without the directory (no user.read), you are the only sponsor to choose.
   const sponsors = options(people);
-  if (me && !sponsors.some((o) => o.value === me.id))
+  if (me?.id && !sponsors.some((o) => o.value === me.id))
     sponsors.unshift({
       value: me.id,
-      label: me.display_name?.trim() || me.email,
-      description: me.email,
+      label: me.display_name?.trim() || me.email || me.id,
+      description: me.email ?? "",
     });
   const origin = new URL(getApiBaseUrl()).origin;
   return (
@@ -251,7 +251,7 @@ export function AgentDrawer({
             language="shell"
             title={t("identityDrawer.getToken")}
             wrap
-            code={`curl -X POST "${origin}/v1/agents/token" \\\n  -H "Content-Type: application/json" \\\n  -d '{"agent_id":"${made.id}","secret":"'"$QEET_ID_AGENT_SECRET"'"}'`}
+            code={`curl -X POST "${origin}/v1/oauth/token" \\\n  -d grant_type=client_credentials \\\n  -d client_id=${made.id} \\\n  -d client_secret="$QEET_ID_AGENT_SECRET"`}
           />
         ) : null}
       </ShownOnceDrawer>

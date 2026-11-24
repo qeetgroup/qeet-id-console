@@ -2,6 +2,7 @@
 // and how people sign in: each method's share and its own 14-day line on one shared scale.
 
 import { Table, Toggle, ToggleGroup } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,12 +26,11 @@ import {
   ChartTip,
   endLabel,
   Keys,
-  LinkButton,
+  PanelLink,
   num,
   Panel,
   pct,
   ringDot,
-  Sparkline,
 } from "./overview-parts";
 
 // ── Sign-ins, last 14 days ──────────────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ export function SignInMethodsPanel({
       title={t("overview.methods.title")}
       note={t("overview.methods.note")}
       action={
-        <LinkButton to="/auth/login-methods/password">{t("overview.methods.action")}</LinkButton>
+        <PanelLink to="/auth/login-methods/password">{t("overview.methods.action")}</PanelLink>
       }
     >
       {rows.length ? (

@@ -17,6 +17,7 @@ import {
   formatDate,
   formatRelativeTime,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -46,13 +47,12 @@ import {
 } from "@/modules/users/api/user360";
 import { useUser } from "@/modules/users/api/users";
 import { EditUserSheet } from "@/modules/users/components/edit-user-sheet";
-import { roleLabel } from "@/modules/users/components/people/people-table";
 import { SetPasswordSheet } from "@/modules/users/components/set-password-sheet";
 import { lastActive, personNames } from "@/modules/users/person-model";
 import type { User360Tab } from "@/modules/users/tabs";
 import { useUserActions } from "@/modules/users/use-user-actions";
 import { parseUserAgent } from "@/modules/users/user-agent";
-import { useTenantId, useUserId } from "@/platform/auth/session";
+import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { ApiError } from "@/platform/errors/api-error";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -62,6 +62,7 @@ import { RawRecordDrawer } from "./person-raw";
 import { PersonSecurity } from "./person-security";
 import { PersonSessions } from "./person-sessions";
 import "./person.css";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 /** What the viewer may do to this person: the server's rules, so the page only offers what works. */
 export interface Standing {
@@ -88,7 +89,7 @@ interface PersonView {
 export function UserDetailPage({ userId, ...view }: { userId: string } & PersonView) {
   const { t } = useTranslation("users");
   const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const me = useUserId();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -124,9 +125,9 @@ export function UserDetailPage({ userId, ...view }: { userId: string } & PersonV
               title={t("person.notFound.title")}
               description={t("person.notFound.description")}
               actions={
-                <Button render={<RouterLink to="/users" />} variant="soft">
+                <LinkButton render={<RouterLink to="/users" />} variant="soft">
                   {t("person.notFound.back")}
-                </Button>
+                </LinkButton>
               }
             />
           ) : (
@@ -148,7 +149,7 @@ export function UserDetailPage({ userId, ...view }: { userId: string } & PersonV
   }
 
   const canWrite = access.can("user.write");
-  const home = user.tenant_id === tenantId;
+  const home = user.organization_id === organizationId;
   const self = user.id === me;
   const standing: Standing = { canWrite, home, self, manage: canWrite && home && !self };
   return <Person user={user} standing={standing} {...view} />;
@@ -202,13 +203,8 @@ function Person({
     <Tabs value={tab} onValueChange={(next) => onTabChange(next as User360Tab)}>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
-        title={
-          // The avatar sits in the title, unannounced, until PageHeader has a leading slot (QTRX-48).
-          <span className="prs-title-name">
-            <Avatar name={full} src={user.avatar_url ?? undefined} size="lg" decorative />
-            {full}
-          </span>
-        }
+        leading={<Avatar name={full} src={user.avatar_url ?? undefined} size="lg" decorative />}
+        title={full}
         status={
           suspended ? (
             <Badge tone="warning">{t("status.suspended")}</Badge>
@@ -306,7 +302,7 @@ function Person({
                 {accessQ.isLoading
                   ? "…"
                   : roles.length
-                    ? roles.map((r) => roleLabel(t, r.name)).join(", ")
+                    ? roles.map((r) => roleDisplayName(r.name)).join(", ")
                     : t("person.band.noRole")}
               </dd>
               <dd className="ppl-note">

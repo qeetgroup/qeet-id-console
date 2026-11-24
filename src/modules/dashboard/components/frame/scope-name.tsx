@@ -2,16 +2,16 @@ import { Avatar } from "@qeetrix/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { orgQueries } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 /**
  * The organisation in the top bar's scope path: always its name, never a control. Switching lives
  * in the account menu. Nothing shows before an organisation exists.
  */
 export function ScopeName() {
-  const tenantId = useTenantId();
-  const org = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
-    (item) => item.id === tenantId,
+  const organizationId = useOrganizationId();
+  const org = useQuery({ ...orgQueries.list(), enabled: !!organizationId }).data?.items.find(
+    (item) => item.id === organizationId,
   );
   if (!org) return null;
   return (

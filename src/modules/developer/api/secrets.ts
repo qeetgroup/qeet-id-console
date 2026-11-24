@@ -2,10 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface Secret {
   id: string;
@@ -17,35 +16,41 @@ export interface Secret {
 }
 
 export function useSecrets(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: developerKeys.secrets(tenantId),
-    enabled: enabled && !!tenantId,
-    queryFn: () => api<{ items: Secret[] }>(`/v1/tenants/${tenantId}/secrets`),
+    queryKey: developerKeys.secrets(organizationId),
+    enabled: enabled && !!organizationId,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/secrets", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
 export function useCreateSecret() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { name: string; scope: string; value: string }) =>
-      api<Secret>(`/v1/tenants/${tenantId}/secrets`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/secrets", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(organizationId) }),
     meta: { successMessage: "developer:toast.secretCreated", silentError: true }, // the sheet shows the error
   });
 }
 
 export function useRotateSecret() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, value }: { id: string; value: string }) =>
-      api<Secret>(`/v1/tenants/${tenantId}/secrets/${id}`, {
-        method: "PATCH",
+      backend.patch("/v1/organizations/{organizationID}/secrets/{id}", {
+        path: { organizationID: organizationId ?? "", id },
         body: { value },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(organizationId) }),
     meta: { successMessage: "developer:toast.secretRotated", silentError: true }, // the sheet shows the error
   });
 }
@@ -53,12 +58,12 @@ export function useRotateSecret() {
 const revealedSecretSchema = z.object({ value: z.string() });
 
 export function useRevealSecret() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (id: string) =>
-      api(`/v1/tenants/${tenantId}/secrets/${id}/reveal`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/secrets/{id}/reveal", {
+        path: { organizationID: organizationId ?? "", id },
         schema: revealedSecretSchema,
       }),
     meta: { silent: true },
@@ -66,12 +71,14 @@ export function useRevealSecret() {
 }
 
 export function useDeleteSecret() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/secrets/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
+      backend.delete("/v1/organizations/{organizationID}/secrets/{id}", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(organizationId) }),
     meta: { successMessage: "developer:toast.secretDeleted" },
   });
 }

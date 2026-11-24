@@ -1,13 +1,20 @@
 import { PlusIcon, ServerIcon } from "@qeetrix/icons";
 import { Button, Skeleton } from "@qeetrix/react";
-import { DataState, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
+import {
+  DataState,
+  EmptyState,
+  InstructionList,
+  InstructionStep,
+  PageContent,
+  PageHeader,
+} from "@qeetrix/react/experimental";
 import { Navigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { useLdapConnections } from "@/modules/authentication/api/ldap";
 import { Section } from "@/modules/authentication/components/connections/connection-parts";
 import { FeatureGate } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { LdapDrawer } from "./ldap-drawer";
 import "@/modules/authentication/components/connections/connections.css";
@@ -46,11 +53,7 @@ export function LdapIndexPage({ creating, onCreatingChange }: LdapIndexPageProps
             </Button>
           ) : undefined
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <FeatureGate
@@ -69,14 +72,15 @@ export function LdapIndexPage({ creating, onCreatingChange }: LdapIndexPageProps
                 title={t("ldap.index.whatTitle")}
                 description={t("ldap.index.whatNote")}
               >
-                <ol className="cx-flow">
+                <InstructionList orientation="horizontal">
                   {(["bind", "find", "check", "signIn"] as const).map((step) => (
-                    <li key={step} className="cx-flow-step">
-                      <p className="cx-flow-cap">{t(`ldap.how.${step}`)}</p>
-                      <p className="cx-flow-note">{t(`ldap.index.steps.${step}`)}</p>
-                    </li>
+                    <InstructionStep
+                      key={step}
+                      title={t(`ldap.how.${step}`)}
+                      note={t(`ldap.index.steps.${step}`)}
+                    />
                   ))}
-                </ol>
+                </InstructionList>
               </Section>
               {items.length === 0 ? (
                 <div className="cx-empty">

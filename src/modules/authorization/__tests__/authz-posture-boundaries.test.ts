@@ -6,7 +6,7 @@ import { postureFindings } from "../authz-posture";
 function policy(overrides: Partial<AbacPolicy> = {}): AbacPolicy {
   return {
     id: "p",
-    tenant_id: "t",
+    organization_id: "t",
     name: "policy",
     description: "",
     effect: "allow",

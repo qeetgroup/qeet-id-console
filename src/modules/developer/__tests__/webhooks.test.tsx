@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "s1",
 }));
@@ -100,10 +100,10 @@ beforeEach(() => {
       const method = options?.method ?? "GET";
       calls.push({ method, path, body: options?.body });
       if (method === "GET") {
-        if (path === "/v1/tenants/t1/webhooks") return { items: [OFF, FAILING] };
+        if (path === "/v1/organizations/t1/webhooks") return { items: [OFF, FAILING] };
         if (path === "/v1/webhooks/w-off") return OFF;
         if (path === "/v1/webhooks/w-off/deliveries") return { items: DELIVERIES };
-        if (path === "/v1/tenants/t1/webhooks/events")
+        if (path === "/v1/organizations/t1/webhooks/events")
           return {
             items: [
               { name: "user.created", description: "" },
@@ -208,7 +208,9 @@ describe("A webhook's page", () => {
   it("opens a delivery with its request, and retries one that gave up", async () => {
     renderWith(<WebhookPage id="w-off" />);
     const table = within(await screen.findByRole("table", { name: "Recent deliveries" }));
-    fireEvent.click(table.getByRole("button", { name: /Delivery d-dead-0/ }));
+    fireEvent.click(
+      table.getByRole("button", { name: /^session\.revoked, /, description: /d-dead-0/ }),
+    );
     const drawer = await screen.findByRole("dialog");
     expect(within(drawer).getByText("It used all its attempts")).toBeTruthy();
     expect(within(drawer).getByText("Request body")).toBeTruthy();

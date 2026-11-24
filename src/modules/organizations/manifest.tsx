@@ -29,7 +29,7 @@ export const manifest = defineModule({
       description: "organizations:nav.settings.general.description",
       url: "/settings/organization/general",
       icon: <Settings2Icon />,
-      capability: "tenant.read",
+      capability: "organization.read",
     },
     {
       id: "settings.domains",
@@ -39,7 +39,7 @@ export const manifest = defineModule({
       description: "organizations:nav.settings.domains.description",
       url: "/settings/organization/domains",
       icon: <GlobeIcon />,
-      capability: "tenant.read",
+      capability: "organization.read",
     },
     {
       id: "settings.emails",
@@ -74,7 +74,7 @@ export const manifest = defineModule({
       text: "organizations:commands.organizationSettings",
       icon: <Settings2Icon />,
       to: "/settings/organization/general",
-      capability: "tenant.read",
+      capability: "organization.read",
     },
   ],
   shortcuts: [
@@ -110,13 +110,13 @@ export const manifest = defineModule({
           type: "tool",
           toolName: "create_organization",
           label: "organizations:qeetaiSuggestions.labels.createOrganization",
-          requiredCapability: "tenant.write",
+          requiredCapability: "organization.write",
         },
         {
           type: "tool",
           toolName: "generate_terraform",
-          label: "organizations:qeetaiSuggestions.labels.terraformTenant",
-          prefillInput: { resource_type: "tenant" },
+          label: "organizations:qeetaiSuggestions.labels.terraformOrganization",
+          prefillInput: { resource_type: "organization" },
           requiredCapability: "connection.read",
         },
       ],

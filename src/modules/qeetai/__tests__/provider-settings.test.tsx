@@ -6,13 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
-  tenantId: "tenant-a" as string | null,
+  organizationId: "tenant-a" as string | null,
   state: "ready",
   canRead: true,
   canWrite: true,
 }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: context.state,
@@ -39,9 +39,13 @@ import {
   validateProviderSettings,
 } from "../provider-settings-model";
 
+// The server sends every field, empty when there is nothing to say (qeetai/http.go).
+const BLANK = { provider: "", model: "", base_url: "", max_tokens: 0, last4: "" };
+
 function savedConfig(): QeetAIProviderConfig {
   return {
-    source: "tenant",
+    ...BLANK,
+    source: "organization",
     provider: "anthropic",
     model: "claude-sonnet-5",
     max_tokens: 4096,
@@ -50,9 +54,9 @@ function savedConfig(): QeetAIProviderConfig {
   };
 }
 
-const NONE: QeetAIProviderConfig = { source: "none", platform_fallback: false };
+const NONE: QeetAIProviderConfig = { ...BLANK, source: "none", platform_fallback: false };
 const OFF: QeetAIStatus = { configured: false, available: false, source: "none" };
-const ON: QeetAIStatus = { configured: true, available: true, source: "tenant" };
+const ON: QeetAIStatus = { configured: true, available: true, source: "organization" };
 
 function viewProps(overrides: Partial<ProviderSettingsViewProps> = {}): ProviderSettingsViewProps {
   return {
@@ -78,7 +82,7 @@ function openConnect() {
 const field = (name: string) => screen.getByLabelText(name) as HTMLInputElement;
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   context.state = "ready";
   context.canRead = true;
   context.canWrite = true;
@@ -241,6 +245,7 @@ describe("Settings › Qeet AI", () => {
 
   it("names the Qeet-managed provider, and says when the plan leaves it out", () => {
     const config: QeetAIProviderConfig = {
+      ...BLANK,
       source: "platform",
       provider: "anthropic",
       model: "claude-sonnet-5",
@@ -329,6 +334,7 @@ describe("Settings › Qeet AI against the server", () => {
       if (path === "/v1/qeetai/status") return ON as never;
       if (options?.method === "DELETE") {
         remote = {
+          ...BLANK,
           source: "platform",
           provider: "openai",
           model: "gpt-4o",
@@ -352,7 +358,7 @@ describe("Settings › Qeet AI against the server", () => {
     const { rerender } = renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Change" }));
     fireEvent.change(field("API key"), { target: { value: "fixture-key" } });
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     rerender(<QeetAISettingsPage />);
     await screen.findByRole("button", { name: "Change" });
     expect(screen.queryByRole("form")).toBeNull();
@@ -367,7 +373,7 @@ describe("Settings › Qeet AI against the server", () => {
     const { rerender } = renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Remove" }));
     const confirm = await screen.findByRole("alertdialog");
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     rerender(<QeetAISettingsPage />);
     fireEvent.click(within(confirm).getByRole("button", { name: "Remove key" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
@@ -385,7 +391,8 @@ describe("Settings › Qeet AI against the server", () => {
 describe("Provider settings form model", () => {
   it("hydrates only configuration metadata, never a stored key", () => {
     const config = {
-      source: "tenant" as const,
+      source: "organization" as const,
+      platform_fallback: false,
       provider: "openai",
       model: "custom-model",
       base_url: "https://gateway.example.test/v1",

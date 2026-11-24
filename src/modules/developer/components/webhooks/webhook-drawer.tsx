@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { applyServerErrors, useAppForm } from "@/platform/forms/app-form";
 import {
   settleSensitiveAction,
@@ -48,7 +48,7 @@ export function WebhookDrawer({
 }) {
   const { t } = useTranslation("developer");
   const { n } = useNumbers();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const runSensitive = useSensitiveAction();
   const createM = useCreateWebhook();
   const eventsQ = useWebhookEvents();
@@ -71,12 +71,11 @@ export function WebhookDrawer({
     defaultValues: { url: "", events: [] as string[] },
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
-      if (!tenantId) return;
+      if (!organizationId) return;
       setFailure(null);
       await runSensitive({
         actionLabel: t("webhookDrawer.stepUp"),
-        run: () =>
-          createM.mutateAsync({ tenant_id: tenantId, url: value.url.trim(), events: value.events }),
+        run: () => createM.mutateAsync({ url: value.url.trim(), events: value.events }),
       })
         .then((res) => {
           if (!res) return;

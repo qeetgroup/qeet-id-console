@@ -1,7 +1,7 @@
 // What the Dashboard reads now that the area overviews are gone: the directory's failing
-// connections, the groups, authorization's risk checks and everyone's profile (for the
-// organisation's shape). Each source is read only when the person may; one they can't read stays
-// `undefined`, so its alerts, set-up rows and panels drop out.
+// connections, the groups, authorization's risk checks and the members' counts by department,
+// team and location (for the organisation's shape). Each source is read only when the person may;
+// one they can't read stays `undefined`, so its alerts, set-up rows and panels drop out.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -9,7 +9,7 @@ import { postureFindings, useAbacPolicies, usePermissions } from "@/modules/auth
 import { useDirectoryConnections, useDirectoryErrors } from "@/modules/directory";
 import { groupQueries } from "@/modules/groups";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   directoryAttention,
@@ -21,7 +21,7 @@ import {
 
 export function useDirectoryInsights() {
   const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = {
     users: access.can("user.read"),
     groups: access.can("group.read"),
@@ -31,12 +31,16 @@ export function useDirectoryInsights() {
 
   const errors = useDirectoryErrors(FAILING_FILTERS); // connection.read, checked in the hook
   const connections = useDirectoryConnections();
-  const groups = useQuery({ ...groupQueries.list(tenantId), enabled: can.groups && !!tenantId });
+  const groups = useQuery({
+    ...groupQueries.list(organizationId),
+    enabled: can.groups && !!organizationId,
+  });
   const perms = usePermissions(can.roles);
   const policies = useAbacPolicies(can.policies);
-  const people = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: can.users && !!tenantId,
+  // The Users band's own read, shared through its cache.
+  const stats = useQuery({
+    ...userQueries.stats(organizationId),
+    enabled: can.users && !!organizationId,
   });
 
   const failing = useMemo(() => failingConnections(errors.data), [errors.data]);
@@ -57,9 +61,12 @@ export function useDirectoryInsights() {
       }),
     [errors.data, connections.data, groups.data, findings],
   );
-  const everyone = people.data?.items;
-  const shape = useMemo(() => (everyone ? orgShape(everyone) : undefined), [everyone]);
-  const places = useMemo(() => (everyone ? placesByCountry(everyone) : undefined), [everyone]);
+  const counts = stats.data;
+  const shape = useMemo(() => (counts ? orgShape(counts) : undefined), [counts]);
+  const places = useMemo(
+    () => (counts ? placesByCountry(counts.by_location) : undefined),
+    [counts],
+  );
 
   return {
     attention,
@@ -67,8 +74,9 @@ export function useDirectoryInsights() {
     /** Failing connections by id, once the errors are in. */
     failing: errors.data ? failing : undefined,
     groups: groups.data?.items,
-    setupLoading: [errors, groups, people].some((q) => q.isLoading),
-    people: everyone,
+    setupLoading: [errors, groups, stats].some((q) => q.isLoading),
+    /** How many people the organisation has, for the places' shares. */
+    people: counts?.total,
     shape,
     places,
   };

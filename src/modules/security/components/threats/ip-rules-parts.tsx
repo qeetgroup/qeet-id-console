@@ -49,10 +49,11 @@ export function AddressCheck({ enabled, rules }: { enabled: boolean; rules: read
     try {
       const res = await check.mutateAsync(value);
       const code = (res.reason_code ?? "").replace(/^ip\./, "");
+      const cidr = res.reason_params?.cidr;
       setResult({
         allowed: res.allowed,
         reason: code,
-        cidr: res.reason_params?.cidr,
+        cidr: typeof cidr === "string" ? cidr : undefined,
         local: false,
       });
     } catch (err) {

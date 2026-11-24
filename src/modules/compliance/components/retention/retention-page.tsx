@@ -3,7 +3,7 @@
 // the data Qeet ID keeps by its own rules. Removal is a hard delete; the audit log keeps its events.
 
 import { EraserIcon, MonitorSmartphoneIcon, ScrollTextIcon, ArrowRightIcon } from "@qeetrix/icons";
-import { Badge, Button, formatDate, formatNumber } from "@qeetrix/react";
+import { Badge, Button, formatDate, formatNumber, LinkButton } from "@qeetrix/react";
 import { DataState, NumberField } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -326,13 +326,13 @@ function RetentionView({ policy }: { policy: RetentionPolicy }) {
             line={t("retention.other.auditLine")}
             actions={
               canAudit ? (
-                <Button
+                <LinkButton
                   variant="ghost"
                   icon={ArrowRightIcon}
                   render={<Link to="/security/audit-logs" />}
                 >
                   {t("retention.other.auditOpen")}
-                </Button>
+                </LinkButton>
               ) : undefined
             }
           />
@@ -347,13 +347,13 @@ function RetentionView({ policy }: { policy: RetentionPolicy }) {
             line={t("retention.other.erasureLine", { days: ERASURE_GRACE_DAYS })}
             actions={
               access.can("gdpr.write") ? (
-                <Button
+                <LinkButton
                   variant="ghost"
                   icon={ArrowRightIcon}
                   render={<Link to="/security/compliance/gdpr" />}
                 >
                   {t("retention.other.erasureOpen")}
-                </Button>
+                </LinkButton>
               ) : undefined
             }
           />

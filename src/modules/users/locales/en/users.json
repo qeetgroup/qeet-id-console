@@ -480,11 +480,11 @@
       "branding": "Branding",
       "connection": "Connections",
       "group": "Groups",
+      "organization": "Organisation",
       "policy": "Policies",
       "role": "Roles",
       "secret": "Secrets",
       "session": "Sessions",
-      "tenant": "Organisation",
       "user": "Users",
       "webhook": "Webhooks"
     },
@@ -793,7 +793,7 @@
       "userAuditEvents": "Search the audit log filtered to this user"
     },
     "prompts": {
-      "suspendedUsers": "List all suspended users in this tenant.",
+      "suspendedUsers": "List all suspended users in this organisation.",
       "userActivity": "Summarize recent user activity and any anomalies in the audit log.",
       "userRecentActivity": "Summarize the most recent audit events for the currently selected user."
     }
@@ -807,18 +807,11 @@
     "exportCsv": "Export to CSV",
     "exportJson": "Export to JSON",
     "addUser": "Add user",
-    "capped": {
-      "title": "Showing the first {{n}} of {{total}} people",
-      "description": "Search, the filters and the counts above cover these people only."
-    },
     "empty": {
       "filteredTitle": "No one matches",
       "filteredDescription": "No one has all of these at once. Remove a filter, or clear them all.",
       "clear": "Clear filters",
       "description": "Add the first person, or import a file of them."
-    },
-    "roles": {
-      "owner": "Owner"
     },
     "noRole": "No role",
     "columns": {
@@ -852,8 +845,8 @@
       "people": "People",
       "activeAndNew": "{{active}} active · +{{n}} in the last 30 days",
       "activeNoneNew": "{{active}} active · no one new in 30 days",
-      "growthLabel": "People at the end of each month: {{from}} to {{to}} over {{months}} months",
-      "months": "{{months}} months",
+      "growthLabel": "People each day: {{from}} to {{to}} over the last {{days}} days",
+      "days": "{{days}} days",
       "twoStep": "Two-step verification",
       "percent": "{{n}}%",
       "twoStepNote": "{{n}} of {{total}} people · target {{target}}%",
@@ -956,7 +949,8 @@
       "retry": "Try again",
       "emptyTitle": "No one is suspended",
       "emptyDescription": "Everyone in this organisation can sign in."
-    }
+    },
+    "exportCapped": "The export holds the first {{n}} people."
   },
   "invites": {
     "title": "Invitations",
@@ -998,7 +992,8 @@
       "accepted": "Joined",
       "expired": "Expired",
       "revoked": "Revoked",
-      "declined": "Declined"
+      "declined": "Declined",
+      "unknown": "Unknown"
     },
     "outcome": {
       "expiresToday": "Expires today",

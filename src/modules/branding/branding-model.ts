@@ -1,13 +1,7 @@
-export type Branding = {
-  tenant_id: string;
-  logo_url?: string | null;
-  primary_color?: string | null;
-  secondary_color?: string | null;
-  custom_domain?: string | null;
-  email_from_name?: string | null;
-  email_from_address?: string | null;
-  settings?: Record<string, unknown> | null;
-};
+import type { Answer } from "@/platform/api/contract";
+
+/** The organisation's branding; PUT replaces it whole. */
+export type Branding = Answer<"/v1/organizations/{organizationID}/branding">;
 
 /** The values Branding changes, each saved on its own. */
 export type BrandingChange = {
@@ -37,14 +31,14 @@ export function brandingReplyTo(branding: Branding): string {
  * every other setting.
  */
 export function brandingWith(current: Branding, change: BrandingChange): Branding {
-  const settings: Record<string, unknown> = { ...(current.settings ?? {}) };
+  const settings: NonNullable<Branding["settings"]> = { ...(current.settings ?? {}) };
   if ("background_color" in change) {
     settings.background_color = normalizeBrandColor(change.background_color ?? "") ?? "";
   }
   if ("email_reply_to" in change) settings.email_reply_to = (change.email_reply_to ?? "").trim();
   const kept = <Key extends keyof Branding>(key: Key) => current[key] ?? null;
   return {
-    tenant_id: current.tenant_id,
+    organization_id: current.organization_id,
     logo_url: "logo_url" in change ? change.logo_url?.trim() || null : kept("logo_url"),
     primary_color:
       "primary_color" in change
@@ -114,7 +108,7 @@ export function brandLogoSource(
 /** One address, as the server accepts for the reply-to and sender. */
 export function validBrandEmail(value: string): boolean {
   const address = value.trim();
-  return !address || /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(address);
+  return !address || /^[^\s@<>,;]+@[^\s@<>,;.]+(?:\.[^\s@<>,;.]+)+$/.test(address);
 }
 
 function colorLuminance(color: string): number {

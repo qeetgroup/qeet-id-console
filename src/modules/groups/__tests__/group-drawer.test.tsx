@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -73,7 +73,7 @@ import { GroupDrawer, type GroupDrawerProps } from "../components/group-drawer";
 
 const group = (id: string, name: string, parent: string | null = null, members = 1): Group => ({
   id,
-  tenant_id: "t-1",
+  organization_id: "t-1",
   parent_id: parent,
   name,
   description: "",
@@ -100,7 +100,7 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/roles" && method === "GET")
+    if (path === "/v1/organizations/t-1/roles" && method === "GET")
       return {
         items: [
           { id: "r-sa", name: "Security Analyst", description: "Investigates sign-in activity" },
@@ -108,7 +108,8 @@ beforeEach(() => {
       };
     if (path === "/v1/groups" && method === "POST") return createResult();
     if (/^\/v1\/groups\/g-new\/members\/u-/.test(path) && method === "POST") return undefined;
-    if (path === "/v1/tenants/t-1/groups/g-new/roles/r-sa" && method === "POST") return undefined;
+    if (path === "/v1/organizations/t-1/groups/g-new/roles/r-sa" && method === "POST")
+      return undefined;
     if (path === "/v1/groups/cs" && method === "PATCH")
       return group("cs", "Customer Success", "ops");
     throw new Error(`Unexpected request ${method} ${path}`);
@@ -175,10 +176,10 @@ describe("the group drawer › new", () => {
       "POST /v1/groups",
       "POST /v1/groups/g-new/members/u-aditya",
       "POST /v1/groups/g-new/members/u-madhuri",
-      "POST /v1/tenants/t-1/groups/g-new/roles/r-sa",
+      "POST /v1/organizations/t-1/groups/g-new/roles/r-sa",
     ]);
     expect(vi.mocked(api).mock.calls[1]?.[1]).toMatchObject({
-      body: { tenant_id: "t-1", name: "Platform Security", parent_id: "eng" },
+      body: { name: "Platform Security", parent_id: "eng" },
     });
     // Only the role grant is sensitive; making the group and adding members are not.
     expect(sensitiveCalls).toEqual([

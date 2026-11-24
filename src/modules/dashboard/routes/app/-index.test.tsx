@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "user-1",
   useSessionId: () => "session-1",
 }));
@@ -103,7 +103,22 @@ const overview = {
 };
 
 const RESPONSES: Record<string, unknown> = {
-  "/v1/tenants/t1/analytics/overview": overview,
+  "/v1/organizations/t1/analytics/overview": overview,
+  // The set-up flags and counts, as the overview answers an administrator who may read every area.
+  "/v1/organizations/t1/overview": {
+    organization_id: "t1",
+    generated_at: day(0),
+    invitations: { pending: 1 },
+    remembered_devices: { devices: 5, people: 4 },
+    sign_in: {
+      password: true,
+      passkey: true,
+      magic_link: true,
+      remember_device: true,
+      self_registration: false,
+      mfa_enforcement: "optional",
+    },
+  },
   "/v1/users/stats": {
     total: 45,
     active: 44,
@@ -112,35 +127,28 @@ const RESPONSES: Record<string, unknown> = {
     mfa_enabled: 18,
     mfa_missing: 27,
     new_last_30d: 2,
-  },
-  "/v1/tenants/t1/invites": {
-    items: [
-      {
-        id: "i1",
-        tenant_id: "t1",
-        email: "sai@qeet.in",
-        status: "pending",
-        expires_at: day(10),
-        created_at: day(-3),
-      },
+    by_department: [
+      { department: "Engineering", count: 2 },
+      { department: "Sales", count: 1 },
+    ],
+    by_team: [{ department: "Engineering", team: "Payments", count: 2 }],
+    by_location: [
+      { location: "Bengaluru, IN", count: 2 },
+      { location: "Berlin, DE", count: 1 },
     ],
   },
-  "/v1/auth/trusted-devices/count": { devices: 5, users: 4 },
-  "/v1/tenants/t1/auth-policy": {
-    password_enabled: true,
-    passkey_enabled: true,
-    magic_link_enabled: true,
+  "/v1/organizations/t1/social/providers": { items: [{ provider: "google", enabled: true }] },
+  "/v1/organizations/t1/saml": {
+    items: [{ id: "s1", name: "Google Workspace", status: "active" }],
   },
-  "/v1/tenants/t1/social/providers": { items: [{ provider: "google", enabled: true }] },
-  "/v1/tenants/t1/saml": { items: [{ id: "s1", name: "Google Workspace", status: "active" }] },
-  "/v1/tenants/t1/saml-providers": { items: [{ id: "p1", name: "Slack", status: "active" }] },
-  "/v1/tenants/t1/scim": {
+  "/v1/organizations/t1/saml-providers": { items: [{ id: "p1", name: "Slack", status: "active" }] },
+  "/v1/organizations/t1/scim": {
     token_set: false,
     created_at: null,
     last_used_at: null,
     provisioned_count: 0,
   },
-  "/v1/tenants/t1/ldap": {
+  "/v1/organizations/t1/ldap": {
     items: [
       {
         id: "l1",
@@ -151,7 +159,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/directory/connections": {
+  "/v1/organizations/t1/directory/connections": {
     items: [
       {
         id: "l1",
@@ -171,7 +179,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/directory/errors": {
+  "/v1/organizations/t1/directory/errors": {
     items: [
       {
         id: "e1",
@@ -192,30 +200,16 @@ const RESPONSES: Record<string, unknown> = {
     connections: [],
     remediations: [],
   },
-  "/v1/tenants/t1/groups": {
+  "/v1/organizations/t1/groups": {
     items: [
       { id: "g1", tenant_id: "t1", name: "Engineering", description: "", member_count: 3 },
       { id: "g2", tenant_id: "t1", name: "Partnerships", description: "", member_count: 0 },
     ],
   },
   "/v1/permissions": { items: [{ id: "p1", key: "users.*", description: "" }] },
-  "/v1/tenants/t1/abac/policies": { items: [] },
-  "/v1/tenants": { items: [{ id: "t1", name: "Qeet Group" }] },
-  "/v1/users": {
-    items: [
-      {
-        id: "u1",
-        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
-      },
-      {
-        id: "u2",
-        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
-      },
-      { id: "u3", metadata: { department: "Sales", location: "Berlin, DE" } },
-      { id: "u4", metadata: {} },
-    ],
-  },
-  "/v1/tenants/t1/oidc/clients": {
+  "/v1/organizations/t1/abac/policies": { items: [] },
+  "/v1/organizations": { items: [{ id: "t1", name: "Qeet Group" }] },
+  "/v1/organizations/t1/oidc/clients": {
     items: [
       {
         id: "c1",
@@ -229,7 +223,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/oauth/grants": {
+  "/v1/organizations/t1/oauth/grants": {
     items: [
       {
         id: "g1",
@@ -242,8 +236,8 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/domains": { items: [{ id: "d1", domain: "qeet.in", status: "verified" }] },
-  "/v1/tenants/t1/api-keys": {
+  "/v1/organizations/t1/domains": { items: [{ id: "d1", domain: "qeet.in", status: "verified" }] },
+  "/v1/organizations/t1/api-keys": {
     items: [
       {
         id: "k1",
@@ -256,7 +250,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/webhooks": {
+  "/v1/organizations/t1/webhooks": {
     items: [
       {
         id: "w1",
@@ -269,8 +263,8 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/security/anomalies": { items: [] },
-  "/v1/tenants/t1/billing/subscription": {
+  "/v1/organizations/t1/security/anomalies": { items: [] },
+  "/v1/organizations/t1/billing/subscription": {
     plan_code: "enterprise",
     plan_name: "Enterprise",
     currency: "INR",
@@ -361,24 +355,32 @@ describe("the Dashboard", () => {
     ).toBeTruthy();
     const map = screen.getByRole("list", { name: "Departments and their teams" });
     expect(
-      within(map)
-        .getByRole("link", { name: "Engineering, 2 people: Payments 2" })
-        .getAttribute("href"),
+      within(map).getByRole("link", { name: "Engineering, 2: Payments 2" }).getAttribute("href"),
     ).toBe("/users");
-    expect(within(map).getByText("No department, 1 person")).toBeTruthy();
+    expect(within(map).getByText("No department, 42: No team 42")).toBeTruthy();
     expect(
-      screen.getByText("1 person is in a department but no team · 1 person has no department"),
+      screen.getByText("1 person is in a department but no team · 42 people have no department"),
     ).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Where people work" })).toBeTruthy();
     expect(screen.getByText("2 cities in 2 countries, sized by people")).toBeTruthy();
-    expect(screen.getByText("Bengaluru, 2 people")).toBeTruthy();
-    expect(screen.getByText("50% of people work in Bengaluru")).toBeTruthy();
+    expect(screen.getByText("Bengaluru, 2")).toBeTruthy();
+    expect(screen.getByText("4% of people work in Bengaluru")).toBeTruthy();
+    // From the members' counts: the Dashboard never reads the members themselves.
+    expect(vi.mocked(api).mock.calls.some(([path]) => path === "/v1/users")).toBe(false);
   });
 
   it("shows the set-up as a checklist, with an action only where something's needed", async () => {
     renderPage();
     const progress = await screen.findByText(/of \d+ done$/);
     expect(progress.textContent).toBe("7 of 13 done");
+    // The invitations, remembered devices and sign-in methods come from the one overview read.
+    const asked = vi.mocked(api).mock.calls.map(([path]) => path);
+    for (const list of [
+      "/v1/organizations/t1/invites",
+      "/v1/organizations/t1/auth-policy",
+      "/v1/auth/trusted-devices/count",
+    ])
+      expect(asked).not.toContain(list);
     const sso = screen
       .getByText("Single sign-on", { selector: "strong" })
       .closest("li") as HTMLElement;

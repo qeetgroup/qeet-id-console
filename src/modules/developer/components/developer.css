@@ -582,15 +582,17 @@ textarea.dev-code-area {
   font: var(--qx-typography-body-sm);
 }
 
-/* ── Infrastructure: each address, what it's for, and Copy ─────────────────────────────────── */
+/* ── Infrastructure: each address, what it's for, and Copy; each part's state ───────────────── */
 
-.dev-endpoints {
+.dev-endpoints,
+.dev-service-list {
   display: grid;
   margin: 0;
   border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
 }
 
-.dev-endpoint-row {
+.dev-endpoint-row,
+.dev-service-row {
   display: grid;
   grid-template-columns: minmax(8rem, 10rem) 1fr auto;
   align-items: start;
@@ -599,21 +601,58 @@ textarea.dev-code-area {
   border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
 }
 
-.dev-endpoint-row dt {
+.dev-endpoint-row dt,
+.dev-service-row dt {
   color: var(--qx-color-text-default);
   font: var(--qx-typography-label-md);
 }
 
-.dev-endpoint-row dd {
+.dev-endpoint-row dd,
+.dev-service-row dd {
   display: grid;
   gap: 2px;
   min-inline-size: 0;
   margin: 0;
 }
 
-.dev-endpoint-row small {
+.dev-endpoint-row small,
+.dev-service-row small,
+.dev-incident-list small {
   color: var(--qx-color-text-subtle);
   font: var(--qx-typography-body-sm);
+}
+
+/* The state sits at the row's end, as Copy does on an address. */
+.dev-service-state {
+  justify-items: end;
+}
+
+/* Under the parts: open incidents as alerts, then the ones resolved lately. */
+.dev-incidents {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-lg);
+}
+
+.dev-subhead {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.dev-incident-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-incident-list li {
+  display: grid;
+  gap: 2px;
+  padding-block: var(--qx-space-gap-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
 }
 
 /* Narrow: side-by-side parts stack. */
@@ -637,6 +676,7 @@ textarea.dev-code-area {
   }
 
   .dev-endpoint-row,
+  .dev-service-row,
   .dev-headers > div {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -1,9 +1,12 @@
-// Client-side templating that applies nothing. generate_terraform reads live config through
-// api(); the SDK snippet and API example are generic templates that make no request.
+// Client-side templating that applies nothing. generate_terraform reads live config through the
+// owning modules' reads; the SDK snippet and API example are generic templates that make no
+// request.
 
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
+import { type OidcClient, oidcClientQueries } from "@/modules/authentication";
+import { type Role, roleQueries } from "@/modules/authorization";
+import { orgQueries } from "@/modules/organizations";
 import type { ToolDefinition } from "../types/tool.types";
 
 function hclString(value: string | null | undefined): string {
@@ -17,33 +20,10 @@ function hclList(items: string[] | null | undefined): string {
 }
 
 const generateTerraformInput = z.object({
-  resource_type: z.enum(["oidc_client", "tenant", "role"]),
+  resource_type: z.enum(["oidc_client", "organization", "role"]),
   resource_id: z.string().optional(),
 });
 type GenerateTerraformInput = z.infer<typeof generateTerraformInput>;
-
-interface OidcClient {
-  id: string;
-  client_id: string;
-  name: string;
-  type: string;
-  redirect_uris: string[];
-  grant_types: string[];
-  scopes: string[];
-}
-
-interface Tenant {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  is_system: boolean;
-}
 
 function oidcClientHcl(client: OidcClient): string {
   const label = client.name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
@@ -58,12 +38,12 @@ function oidcClientHcl(client: OidcClient): string {
   ].join("\n");
 }
 
-function tenantHcl(tenant: Tenant): string {
-  const label = tenant.slug || tenant.name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+function organizationHcl(org: { name: string; slug: string }): string {
+  const label = org.slug || org.name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
   return [
     `resource "qeetid_tenant" ${hclString(label)} {`,
-    `  name = ${hclString(tenant.name)}`,
-    `  slug = ${hclString(tenant.slug)}`,
+    `  name = ${hclString(org.name)}`,
+    `  slug = ${hclString(org.slug)}`,
     "}",
   ].join("\n");
 }
@@ -92,46 +72,24 @@ export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
   async run(ctx, input) {
     let hcl = "";
 
+    // Each read is the owning module's, checked against the contract and shared with its pages.
     if (input.resource_type === "oidc_client") {
-      if (input.resource_id) {
-        const client = await api<OidcClient>(
-          `/v1/tenants/${ctx.tenantId}/oidc/clients/${input.resource_id}`,
-          { signal: ctx.signal },
-        );
-        hcl = oidcClientHcl(client);
-      } else {
-        const data = await api<{ items: OidcClient[] }>(
-          `/v1/tenants/${ctx.tenantId}/oidc/clients`,
-          { signal: ctx.signal },
-        );
-        hcl = (data.items ?? []).map(oidcClientHcl).join("\n\n");
-      }
-    } else if (input.resource_type === "tenant") {
-      if (input.resource_id) {
-        const tenant = await api<Tenant>(`/v1/tenants/${input.resource_id}`, {
-          signal: ctx.signal,
-        });
-        hcl = tenantHcl(tenant);
-      } else {
-        const tenant = await api<Tenant>(`/v1/tenants/${ctx.tenantId}`, { signal: ctx.signal });
-        hcl = tenantHcl(tenant);
-      }
+      const data = await ctx.queryClient.fetchQuery(oidcClientQueries.list(ctx.organizationId));
+      const clients = input.resource_id
+        ? data.items.filter((c) => c.id === input.resource_id || c.client_id === input.resource_id)
+        : data.items;
+      hcl = clients.map(oidcClientHcl).join("\n\n") || "# No applications found.";
+    } else if (input.resource_type === "organization") {
+      const org = await ctx.queryClient.fetchQuery(
+        orgQueries.record(input.resource_id ?? ctx.organizationId),
+      );
+      hcl = organizationHcl(org);
     } else if (input.resource_type === "role") {
-      if (input.resource_id) {
-        const role = await api<Role>(`/v1/tenants/${ctx.tenantId}/roles/${input.resource_id}`, {
-          signal: ctx.signal,
-        });
-        hcl = roleHcl(role);
-      } else {
-        const data = await api<{ items: Role[] }>(`/v1/tenants/${ctx.tenantId}/roles`, {
-          signal: ctx.signal,
-        });
-        hcl =
-          (data.items ?? [])
-            .filter((r) => !r.is_system)
-            .map(roleHcl)
-            .join("\n\n") || "# No custom roles found.";
-      }
+      const data = await ctx.queryClient.fetchQuery(roleQueries.list(ctx.organizationId));
+      const roles = input.resource_id
+        ? data.items.filter((r) => r.id === input.resource_id)
+        : data.items.filter((r) => !r.is_system);
+      hcl = roles.map(roleHcl).join("\n\n") || "# No custom roles found.";
     }
 
     return {
@@ -155,8 +113,7 @@ type GenerateSdkSnippetInput = z.infer<typeof generateSdkSnippetInput>;
 function curlSnippet(endpoint: string): string {
   return `curl -X GET \\
   "https://api.qeet.id${endpoint}" \\
-  -H "Authorization: Bearer $QEET_ACCESS_TOKEN" \\
-  -H "X-Tenant-ID: $QEET_TENANT_ID"`;
+  -H "Authorization: Bearer $QEET_ACCESS_TOKEN"`;
 }
 
 function typescriptSnippet(endpoint: string): string {
@@ -164,7 +121,6 @@ function typescriptSnippet(endpoint: string): string {
 
 const client = new QeetIdClient({
   accessToken: process.env.QEET_ACCESS_TOKEN!,
-  tenantId: process.env.QEET_TENANT_ID!,
 });
 
 const result = await client.fetch("${endpoint}");
@@ -198,7 +154,6 @@ from qeet_id import QeetIdClient
 
 client = QeetIdClient(
     access_token=os.environ["QEET_ACCESS_TOKEN"],
-    tenant_id=os.environ["QEET_TENANT_ID"],
 )
 
 result = client.get("${endpoint}")
@@ -255,7 +210,6 @@ function buildApiExample(endpoint: string, method: string): { request: string; r
     `${method} ${endpoint} HTTP/1.1`,
     "Host: api.qeet.id",
     "Authorization: Bearer <access_token>",
-    "X-Tenant-ID: <tenant_id>",
     ...(hasBody ? ["Content-Type: application/json", "", '{ "example": "body" }'] : [""]),
   ].join("\n");
 

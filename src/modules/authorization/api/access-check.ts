@@ -1,23 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
+import { useOrganizationId } from "@/platform/auth/session";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
-import type { DecidedBy, ReasonFields } from "./decision";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export interface ExplainPath {
-  permission: string;
-  granted_by: string;
-  via: string; // "direct", or "group:<name>" when inherited through a group
-  group_id?: string;
-  role_id: string;
-}
-
-/** GET /v1/check?explain=true response; the reason fields are set on a denial. */
-export interface ExplainResult extends ReasonFields {
-  allowed: boolean;
-  paths: ExplainPath[];
-  decided_by?: DecidedBy;
-}
+// GET /v1/check?explain=true: the grant paths behind an allow, the reason fields on a denial.
+export type ExplainResult = Answer<"/v1/check">;
+export type ExplainPath = NonNullable<ExplainResult["paths"]>[number];
 
 export interface ExplainInput {
   user_id: string;
@@ -29,12 +18,12 @@ export interface ExplainInput {
  * A mutation, not a query: it is a one-shot check the user runs, not data to cache.
  */
 export function useExplainCheck() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     mutationFn: ({ user_id, permission }: ExplainInput) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<ExplainResult>("/v1/check", {
-        query: { user_id, tenant_id: tenantId, permission, explain: "true" },
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.get("/v1/check", {
+        query: { user_id, organization_id: organizationId, permission, explain: "true" },
       });
     },
     meta: { silent: true }, // The screen renders both allow and deny inline; no global toast

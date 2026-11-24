@@ -4,85 +4,98 @@
 // refused (risk.rules_lock_out_caller).
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { strictly } from "@/platform/api/assured";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export type IpAction = "allow" | "deny";
-
-export interface IpRule {
-  id: string;
-  tenant_id: string;
-  cidr: string;
-  label: string;
-  action: IpAction;
-  created_at: string;
-}
+// An action other than these fails the read, rather than show a rule the console can't place.
+const ipRule = z.object({
+  id: z.string(),
+  organization_id: z.string(),
+  cidr: z.string(),
+  label: z.string(),
+  action: z.enum(["allow", "deny"]),
+  created_at: z.string(),
+});
+const ipRules = strictly<Answer<"/v1/organizations/{organizationID}/ip-rules">>()(
+  z.object({ enabled: z.boolean(), items: z.array(ipRule), truncated: z.boolean().optional() }),
+);
+export type IpRule = z.infer<typeof ipRule>;
+export type IpAction = IpRule["action"];
 
 export function useIpRules() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.ipRules(tenantId),
-    enabled: !!tenantId,
-    queryFn: () => api<{ enabled: boolean; items: IpRule[] }>(`/v1/tenants/${tenantId}/ip-rules`),
+    queryKey: securityKeys.ipRules(organizationId),
+    enabled: !!organizationId,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/ip-rules", {
+        path: { organizationID: organizationId ?? "" },
+        schema: ipRules,
+      }),
   });
 }
 
 export function useSetIpEnforcement() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (enabled: boolean) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<{ enabled: boolean }>(`/v1/tenants/${tenantId}/ip-rules/config`, {
-        method: "PUT",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.put("/v1/organizations/{organizationID}/ip-rules/config", {
+        path: { organizationID: organizationId },
         body: { enabled },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(organizationId) }),
     meta: { successMessage: "security:toast.enforcementUpdated" },
   });
 }
 
 export function useAddIpRule() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { cidr: string; label: string; action: IpAction }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<IpRule>(`/v1/tenants/${tenantId}/ip-rules`, { method: "POST", body });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/ip-rules", {
+        path: { organizationID: organizationId },
+        body,
+      });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(organizationId) }),
     meta: { successMessage: "security:toast.ruleAdded", silentError: true }, // the form shows it
   });
 }
 
 export function useDeleteIpRule() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/tenants/${tenantId}/ip-rules/${id}`, { method: "DELETE" });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.delete("/v1/organizations/{organizationID}/ip-rules/{ruleID}", {
+        path: { organizationID: organizationId, ruleID: id },
+      });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(organizationId) }),
     meta: { successMessage: "security:toast.ruleRemoved" },
   });
 }
 
 export function useCheckIp() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     mutationFn: (ip: string) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<{
-        enabled: boolean;
-        allowed: boolean;
-        reason: string; // English, or a bare code from a server without reason_code; never shown
-        reason_code?: string; // ip.allowed, ip.deny_rule, ip.not_in_allow_rules, ...
-        reason_params?: { cidr?: string }; // the deny rule that refused it
-      }>(`/v1/tenants/${tenantId}/ip-rules/check`, { method: "POST", body: { ip } });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/ip-rules/check", {
+        path: { organizationID: organizationId },
+        body: { ip },
+      });
     },
     meta: { silent: true },
   });
@@ -150,12 +163,13 @@ export function toAddressRefusal(row: AuditRow): AddressRefusal {
 
 /** Fetches the organisation's most recent address-rule refusals, newest first. */
 export function useAddressRefusals(limit = 20) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.addressRefusals(tenantId, limit),
-    enabled: !!tenantId,
+    queryKey: securityKeys.addressRefusals(organizationId, limit),
+    enabled: !!organizationId,
     queryFn: async () => {
-      const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {
+      const res = await backend.get("/v1/organizations/{organizationID}/audit", {
+        path: { organizationID: organizationId ?? "" },
         query: { action: "auth.address_refused", limit },
       });
       return (res.items ?? []).map(toAddressRefusal);
@@ -168,12 +182,13 @@ export function useAddressRefusals(limit = 20) {
  * change is recorded with it, so the latest set today's state.
  */
 export function useEnforcementChange() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.enforcementChanges(tenantId),
-    enabled: !!tenantId,
+    queryKey: securityKeys.enforcementChanges(organizationId),
+    enabled: !!organizationId,
     queryFn: async () => {
-      const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {
+      const res = await backend.get("/v1/organizations/{organizationID}/audit", {
+        path: { organizationID: organizationId ?? "" },
         query: { action: "ip_rules.enforcement_changed", limit: 1 },
       });
       const row = res.items?.[0];

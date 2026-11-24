@@ -18,16 +18,17 @@ const days = (n: number) => new Date(NOW.getTime() + n * 86_400_000).toISOString
 
 const webhook = (id: string, over: Partial<Webhook> = {}): Webhook => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   url: `https://${id}.qeet.in/hook`,
   events: ["user.created"],
   created_at: days(-90),
+  disabled_at: null,
   ...over,
 });
 
 const apiKey = (id: string, over: Partial<ApiKey> = {}): ApiKey => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   name: `Key ${id}`,
   prefix: "qk_",
   scopes: null,
@@ -81,6 +82,18 @@ describe("deriveOverviewAttention", () => {
     });
   });
 
+  // 10:00 in India is 04:30 UTC, earlier than 05:00 UTC, though its text sorts later.
+  it("says failing webhooks have failed since the earliest of them, by time", () => {
+    const items = deriveOverviewAttention({
+      webhooks: [
+        webhook("notify", { failing_since: "2026-10-28T05:00:00Z" }),
+        webhook("audit", { failing_since: "2026-10-28T10:00:00+05:30" }),
+      ],
+      now: NOW,
+    });
+    expect(items.find((i) => i.id === "webhooks-failing")?.since).toBe("2026-10-28T10:00:00+05:30");
+  });
+
   it("adds the analytics signals past their thresholds, and nothing for missing sources", () => {
     const overview = {
       ...EMPTY_OVERVIEW,
@@ -105,6 +118,13 @@ describe("deriveOverviewAttention", () => {
       mfa_enabled: 18,
       mfa_missing: 27,
       new_last_30d: 2,
+      last_seen: { today: 20, week: 10, month: 5, older: 8, never: 2 },
+      admins_without_mfa: 0,
+      email_unverified: 0,
+      by_role: [],
+      by_department: [],
+      by_team: [],
+      by_location: [],
     };
     const items = deriveOverviewAttention({ overview, userStats, now: NOW });
     expect(items.map((i) => i.id)).toEqual(["two-step"]);
@@ -131,7 +151,7 @@ describe("the last 24 hours", () => {
 describe("appsInUse", () => {
   const client = (id: string, name: string): OidcClient => ({
     id,
-    tenant_id: "t1",
+    organization_id: "t1",
     client_id: `qci_${id}`,
     name,
     type: "confidential",
@@ -145,6 +165,11 @@ describe("appsInUse", () => {
     client_id: clientId,
     user_id: userId,
     user_email: `${userId}@qeet.in`,
+    user_name: null,
+    client_name: "App",
+    authorized_at: "",
+    last_used_at: "",
+    consented_at: null,
     scopes: [],
     issued_at: days(-1),
     expires_at: days(expiresIn),
@@ -183,6 +208,13 @@ describe("deriveSetup", () => {
         mfa_enabled: 18,
         mfa_missing: 27,
         new_last_30d: 2,
+        last_seen: { today: 20, week: 10, month: 5, older: 8, never: 2 },
+        admins_without_mfa: 0,
+        email_unverified: 0,
+        by_role: [],
+        by_department: [],
+        by_team: [],
+        by_location: [],
       },
       pendingInvites: 2,
       domains: [{ id: "d", domain: "qeet.in", status: "verified" } as never],

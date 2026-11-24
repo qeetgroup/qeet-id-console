@@ -3,14 +3,8 @@
 // do, until those parts move to shared console code (redesign findings §1.3).
 
 import { CircleAlertIcon, CircleCheckIcon, CircleDashedIcon, InfoIcon } from "@qeetrix/icons";
-import {
-  Badge,
-  formatDate,
-  formatDateTime,
-  formatRelativeTime,
-  Heading,
-  Text,
-} from "@qeetrix/react";
+import { Badge, Heading, Text } from "@qeetrix/react";
+import { RelativeTime } from "@qeetrix/react/experimental";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -171,20 +165,12 @@ export function ControlBadge({ status }: { status: ControlStatus }) {
   );
 }
 
-const MONTH = 30 * 86_400_000;
-
 /**
  * A moment, relative ("3 weeks ago", "in 2 weeks"), with the full date and time on hover; past
- * about a month it's the plain date, as "last year" on every row says nothing.
+ * about a month it's the plain date, as "last year" on every row says nothing (RelativeTime).
  */
 export function When({ iso, now }: { iso: string; now: number }) {
-  const locale = formatLocale();
-  const at = new Date(iso).getTime();
-  return (
-    <time dateTime={iso} title={formatDateTime(iso, locale)}>
-      {Math.abs(now - at) > MONTH ? formatDate(iso, locale) : formatRelativeTime(at, locale, now)}
-    </time>
-  );
+  return <RelativeTime date={iso} now={now} locale={formatLocale()} />;
 }
 
 /** A criteria code ("CC6.1"), in the code face. */

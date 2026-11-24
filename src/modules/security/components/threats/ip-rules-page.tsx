@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   type AddressRefusal,
   type IpRule,
@@ -46,7 +46,7 @@ export function IpRulesPage() {
   const rules = list.data?.items ?? [];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("ipRules.title")}
@@ -71,7 +71,7 @@ export function IpRulesPage() {
           </>
         )}
       </PageContent>
-    </PageTabs>
+    </>
   );
 }
 
@@ -90,7 +90,7 @@ function Enforcement({
   const runSensitive = useSensitiveAction();
   const setEnforcement = useSetIpEnforcement();
   const change = useEnforcementChange();
-  const people = usePeople();
+  const people = usePeople([change.data?.actorUserId]);
   const allow = rules.filter((r) => r.action === "allow").length;
   const deny = rules.length - allow;
 
@@ -266,9 +266,9 @@ function Rules({
 function Refusals({ rules }: { rules: readonly IpRule[] }) {
   const { t } = useTranslation("security");
   const refusals = useAddressRefusals();
-  const people = usePeople();
   const byId = new Map(rules.map((r) => [r.id, r]));
   const items = refusals.data ?? [];
+  const people = usePeople(items.map((r) => r.actorUserId));
 
   const columns: TableColumn<AddressRefusal>[] = [
     {

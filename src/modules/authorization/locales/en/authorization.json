@@ -41,10 +41,10 @@
       "connection": "Connections",
       "gdpr": "Data requests",
       "group": "Groups",
+      "organization": "Organisation",
       "policy": "Security policy",
       "role": "Roles",
       "secret": "Secrets",
-      "tenant": "Organisation",
       "user": "Users",
       "webhook": "Webhooks"
     },
@@ -684,7 +684,7 @@
       "relationGrant": "The relationship {{relation}} on {{object}} grants access.",
       "relationGrantUnnamed": "A relationship grants access.",
       "nothingAllows": "Nothing allows this request, so it is denied by default.",
-      "noTenant": "There's no organisation to decide in, so the request is refused.",
+      "noOrganization": "There's no organisation to decide in, so the request is refused.",
       "engineError": "An authorization engine failed, so the request was refused.",
       "unknown": "The decision point gave a reason the console can't display."
     },
@@ -883,7 +883,7 @@
     },
     "prompts": {
       "explainRoles": "Explain the roles and their assigned permissions in plain English.",
-      "summarizePolicies": "List and summarize the active ABAC policies for this tenant."
+      "summarizePolicies": "List and summarize the active ABAC policies for this organisation."
     }
   },
   "abacTest": {

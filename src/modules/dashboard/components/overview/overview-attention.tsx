@@ -10,7 +10,7 @@ import {
   WebhookIcon,
   WebhookOffIcon,
 } from "@qeetrix/icons";
-import { Badge, Button } from "@qeetrix/react";
+import { Badge, Button, LinkButton } from "@qeetrix/react";
 import { EmptyState } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -73,9 +73,9 @@ export function NeedsAttentionPanel({ items }: { items: OverviewAttention[] }) {
                     </span>
                     <small>{i18n.t(item.detail, item.params)}</small>
                   </span>
-                  <Button variant="ghost" size="sm" render={<Link to={item.to as never} />}>
+                  <LinkButton variant="ghost" size="sm" render={<Link to={item.to as never} />}>
                     {i18n.t(item.actionLabel)}
-                  </Button>
+                  </LinkButton>
                 </li>
               );
             })}

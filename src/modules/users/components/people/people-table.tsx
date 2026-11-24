@@ -26,7 +26,6 @@ import {
 } from "@qeetrix/react";
 import { AvatarItem } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
@@ -34,11 +33,7 @@ import type { User } from "@/modules/users/api/users";
 import { isAdmin, personName, recency } from "@/modules/users/people-model";
 import type { useUserActions } from "@/modules/users/use-user-actions";
 import { GroupItems, type usePeopleRun } from "./people-bulk";
-
-/** A role as the list names it: the built-in `owner` in words, the rest as the organisation named them. */
-export function roleLabel(t: TFunction<"users">, role: string) {
-  return role === "owner" ? t("people.roles.owner") : role;
-}
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 /** The list's columns: who, their role, how they sign in, when they were last active, and when they joined. */
 export function usePeopleColumns(currentUserId: string | null, now: number): TableColumn<User>[] {
@@ -69,10 +64,9 @@ export function usePeopleColumns(currentUserId: string | null, now: number): Tab
     {
       id: "role",
       header: t("people.columns.role"),
-      sortable: true,
       cell: (u) =>
         u.roles?.length ? (
-          u.roles.map((role) => roleLabel(t, role)).join(", ")
+          u.roles.map((role) => roleDisplayName(role)).join(", ")
         ) : (
           <Text tone="subtle">{t("people.noRole")}</Text>
         ),

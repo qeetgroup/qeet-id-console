@@ -19,7 +19,7 @@ export function SignUpPage() {
   // /verify-email, a real route, so a refresh returns there rather than to the dashboard.
   const handoff = (userId: string) => {
     startVerify.mutate(userId);
-    navigate({ to: "/verify-email" });
+    void navigate({ to: "/verify-email" });
   };
 
   const signup = useSignup({ onSuccess: (res) => handoff(res.user_id) });

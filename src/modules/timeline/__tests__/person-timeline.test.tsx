@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 const caps = vi.hoisted(() => ({ denied: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: (c: string) => !caps.denied.has(c) }),
@@ -135,7 +135,7 @@ beforeEach(() => {
         display_name: "Ananya Iyer",
         status: "active",
       };
-    if (path === "/v1/tenants/t-1/roles")
+    if (path === "/v1/organizations/t-1/roles")
       return { items: [{ id: "r-1", name: "editor", description: "", is_system: false }] };
     if (path === "/v1/activity/summary") return summary;
     if (path === "/v1/activity" && query.types) return { events: [passkey, twoStep, failed, sso] };

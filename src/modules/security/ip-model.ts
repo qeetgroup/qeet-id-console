@@ -52,7 +52,7 @@ const MAPPED = 0xffffn << 32n;
 
 /** An address, or null when it can't be read. An IPv4-mapped IPv6 address reads as IPv4. */
 export function parseAddress(raw: string): Addr | null {
-  const text = raw.trim().replace(/%.*$/, ""); // a zone is ignored, as Unmap().WithZone("") does
+  const text = raw.trim().split("%")[0] ?? ""; // a zone is ignored, as Unmap().WithZone("") does
   if (!text) return null;
   if (!text.includes(":")) {
     const v4 = parseV4(text);

@@ -1,7 +1,7 @@
-// OAuth grants as the two pages show them. GET /v1/tenants/{id}/oauth/grants lists each person's
-// live refresh token per application (one per client and person: the server returns the current
-// link of each rotation chain), with the person's email and the client ID only; names come from
-// the Users directory and the applications list where this person may read them.
+// OAuth grants as the two pages show them. GET /v1/organizations/{organizationID}/oauth/grants
+// lists each person's live refresh token per application (one per client and person: the server
+// returns the current link of each rotation chain), with the person's email and the client ID;
+// names come from the Users directory and the applications list where this person may read them.
 
 import type { TableSort } from "@qeetrix/react";
 
@@ -78,6 +78,9 @@ export type AppTokens = {
   nextEnd: string; // the soonest to end
 };
 
+// Times by when they are: the server's may carry different offsets, so their text doesn't sort.
+const byTime = (a: string, b: string) => Date.parse(a) - Date.parse(b);
+
 /** The grants by application, the most tokens first. */
 export function byApplication(rows: readonly GrantRow[]): AppTokens[] {
   const groups = new Map<string, GrantRow[]>();
@@ -92,9 +95,9 @@ export function byApplication(rows: readonly GrantRow[]): AppTokens[] {
       renewed:
         grants
           .map((g) => g.issued_at)
-          .sort()
+          .sort(byTime)
           .at(-1) ?? "",
-      nextEnd: grants.map((g) => g.expires_at).sort()[0] ?? "",
+      nextEnd: grants.map((g) => g.expires_at).sort(byTime)[0] ?? "",
     }))
     .sort((a, b) => b.grants.length - a.grants.length || a.name.localeCompare(b.name));
 }

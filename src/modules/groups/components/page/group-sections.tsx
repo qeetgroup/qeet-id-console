@@ -35,6 +35,7 @@ import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { roleDescription, roleDisplayName } from "@/shared/utils/role-name";
 
 /** A ruled section: its heading, an action at the end, then what it holds. */
 export function Section({
@@ -211,7 +212,7 @@ export function RolesSection({
   const [roleId, setRoleId] = useState("");
   const grantedIds = new Set(granted.map((r) => r.role_id));
   const grantable = roles.filter((r) => !grantedIds.has(r.id) && r.name !== "owner");
-  const about = new Map(roles.map((r) => [r.id, r.description]));
+  const about = new Map(roles.map((r) => [r.id, roleDescription(r)]));
 
   const grant = () =>
     roleId &&
@@ -280,7 +281,7 @@ export function RolesSection({
             {granted.map((r) => (
               <li key={r.role_id} className="grp-page-row">
                 <span className="grp-page-two">
-                  <strong>{r.name}</strong>
+                  <strong>{roleDisplayName(r.name)}</strong>
                   {about.get(r.role_id) ? <small>{about.get(r.role_id)}</small> : null}
                 </span>
                 <small className="grp-page-when">

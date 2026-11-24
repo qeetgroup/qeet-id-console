@@ -51,12 +51,14 @@ sub-entry is a tab, not a sidebar row.
 ## Call a new endpoint
 
 ```text
-1  VERIFY IT EXISTS in qeet-id-server — never invent one
-2  key: add it to the module's key factory, under [module, tenantId, …]
+1  VERIFY IT EXISTS in contract/qeet-id-server — never invent one; `bun run contract:sync` if
+   the server added it since
+2  key: add it to the module's key factory, under [module, organizationId, …]
 3  read: a queryOptions entry (see userQueries) and a hook that uses it
    write: a mutation that refreshes what it changed, by key prefix
-4  call api(path, opts) from src/platform/api/client.ts — the ONLY request path
-5  a Zod `schema` for anything critical (MFA, secrets, sessions, tenant switch)
+4  call backend.get/post/… from src/platform/api/backend.ts with the contract's path
+   ("/v1/users/{id}", { path: { id } }) — typed, and the ONLY request path
+5  a Zod `schema` for anything critical (MFA, secrets, sessions, organization switch)
 6  map errors through the module; never render error.message
 7  test
 ```

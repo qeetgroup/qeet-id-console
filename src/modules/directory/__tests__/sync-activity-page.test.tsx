@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -69,7 +69,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
     const query = (options?.query ?? {}) as Record<string, unknown>;
-    if (path === "/v1/tenants/t1/directory/connections")
+    if (path === "/v1/organizations/t1/directory/connections")
       return {
         items: [
           record(),
@@ -82,7 +82,7 @@ beforeEach(() => {
           }),
         ],
       };
-    if (path === "/v1/tenants/t1/directory/activity") {
+    if (path === "/v1/organizations/t1/directory/activity") {
       const items = query.status === "failed" ? [check()] : [push(), check()];
       return page(items, {
         total: items.length,
@@ -90,7 +90,7 @@ beforeEach(() => {
         volume: [{ date: new Date().toISOString().slice(0, 10), users: 1, groups: 0 }],
       });
     }
-    if (path === "/v1/tenants/t1/directory/errors")
+    if (path === "/v1/organizations/t1/directory/errors")
       return page([check()], {
         summary: { open: 3, critical: 3, warning: 0, retried: 0, impacted_users: 0 },
         categories: [],
@@ -125,7 +125,7 @@ const table = () => screen.getByRole("table", { name: "Sync activity" });
 const activityCalls = () =>
   vi
     .mocked(api)
-    .mock.calls.filter(([path]) => path === "/v1/tenants/t1/directory/activity")
+    .mock.calls.filter(([path]) => path === "/v1/organizations/t1/directory/activity")
     .map(([, options]) => options?.query as Record<string, unknown>);
 const writes = () =>
   vi
@@ -171,17 +171,13 @@ describe("Directories › Sync activity", () => {
         status: "failed",
         connection_id: "st",
         q: "DIR-502",
-        limit: 25,
+        limit: 100, // the list reads a hundred at a time and shows them a page at a time
       }),
     );
-    // The band's reads: the period alone, its failures, and each connection's.
-    expect(queries).toContainEqual({ ...DEFAULT_EVENT_FILTERS, days: 7, limit: 1 });
-    expect(queries).toContainEqual({
-      ...DEFAULT_EVENT_FILTERS,
-      days: 7,
-      connection_id: "st",
-      limit: 1,
-    });
+    // The band's reads: the period alone, its failures, and each connection's. An empty filter
+    // isn't sent.
+    expect(queries).toContainEqual({ days: 7, limit: 1 });
+    expect(queries).toContainEqual({ days: 7, connection_id: "st", limit: 1 });
   });
 
   it("opens a run's details, and leads a failure to Sync errors", async () => {
@@ -213,7 +209,7 @@ describe("Directories › Sync activity", () => {
     await waitFor(() =>
       expect(writes()).toEqual([
         {
-          call: "POST /v1/tenants/t1/directory/alerts",
+          call: "POST /v1/organizations/t1/directory/alerts",
           body: { name: "Directory failures", connection_id: null, threshold: 3 },
         },
       ]),
@@ -228,16 +224,17 @@ describe("Directories › Sync activity", () => {
   });
 
   it("exports every page on the list's filters, not just the rows on show", async () => {
-    const first = page([push()], { total: 2, summary, volume: [] });
+    const first = page([push()], { total: 2, summary, volume: [], next_cursor: "c2" });
     vi.mocked(api).mockReset();
     vi.mocked(api)
       .mockResolvedValueOnce(first)
-      .mockResolvedValueOnce({ ...first, items: [push({ id: "p2" })] });
+      .mockResolvedValueOnce({ ...first, items: [push({ id: "p2" })], next_cursor: undefined });
     const records = await fetchActivityExport("t1", DEFAULT_EVENT_FILTERS);
     expect(records.map((e) => e.id)).toEqual(["p1", "p2"]);
+    expect(api).toHaveBeenCalledTimes(2);
     expect(api).toHaveBeenLastCalledWith(
-      "/v1/tenants/t1/directory/activity",
-      expect.objectContaining({ query: { ...DEFAULT_EVENT_FILTERS, limit: 100, offset: 100 } }),
+      "/v1/organizations/t1/directory/activity",
+      expect.objectContaining({ query: expect.objectContaining({ limit: 100, cursor: "c2" }) }),
     );
   });
 });

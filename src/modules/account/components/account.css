@@ -7,8 +7,10 @@
 
 /* ── Sections and their rows ───────────────────────────────────────────────── */
 
+/* One column no wider than the page, so a long word wraps rather than widening its rows. */
 .account-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--qx-space-gap-md);
   padding-block: var(--qx-space-layout-sm);
 }
@@ -73,7 +75,7 @@
   color: var(--qx-color-icon-default);
 }
 
-.account-icon svg {
+.account-icon :is(svg, img) {
   inline-size: 16px;
   block-size: 16px;
 }
@@ -97,7 +99,7 @@
   block-size: 40px;
 }
 
-.account-icon-lg svg {
+.account-icon-lg :is(svg, img) {
   inline-size: 20px;
   block-size: 20px;
 }

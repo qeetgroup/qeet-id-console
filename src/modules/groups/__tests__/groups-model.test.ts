@@ -22,7 +22,7 @@ const group = (
   description = "",
 ): Group => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   parent_id,
   name,
   description,
@@ -157,16 +157,11 @@ describe("visibleGroups", () => {
 });
 
 describe("pageOf", () => {
-  it("marks a family's first row on a later page, so its path comes with it", () => {
+  it("cuts the rows on show into pages, a family running on to the next", () => {
     const roots = groupTree(GROUPS);
     const rows = visibleGroups(roots, {}, new Set(foldable(roots)), ROLES, null);
-    const second = pageOf(rows, 2, 2, false);
-    expect(second.map((r) => [r.name, !!r.continued])).toEqual([
-      ["Site Reliability", true],
-      ["Core", false],
-    ]);
-    expect(pageOf(rows, 0, 2, false)[0]?.continued).toBeUndefined();
-    expect(pageOf(rows, 2, 2, true)[0]?.continued).toBeUndefined();
+    expect(pageOf(rows, 2, 2).map((r) => r.name)).toEqual(["Site Reliability", "Core"]);
+    expect(pageOf(rows, 0, 2)).toHaveLength(2);
   });
 });
 

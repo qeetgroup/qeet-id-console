@@ -12,7 +12,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_ERROR_FILTERS,
   DEFAULT_EVENT_FILTERS,
@@ -95,7 +95,7 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
             <Menu>
               <MenuTrigger render={<Button icon={PlusIcon}>{t("connections.add")}</Button>} />
               <MenuContent align="end">
-                {/* A second line for each kind waits for MenuItem descriptions (QTRX-50); the
+                {/* A second line for each kind waits for Qeetrix's MenuItem descriptions; the
                     offers under the table say what each does. */}
                 <MenuItem
                   icon={WorkflowIcon}
@@ -134,11 +134,7 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
             <BandPlaceholder />
           )
         }
-        tabs={
-          <PageTabs>
-            <PageTabList badges={{ "/directory/sync-errors": openErrors }} />
-          </PageTabs>
-        }
+        tabs={<PageTabList badges={{ "/directory/sync-errors": openErrors }} />}
       />
       <PageContent>
         <div className="ppl dir">

@@ -20,7 +20,7 @@ const ago = (days: number) => new Date(NOW - days * DAY_MS).toISOString();
 function invite(overrides: Partial<Invitation> = {}): Invitation {
   return {
     id: "i1",
-    tenant_id: "t1",
+    organization_id: "t1",
     email: "kavya@qeet.in",
     role_id: "role-member",
     status: "pending",

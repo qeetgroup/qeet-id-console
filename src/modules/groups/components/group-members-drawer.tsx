@@ -267,16 +267,18 @@ export function GroupMembersDrawer({
             </section>
           </form>
         </DrawerBody>
-        <DrawerFooter>
-          {group ? (
-            // A start slot for the footer is QTRX-23; the Users drawer's class places it.
-            <Link
-              className="add-import"
-              render={<RouterLink to="/groups/$groupId" params={{ groupId: group.id }} />}
-            >
-              {t("membersDrawer.openPage")}
-            </Link>
-          ) : null}
+        <DrawerFooter
+          start={
+            group ? (
+              <Link
+                className="add-import"
+                render={<RouterLink to="/groups/$groupId" params={{ groupId: group.id }} />}
+              >
+                {t("membersDrawer.openPage")}
+              </Link>
+            ) : undefined
+          }
+        >
           <Button variant="ghost" onClick={onClose} disabled={adding}>
             {t("membersDrawer.close")}
           </Button>

@@ -1,6 +1,6 @@
-import { PencilIcon, RotateCcwIcon, TriangleAlertIcon } from "@qeetrix/icons";
-import { Button, IconButton, Spinner, Textarea, VisuallyHidden } from "@qeetrix/react";
-import { CopyButton } from "@qeetrix/react/experimental";
+import { PencilIcon, RotateCcwIcon } from "@qeetrix/icons";
+import { Button, IconButton, Textarea } from "@qeetrix/react";
+import { CopyButton, Turn } from "@qeetrix/react/experimental";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,9 +16,9 @@ interface MessageItemProps {
 }
 
 /**
- * One turn. What the person asked sits at the end on the neutral tint and can be edited and sent
- * again; Qeet AI's answer is Markdown across the panel, with the tools it ran, Copy and, on the
- * last answer, Regenerate. Each turn names its speaker for screen readers.
+ * One turn (Qeetrix's Turn). What the person asked sits at the end on the neutral tint and can be
+ * edited and sent again; Qeet AI's answer is Markdown across the panel, with the tools it ran, Copy
+ * and, on the last answer, Regenerate. Each turn names its speaker for screen readers.
  */
 export function MessageItem({ message, isLast, chat }: MessageItemProps) {
   const { t } = useTranslation("qeetai");
@@ -28,41 +28,38 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
   const streaming = message.status === "streaming";
   const errored = message.status === "error";
 
+  const tools = message.toolExecutions?.length ? message.toolExecutions : null;
   return (
-    <div className="qai-turn" data-role="assistant">
-      <VisuallyHidden>{t("transcript.assistant")}</VisuallyHidden>
-      {message.content ? (
-        <MarkdownMessage content={message.content} />
-      ) : streaming ? (
-        <span className="qai-thinking">
-          <Spinner size="sm" decorative />
-          {t("messageItem.thinking")}
-        </span>
+    <Turn
+      speaker="assistant"
+      speakerName={t("transcript.assistant")}
+      streaming={streaming}
+      error={errored ? (message.error ?? t("chat.turnFailed")) : undefined}
+      messages={{ thinking: t("messageItem.thinking") }}
+      actions={
+        !streaming && message.content ? (
+          <>
+            <CopyButton value={message.content} size="sm" label={t("messageItem.copyAnswer")} />
+            {isLast ? (
+              <IconButton
+                icon={RotateCcwIcon}
+                size="sm"
+                tone="neutral"
+                aria-label={t("messageItem.regenerate")}
+                onClick={chat.regenerate}
+              />
+            ) : null}
+          </>
+        ) : undefined
+      }
+    >
+      {message.content || tools ? (
+        <>
+          {message.content ? <MarkdownMessage content={message.content} /> : null}
+          {tools ? <ExecutionTimeline executions={tools} /> : null}
+        </>
       ) : null}
-      {message.toolExecutions && message.toolExecutions.length > 0 ? (
-        <ExecutionTimeline executions={message.toolExecutions} />
-      ) : null}
-      {errored ? (
-        <p className="qai-turn-error" role="alert">
-          <TriangleAlertIcon shape="sharp" size={16} aria-hidden="true" />
-          {message.error ?? t("chat.turnFailed")}
-        </p>
-      ) : null}
-      {!streaming && message.content ? (
-        <div className="qai-turn-actions">
-          <CopyButton value={message.content} size="sm" label={t("messageItem.copyAnswer")} />
-          {isLast ? (
-            <IconButton
-              icon={RotateCcwIcon}
-              size="sm"
-              tone="neutral"
-              aria-label={t("messageItem.regenerate")}
-              onClick={chat.regenerate}
-            />
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+    </Turn>
   );
 }
 
@@ -78,9 +75,10 @@ function Question({ message, chat }: { message: Message; chat: UseQeetAIChat }) 
     if (editing) editRef.current?.focus();
   }, [editing]);
 
+  // While it's edited, the question gives way to a full-width field and Send.
   if (editing) {
     return (
-      <div className="qai-turn" data-role="user">
+      <div className="qai-turn-edit">
         <div className="qai-edit">
           <Textarea
             ref={editRef}
@@ -118,22 +116,26 @@ function Question({ message, chat }: { message: Message; chat: UseQeetAIChat }) 
   }
 
   return (
-    <div className="qai-turn" data-role="user">
-      <VisuallyHidden>{t("transcript.you")}</VisuallyHidden>
-      <div className="qai-question">{message.content}</div>
-      <div className="qai-turn-actions">
-        <CopyButton value={message.content} size="sm" label={t("messageItem.copyQuestion")} />
-        <IconButton
-          icon={PencilIcon}
-          size="sm"
-          tone="neutral"
-          aria-label={t("messageItem.editMessage")}
-          onClick={() => {
-            setDraft(message.content);
-            setEditing(true);
-          }}
-        />
-      </div>
-    </div>
+    <Turn
+      speaker="user"
+      speakerName={t("transcript.you")}
+      actions={
+        <>
+          <CopyButton value={message.content} size="sm" label={t("messageItem.copyQuestion")} />
+          <IconButton
+            icon={PencilIcon}
+            size="sm"
+            tone="neutral"
+            aria-label={t("messageItem.editMessage")}
+            onClick={() => {
+              setDraft(message.content);
+              setEditing(true);
+            }}
+          />
+        </>
+      }
+    >
+      {message.content}
+    </Turn>
   );
 }

@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@qeetrix/icons";
-import { Button, Radio, RadioGroup, VisuallyHidden } from "@qeetrix/react";
+import { Button, LinkButton, Radio, RadioGroup, VisuallyHidden } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -109,13 +109,13 @@ function MagicLinkSections({ policy }: { policy: AuthPolicy }) {
             }
             action={
               canEmails && (
-                <Button
+                <LinkButton
                   variant="ghost"
                   icon={ArrowRightIcon}
                   render={<Link to="/settings/organization/email-templates" />}
                 >
                   {t("magicLinks.editEmail")}
-                </Button>
+                </LinkButton>
               )
             }
           >

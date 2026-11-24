@@ -9,7 +9,7 @@ const EMPTY_SESSION: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
@@ -19,7 +19,7 @@ const AUTHENTICATED_SESSION: PublicSession = {
   expiresAt: "2030-01-01T00:00:00Z",
   sessionId: "session-1",
   userId: "user-1",
-  tenantId: "tenant-1",
+  organizationId: "tenant-1",
   version: 1,
   impersonationActor: null,
 };
@@ -57,7 +57,7 @@ describe("public session store", () => {
     const clear = vi.fn();
     const unsubscribe = onSessionClear(clear);
 
-    sessionStore.hydrate({ ...AUTHENTICATED_SESSION, tenantId: "tenant-2" });
+    sessionStore.hydrate({ ...AUTHENTICATED_SESSION, organizationId: "tenant-2" });
 
     expect(clear).toHaveBeenCalledOnce();
     unsubscribe();

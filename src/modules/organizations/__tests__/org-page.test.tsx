@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
+import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
@@ -10,15 +11,15 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "g",
+  useOrganizationId: () => "g",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", mode: "full", can: () => true, canAll: () => true }),
 }));
-const switchToTenant = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("@/modules/authentication", () => ({ switchToTenant }));
+const switchToOrganization = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("@/modules/authentication", () => ({ switchToOrganization }));
 vi.mock("@/modules/billing", () => ({
   useSubscription: () => ({
     data: {
@@ -62,6 +63,8 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import { api } from "@/platform/api/client";
+import { ApiError } from "@/platform/errors/api-error";
+import { getContext } from "@/platform/query/query-client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import type { Org } from "../api/orgs";
 import { OrgPage } from "../components/page/org-page";
@@ -74,7 +77,9 @@ const GROUP: Org = {
   plan: "enterprise",
   region: "ap-south-1",
   logo_url: "",
+  deletion_due_at: null,
   created_at: "2025-08-18T09:00:00Z",
+  updated_at: "2025-08-18T09:00:00Z",
   member_count: 46,
   mfa_enabled_count: 18,
   metadata: { industry: "Software", headquarters: "Bengaluru, IN", website: "https://qeet.in" },
@@ -101,7 +106,7 @@ const HISTORY = [
   {
     id: "e2",
     action: "security_policy.updated",
-    resource_type: "tenant",
+    resource_type: "organization",
     actor_user_id: "u-shalini",
     ip: "203.0.113.34",
     user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/153.0.0.0 Safari/537.36",
@@ -109,8 +114,8 @@ const HISTORY = [
   },
   {
     id: "e1",
-    action: "tenant.created",
-    resource_type: "tenant",
+    action: "organization.created",
+    resource_type: "organization",
     actor_user_id: "u-mareedu",
     created_at: "2025-08-18T09:00:00Z",
   },
@@ -120,22 +125,23 @@ const state = vi.hoisted(() => ({ roles: ["Admin"], due: null as string | null }
 beforeEach(() => {
   state.roles = ["Admin"];
   state.due = null;
-  switchToTenant.mockClear();
+  switchToOrganization.mockClear();
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants") return { items: [GROUP, SANDBOX], next_cursor: "" };
+    if (path === "/v1/organizations")
+      return { items: [{ ...GROUP, deletion_due_at: state.due }, SANDBOX] };
     if (path === "/v1/me/organizations")
       return {
         items: [membership("g", state.roles, "qeet.in"), membership("s", ["owner"])],
         next_cursor: "",
       };
-    if (path === "/v1/tenants/g" && method === "GET")
+    if (path === "/v1/organizations/g" && method === "GET")
       return { ...GROUP, deletion_due_at: state.due };
-    if (path === "/v1/tenants/g" && method === "DELETE")
-      return { tenant_id: "g", deletion_due_at: "2026-11-04T09:00:00Z" };
-    if (path === "/v1/tenants/g/deletion/cancel") return GROUP;
-    if (path === "/v1/tenants/g/audit") return { items: HISTORY };
-    if (path === "/v1/tenants/g/domains")
+    if (path === "/v1/organizations/g" && method === "DELETE")
+      return { organization_id: "g", deletion_due_at: "2026-11-04T09:00:00Z" };
+    if (path === "/v1/organizations/g/deletion/cancel") return GROUP;
+    if (path === "/v1/organizations/g/audit") return { items: HISTORY };
+    if (path === "/v1/organizations/g/domains")
       return { items: [{ domain: "qeet.in", verified_at: "2025-08-19T06:00:00Z" }] };
     if (path === "/v1/users/u-shalini")
       return { id: "u-shalini", email: "s@qeet.in", display_name: "Shalini Goyal" };
@@ -149,10 +155,12 @@ afterEach(() => {
   vi.mocked(api).mockReset();
 });
 
-function renderPage(orgId = "g") {
-  const client = new QueryClient({
+function renderPage(
+  orgId = "g",
+  client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
+  }),
+) {
   render(
     <QueryClientProvider client={client}>
       <SensitiveActionProvider>
@@ -200,6 +208,30 @@ describe("an organisation's page, the one you're in", () => {
     expect(within(history).getByText("2 people")).toBeTruthy();
   });
 
+  it("leaves a change without a name, and says nothing, when its person can't be read", async () => {
+    const failed = vi.spyOn(toast, "error").mockImplementation(() => "");
+    const base = vi.mocked(api).getMockImplementation();
+    vi.mocked(api).mockImplementation(async (path, options) => {
+      if (path === "/v1/users/u-mareedu")
+        throw new ApiError(404, "user.not_found", "user not found", undefined, false, undefined, {
+          requestId: "req-1",
+        });
+      return base?.(path, options);
+    });
+    // The app's own client, which toasts a failed read.
+    renderPage("g", getContext().queryClient);
+    const history = (await screen.findByRole("heading", { name: "History" })).closest(
+      "section",
+    ) as HTMLElement;
+    expect(await within(history).findByText("Shalini Goyal")).toBeTruthy();
+    await waitFor(() =>
+      expect(vi.mocked(api).mock.calls.some(([path]) => path === "/v1/users/u-mareedu")).toBe(true),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(failed).not.toHaveBeenCalled();
+    failed.mockRestore();
+  });
+
   it("offers an admin no Delete: only an owner can", async () => {
     renderPage();
     await screen.findByRole("heading", { name: "History" });
@@ -221,7 +253,7 @@ describe("an organisation's page, the one you're in", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete organisation" }));
     dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete organisation" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/g"]));
+    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/organizations/g"]));
   });
 
   it("while a deletion is scheduled, says when and lets an owner keep it", async () => {
@@ -231,7 +263,7 @@ describe("an organisation's page, the one you're in", () => {
     expect(await screen.findByText(/Qeet Group will be deleted on .*2026/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Delete organisation" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Keep Qeet Group" }));
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/g/deletion/cancel"]));
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/g/deletion/cancel"]));
   });
 });
 
@@ -244,9 +276,9 @@ describe("another organisation's page", () => {
     expect(screen.getByText("After switching, you can delete it")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "History" })).toBeNull();
     const asked = vi.mocked(api).mock.calls.map(([path]) => path);
-    expect(asked.some((p) => p.startsWith("/v1/tenants/s"))).toBe(false);
+    expect(asked.some((p) => p.startsWith("/v1/organizations/s"))).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Switch to Qeet Sandbox" }));
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("s"));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("s"));
   });
 
   it("says so when it isn't one you belong to", async () => {

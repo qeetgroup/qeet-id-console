@@ -4,12 +4,12 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { api } from "@/platform/api/client";
 import { userKeys } from "../api/keys";
@@ -43,7 +43,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -53,6 +53,7 @@ afterEach(cleanup);
 describe("per-user read surfaces", () => {
   it.each([
     ["security posture", useUserSecurity, "/v1/users/user-1/security"],
+    ["live sessions", useUserSessions, "/v1/users/user-1/sessions"],
     ["access summary", useUserAccess, "/v1/users/user-1/access"],
   ] as const)("reads the user's %s", async (_name, useHook, path) => {
     vi.mocked(api).mockResolvedValue({ from: path });
@@ -74,39 +75,13 @@ describe("per-user read surfaces", () => {
   });
 });
 
-describe("useUserSessions", () => {
-  it("checks the sessions against the server's shape", async () => {
-    vi.mocked(api).mockResolvedValue({ items: [] });
-    const { result } = setup(() => useUserSessions("user-1"));
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    const [path, opts] = vi.mocked(api).mock.calls[0] ?? [];
-    expect(path).toBe("/v1/users/user-1/sessions");
-    const schema = (
-      opts as {
-        schema: { parse: (v: unknown) => unknown; safeParse: (v: unknown) => { success: boolean } };
-      }
-    ).schema;
-    const session = {
-      id: "s-1",
-      ip: null,
-      user_agent: "Mozilla/5.0",
-      created_at: "2026-10-01T00:00:00Z",
-      last_seen_at: "2026-10-02T00:00:00Z",
-    };
-    expect(schema.parse({ items: [session] })).toEqual({ items: [session] });
-    expect(schema.safeParse({ items: null }).success).toBe(false);
-    expect(schema.safeParse({ items: [{ ...session, last_seen_at: 1 }] }).success).toBe(false);
-  });
-});
-
 describe("useUserPermissions", () => {
   it("reads the user's effective permissions in the current tenant", async () => {
     vi.mocked(api).mockResolvedValue({ permissions: ["user.read", "role.read"] });
     const { result } = setup(() => useUserPermissions("user-1"));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/users/user-1/tenants/tenant-a/permissions");
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/organizations/tenant-a/permissions");
     expect(result.current.data).toEqual({ permissions: ["user.read", "role.read"] });
   });
 
@@ -128,7 +103,7 @@ describe("useUserPermissions", () => {
   });
 
   it("does not ask without a tenant", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result } = setup(() => useUserPermissions("user-1"));
     expect(result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();

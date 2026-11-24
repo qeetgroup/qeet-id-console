@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import i18n, { type TranslationKey } from "@/i18n";
 import { ApiError } from "@/platform/errors/api-error";
 import { toastError } from "@/platform/errors/error-toast";
+import { isTransientFailure } from "@/platform/errors/normalize-error";
 import { isTwoStepRequired, toastTwoStepRequired } from "@/platform/security/two-step-required";
 
 interface MutationMeta {
@@ -86,6 +87,11 @@ export function getContext(): RouterContext {
   };
 
   queryClient = new QueryClient({
+    defaultOptions: {
+      // A read is asked again only after a failure that may pass (twice at most): a refusal or a
+      // missing record shows at once instead of after seconds of retrying.
+      queries: { retry: (failures, error) => failures < 2 && isTransientFailure(error) },
+    },
     queryCache: new QueryCache({
       onError: (error, query) => {
         reportError(error, query.meta);

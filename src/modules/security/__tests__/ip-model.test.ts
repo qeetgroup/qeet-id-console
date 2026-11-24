@@ -8,6 +8,8 @@ describe("IP rules in the browser", () => {
     expect(parseAddress("203.0.113.7")).toEqual({ v6: false, value: 0xcb007107n });
     expect(parseAddress("::ffff:203.0.113.7")).toEqual({ v6: false, value: 0xcb007107n });
     expect(parseAddress("2001:db8::1")?.v6).toBe(true);
+    // A zone is ignored, as the server's Unmap().WithZone("") does.
+    expect(parseAddress("fe80::1%eth0")).toEqual(parseAddress("fe80::1"));
     for (const bad of ["", "1.2.3", "1.2.3.256", "01.2.3.4", "2001:db8:::1", "hello"]) {
       expect(parseAddress(bad)).toBeNull();
     }

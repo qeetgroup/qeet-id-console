@@ -11,7 +11,7 @@ import { type ReactNode, useEffect, useRef } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { StatePage } from "@/platform/components/state-page";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
 import { capabilityLabel } from "./capability-model";
 import { useCapabilities } from "./capability-provider";
@@ -53,7 +53,7 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const access = useCapabilities();
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useOrganizationId();
   const stateRef = useRef<HTMLDivElement>(null);
   const required = getRequiredCapabilityForPath(pathname);
   const denied = access.state === "ready" && required !== undefined && !access.can(required);

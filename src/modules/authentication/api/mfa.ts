@@ -3,9 +3,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-
-import { api } from "@/platform/api/client";
 import { authKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
 const totpStatusSchema = z.object({
   enrolled: z.boolean(), // True once the account has a *confirmed* TOTP factor
@@ -19,15 +20,17 @@ export type TotpStatus = z.infer<typeof totpStatusSchema>;
 export function useTotpStatus() {
   return useQuery({
     queryKey: authKeys.totp(),
-    queryFn: () => api("/v1/mfa/totp", { schema: totpStatusSchema }),
+    queryFn: () => backend.get("/v1/mfa/totp", { schema: totpStatusSchema }),
   });
 }
 
-const totpEnrollmentSchema = z.object({
-  secret: z.string().min(1),
-  provisioning_url: z.string().startsWith("otpauth://"),
-  replacing: z.boolean().optional(), // A confirmed app exists and works until this one is confirmed
-});
+const totpEnrollmentSchema = strictly<Answer<"/v1/mfa/totp/enroll/start", "post">>()(
+  z.object({
+    secret: z.string().min(1),
+    provisioning_url: z.string().startsWith("otpauth://"),
+    replacing: z.boolean().optional(), // A confirmed app exists and works until this one is confirmed
+  }),
+);
 export type TotpEnrollment = z.infer<typeof totpEnrollmentSchema>;
 
 // Both confirming a new app and regenerating answer with a fresh set, shown once.
@@ -42,17 +45,12 @@ export type RecoveryCodes = z.infer<typeof recoveryCodesSchema>;
  * held this needs a step-up, and the new app replaces it only once confirmed.
  */
 export function startTotpEnrollment(): Promise<TotpEnrollment> {
-  return api("/v1/mfa/totp/enroll/start", {
-    method: "POST",
-    body: {},
-    schema: totpEnrollmentSchema,
-  });
+  return backend.post("/v1/mfa/totp/enroll/start", { body: {}, schema: totpEnrollmentSchema });
 }
 
 /** Confirms the app being set up with a code from it; resolves with the new recovery codes. */
 export function confirmTotpEnrollment(code: string): Promise<RecoveryCodes> {
-  return api("/v1/mfa/totp/enroll/confirm", {
-    method: "POST",
+  return backend.post("/v1/mfa/totp/enroll/confirm", {
     body: { code },
     schema: recoveryCodesSchema,
   });
@@ -87,7 +85,7 @@ export function useConfirmTotpEnrollment() {
 export function useDisableTotp() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => api<void>("/v1/mfa/totp", { method: "DELETE" }),
+    mutationFn: () => backend.delete("/v1/mfa/totp"),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
@@ -105,7 +103,7 @@ export interface RecoveryStatus {
 export function useRecoveryStatus() {
   return useQuery({
     queryKey: authKeys.recoveryCodes(),
-    queryFn: () => api<RecoveryStatus>("/v1/mfa/recovery-codes"),
+    queryFn: () => backend.get("/v1/mfa/recovery-codes"),
   });
 }
 
@@ -114,7 +112,7 @@ export function useRegenerateRecoveryCodes() {
   return useMutation({
     gcTime: 0, // the response holds the new codes
     mutationFn: () =>
-      api("/v1/mfa/recovery-codes/regenerate", { method: "POST", schema: recoveryCodesSchema }),
+      backend.post("/v1/mfa/recovery-codes/regenerate", { schema: recoveryCodesSchema }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() }),
     // The screen opens step-up on a 403 instead of a dead-end toast, and shows its own success
     // toast once the (possibly retried) call resolves.
@@ -142,17 +140,14 @@ const otpFactorListSchema = z.object({ items: z.array(otpFactorSchema) });
 export function useOtpFactors() {
   return useQuery({
     queryKey: authKeys.otpFactors(),
-    queryFn: () => api("/v1/mfa/otp/factors", { schema: otpFactorListSchema }),
+    queryFn: () => backend.get("/v1/mfa/otp/factors", { schema: otpFactorListSchema }),
   });
 }
 
 export function useEnrollOtpStart() {
   return useMutation({
     mutationFn: (body: { channel: OtpChannel; destination: string }) =>
-      api<{ factor_id: string; message: string }>("/v1/mfa/otp/factors", {
-        method: "POST",
-        body,
-      }),
+      backend.post("/v1/mfa/otp/factors", { body }),
     meta: { successMessage: "authentication:toast.verificationCodeSent", silentError: true }, // the sheet shows it
   });
 }
@@ -161,10 +156,7 @@ export function useConfirmOtpFactor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, code }: { id: string; code: string }) =>
-      api<{ verified: boolean }>(`/v1/mfa/otp/factors/${id}/confirm`, {
-        method: "POST",
-        body: { code },
-      }),
+      backend.post("/v1/mfa/otp/factors/{id}/confirm", { path: { id }, body: { code } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
     meta: { successMessage: "authentication:toast.factorConfirmed", silentError: true },
   });
@@ -173,9 +165,7 @@ export function useConfirmOtpFactor() {
 export function useChallengeOtpFactor() {
   return useMutation({
     mutationFn: (id: string) =>
-      api<{ message: string }>(`/v1/mfa/otp/factors/${id}/challenge`, {
-        method: "POST",
-      }),
+      backend.post("/v1/mfa/otp/factors/{id}/challenge", { path: { id } }),
     meta: { successMessage: "authentication:toast.testCodeSent" },
   });
 }
@@ -183,7 +173,7 @@ export function useChallengeOtpFactor() {
 export function useDeleteOtpFactor() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/mfa/otp/factors/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/mfa/otp/factors/{id}", { path: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
     meta: { successMessage: "authentication:toast.factorRemoved" },
   });

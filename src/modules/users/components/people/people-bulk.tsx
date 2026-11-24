@@ -31,7 +31,7 @@ import { toast } from "sonner";
 
 import { useRoles } from "@/modules/authorization";
 import { useGroups } from "@/modules/groups";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import {
   type SensitiveActionOptions,
   settleSensitiveAction,
@@ -41,6 +41,7 @@ import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-e
 
 import { userKeys } from "@/modules/users/api/keys";
 import { perUserCalls, type User } from "@/modules/users/api/users";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 export const peopleCsvColumns: CsvColumn<User>[] = [
   { header: "id", value: (u) => u.id },
@@ -93,7 +94,7 @@ export function usePeopleRun(
   okMessage?: (n: number) => string,
 ) {
   const { t } = useTranslation("users");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   const runSensitive = useSensitiveAction();
   const [running, setRunning] = useState<Running | null>(null);
@@ -105,7 +106,7 @@ export function usePeopleRun(
     if (res.failed === 0) toast.success(okMessage?.(res.ok) ?? t("bulk.actionOk", { n: res.ok }));
     else if (res.ok === 0) toast.error(t("bulk.actionFail", { n: res.failed }));
     else toast.warning(t("bulk.actionPartial", { ok: res.ok, failed: res.failed }));
-    void qc.invalidateQueries({ queryKey: userKeys.tenant(tenantId) });
+    void qc.invalidateQueries({ queryKey: userKeys.organization(organizationId) });
     onDone?.();
   }
 
@@ -136,7 +137,7 @@ export function RoleItems({
   ids: string[];
 }) {
   const { t } = useTranslation("users");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const roles = useRoles().data?.items ?? [];
   return (
     <MenuGroup>
@@ -144,13 +145,17 @@ export function RoleItems({
       {roles.map((role) => (
         <MenuItem
           key={role.id}
-          disabled={!tenantId}
+          disabled={!organizationId}
           onClick={() =>
-            tenantId &&
-            run(t("people.actions.assignRole"), ids, perUserCalls.assignRole(tenantId, role.id))
+            organizationId &&
+            run(
+              t("people.actions.assignRole"),
+              ids,
+              perUserCalls.assignRole(organizationId, role.id),
+            )
           }
         >
-          {role.name}
+          {roleDisplayName(role.name)}
         </MenuItem>
       ))}
     </MenuGroup>
@@ -191,7 +196,7 @@ export function GroupItems({
 /**
  * The selection's actions, in the table's bar: require two-step, a role, a group, and the rest
  * under More. Signing out, suspending and deleting leave out the person using the console, since
- * the Table can't keep their row out of the selection yet (QTRX-16).
+ * Qeetrix's Table can't keep their row out of the selection.
  */
 export function PeopleBulkActions({
   selected,

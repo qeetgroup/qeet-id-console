@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -48,7 +48,7 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/tenant-1/oauth/grants")
+    if (path === "/v1/organizations/tenant-1/oauth/grants")
       return {
         items: [
           grant("g1", "u1", "qci_logs", 3),
@@ -56,7 +56,7 @@ beforeEach(() => {
           grant("g3", "u1", "qci_cli", 20),
         ],
       };
-    if (path === "/v1/tenants/tenant-1/oidc/clients")
+    if (path === "/v1/organizations/tenant-1/oidc/clients")
       return {
         items: [
           { client_id: "qci_logs", name: "Qeet Logs", type: "confidential" },

@@ -12,13 +12,12 @@ import { useMemo } from "react";
 import {
   type ActivityEvent,
   type ActivityFilters,
-  type ActivitySummary,
   DEFAULT_FILTERS,
   useActivityHistory,
 } from "@/modules/activity";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export const CHANGE_KINDS = ["policies", "roles", "groupRoles", "relationships"] as const;
 export type ChangeKind = (typeof CHANGE_KINDS)[number];
@@ -80,19 +79,24 @@ const DAY_MS = 86_400_000;
  * people who made them and a day-by-day series.
  */
 export function useAuthzSummary(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   // From the start of a day, so the query stays the same all day.
   const from = new Date(Math.floor(Date.now() / DAY_MS) * DAY_MS - SUMMARY_DAYS * DAY_MS);
   const fromIso = from.toISOString();
   const sets: (ChangeKind | "all")[] = ["all", ...CHANGE_KINDS];
   const results = useQueries({
     queries: sets.map((set) => ({
-      queryKey: [...authzKeys.tenant(tenantId), "changes-summary", set, fromIso] as const,
-      enabled: enabled && !!tenantId,
+      queryKey: [
+        ...authzKeys.organization(organizationId),
+        "changes-summary",
+        set,
+        fromIso,
+      ] as const,
+      enabled: enabled && !!organizationId,
       staleTime: 60_000,
       meta: { silent: true },
       queryFn: () =>
-        api<ActivitySummary>("/v1/activity/summary", {
+        backend.get("/v1/activity/summary", {
           query: {
             types: (set === "all" ? AUTHZ_ACTIONS : KIND_ACTIONS[set]).join(","),
             from: fromIso,

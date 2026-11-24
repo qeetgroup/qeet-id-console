@@ -3,15 +3,16 @@
 
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { developerKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Body } from "@/platform/api/contract";
 
 const servicePrincipalSchema = z.object({
   id: z.string(),
-  tenant_id: z.string(),
+  organization_id: z.string(),
   name: z.string(),
   scopes: z.array(z.string()).nullable(),
   disabled_at: z.string().nullish(),
@@ -19,33 +20,36 @@ const servicePrincipalSchema = z.object({
 });
 export type ServicePrincipal = z.infer<typeof servicePrincipalSchema>;
 
-const servicePrincipalListSchema = z.object({ items: z.array(servicePrincipalSchema) });
+const servicePrincipalListSchema = strictly<
+  Answer<"/v1/organizations/{organizationID}/service-principals">
+>()(z.object({ items: z.array(servicePrincipalSchema) }));
 
-export const createdServicePrincipalSchema = z.object({
-  service_principal: servicePrincipalSchema,
-  client_id: z.string(),
-  client_secret: z.string().min(1), // Shown this once
-  warning: z.string().optional(),
-});
+export const createdServicePrincipalSchema = strictly<Answer<"/v1/service-principals", "post">>()(
+  z.object({
+    service_principal: servicePrincipalSchema,
+    client_id: z.string(),
+    client_secret: z.string().min(1), // Shown this once
+    warning: z.string().optional(),
+  }),
+);
 export type CreatedServicePrincipal = z.infer<typeof createdServicePrincipalSchema>;
 
-export type CreateServicePrincipalInput = {
-  tenant_id: string;
-  name: string;
-  description?: string;
-  scopes?: string[];
-};
+// The document requires organization_id; the server takes the caller's in any case.
+export type CreateServicePrincipalInput = Body<"/v1/service-principals", "post">;
 
 export const servicePrincipalQueries = {
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: developerKeys.servicePrincipals(tenantId),
+      queryKey: developerKeys.servicePrincipals(organizationId),
       queryFn: () =>
-        api(`/v1/tenants/${tenantId}/service-principals`, { schema: servicePrincipalListSchema }),
-      enabled: !!tenantId,
+        backend.get("/v1/organizations/{organizationID}/service-principals", {
+          path: { organizationID: organizationId ?? "" },
+          schema: servicePrincipalListSchema,
+        }),
+      enabled: !!organizationId,
     }),
 };
 
 export function useServicePrincipals() {
-  return useQuery(servicePrincipalQueries.list(useTenantId()));
+  return useQuery(servicePrincipalQueries.list(useOrganizationId()));
 }

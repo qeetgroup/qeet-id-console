@@ -71,6 +71,7 @@ Biome `noRestrictedImports` overrides in `biome.json` fail the build:
   come from `@qeetrix/react` (stable and `/experimental`), styling from `--qx-*` tokens.
 
 ### 4. All API traffic goes through one path
+`backend` (`src/platform/api/backend.ts`, typed against the API contract) → `api()` in
 `src/platform/api/client.ts` → server function `proxyApiRequest` → backend. **This is the only place
 requests leave the app.** Correlation IDs, schema parsing and telemetry are added there so every
 caller inherits them. Server-sent events go through `openEventStream` / `readServerSentEvents`
@@ -104,10 +105,11 @@ delete, purge, disable SSO). Run it as a mutation, pass an `actionLabel`, `confi
 destructive, and end the chain with `.catch(settleSensitiveAction)`.
 
 ### 8. Runtime schemas guard the critical boundaries
-Pass `schema` to `api()` where wrong data would do harm: MFA, credentials and secrets, sessions,
-the tenant switch. Derive the type from the schema (`z.infer`), and match the server's Go struct:
-`omitempty` is optional. A mismatch throws `client.schema_mismatch` — **fail closed rather than
-hand garbage to the UI.**
+Pass `schema` to a `backend` call where wrong data would do harm: MFA, credentials and secrets,
+sessions, the organization switch. The compiler holds the schema to the contract: it may narrow a
+value (a literal, an enum) but must accept every field the contract leaves optional or nullable;
+to require one anyway, say so with `.refine()`. A mismatch throws `client.schema_mismatch` —
+**fail closed rather than hand garbage to the UI.**
 
 ### 9. `routeTree.gen.ts` is generated
 Committed, and marked read-only in `.vscode/settings.json`. **Never hand-edit it.**
@@ -141,8 +143,9 @@ confirm dialog, a menu). Any violation fails the "Session E2E" job. Fix it in th
 
 A violation from inside a `@qeetrix/react` component that the console can't fix is excused for
 **that rule on that element only**: an entry in the spec's `DESIGN_SYSTEM_ISSUES` (one rule, one
-element selector, every other rule still applies), with a comment naming it as a qeetrix issue, and
-raised as a QTRX ticket. Never disable a rule for a page, and never excuse a console-owned element.
+element selector, every other rule still applies), with a comment naming the Qeetrix component and
+the issue. The issue is raised as a Jira ticket for Qeetrix, but its key never appears in code,
+comments, tests or docs. Never disable a rule for a page, and never excuse a console-owned element.
 
 ## Conventions
 
@@ -175,8 +178,8 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   `searchEnum()` (`src/shared/utils/search-params.ts`), so a blank, stale or unknown value
   becomes undefined instead of failing the route.
 - **Query keys** — one factory per module (`userKeys` in `src/modules/users/api/keys.ts`). Every key
-  starts `[module, tenantId, …]`, so one organization's entries never mix with another's and a
-  prefix refreshes a tenant's lists or one record's views together. Define reads with
+  starts `[module, organizationId, …]`, so one organization's entries never mix with another's and a
+  prefix refreshes an organization's lists or one record's views together. Define reads with
   `queryOptions` (`userQueries`) so hooks, prefetches and other modules share one cache entry. A
   mutation refreshes what it changed; its callers don't.
 - **Forms** — `useAppForm` from `src/platform/forms/app-form.tsx` (TanStack Form bound to the
@@ -221,19 +224,27 @@ One way to do each thing. `src/modules/users` is the reference implementation.
 - **TanStack Start stays at 1.168** — pinned exactly with its router: 1.169 removed the `useSession`
   API the session cookie is sealed with, so upgrading is a session migration of its own
   (docs/llm/context.md, CI/CD).
-- **Bundle size** — `bun run size` (CI, after the build; `scripts/check-bundle-size.mjs`) holds
-  the signed-in shell's initial JS, and each route's own JS beyond its parent's, to the gzip
-  budgets in `bundle-budgets.json`. Code only some screens need (an editor, a date picker, a QR
-  encoder, the Qeet AI workspace) loads with `React.lazy` where it renders. A route's
-  `validateSearch` and `beforeLoad` ship in the entry with everything they import, so they read
-  light model files (`tabs.ts`, `time-range.ts`), never a page; and importing a barrel loads what
-  it re-exports, so the barrels the shell imports stay light. **Raise a budget only in the change
-  that grows the bundle, by hand, to what the check suggests, and give the reason in the commit
-  message**; never re-baseline the file to make room. A route without a budget is held to
-  `newRoute` until it gets one; a removed route's budget fails the check until deleted.
-- **API contract** — no generated client. Each module types the endpoints it calls by hand from
-  the server's Go structs and OpenAPI, and parses with a Zod `schema` where a wrong shape would
-  mislead (a one-time secret, a status). A server contract change is a cross-repository change
+- **Loading** — code only some screens need (a date picker, a QR encoder, the Qeet AI workspace)
+  loads with `React.lazy` where it renders. A route's `validateSearch` and `beforeLoad` ship in the
+  entry with everything they import, so they read light model files (`tabs.ts`, `time-range.ts`),
+  never a page; and importing a barrel loads what it re-exports, so the barrels the shell imports
+  stay light.
+- **API contract** — the server's five OpenAPI documents are copied into `contract/qeet-id-server/`
+  (with the commit they came from) and generated into types (`src/platform/api/contract/`), by
+  `bun run contract:sync`; never edit either. Call the server with `backend.get/post/put/patch/delete`
+  (`src/platform/api/backend.ts`), naming the path as the contract writes it and filling its
+  placeholders from `path`: the typecheck then refuses a path, method, parameter or body field the
+  server doesn't have, a field the answer doesn't carry, and an optional field read as always
+  there. Take a module's types from the contract (`Answer<"/v1/me">`, `Schemas<"identity">`), not
+  by hand. Where the document leaves a field optional that the server always sends (its Go struct
+  has no `omitempty`), say which fields the page relies on with `assured`/`assuredItems` (or
+  `assuredList` for a list under another key), or a stricter Zod schema with `strictly`
+  (`src/platform/api/assured.ts`): checked at runtime, failing closed. A field the server sends or
+  takes that the document lacks goes in `src/platform/api/contract/undocumented.ts`, with the
+  server code that shows it (`partial: true` when the server takes any part of a body the document
+  lists in full); never one the server lacks. A server value the console words (a status, a
+  reason) is matched to a known set (`isOneOf`) before it picks copy. Never call `api()`
+  directly: lint refuses it outside the typed client. A server contract change is a cross-repository change
   (see "Escalate rather than proceed").
 
 ## Commands
@@ -248,9 +259,15 @@ bun run test:e2e         # build, then the Playwright suites: session boundary a
 bun run typecheck
 bun run check            # biome format + lint + assist
 bun run lint:boundaries  # the layering gate
-bun run size             # after a build: the gzip budgets in bundle-budgets.json
+bun run contract:sync    # copy the server's API documents (../qeet-id-server) and regenerate types
+bun run contract:check   # the copied contract and its generated types (CI)
+bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on: before a sync or release
 bun run audit            # known high/critical vulnerabilities in the dependency tree
+bun run sonar            # SonarQube: tests with coverage, then the scanner in Docker (local only)
 ```
+
+`bun run sonar` needs Docker, the server's SonarQube running (`make sonar-up` in ../qeet-id-server)
+and `SONAR_TOKEN` in the environment; it is never run in CI.
 
 **There is no Makefile.** `VITE_ENABLE_DEVTOOLS=true bun run dev` opts into the TanStack devtools.
 
@@ -262,12 +279,14 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 `ci.yml` runs one job, **Verify**, on pull requests into `develop` and `main` (a release reaches
 `main` by one); nothing runs on a plain push. Every action is pinned to a commit SHA
-and workflows default to read-only permissions. Verify (10 min): typecheck → `check` (Biome:
+and workflows default to read-only permissions. Verify (10 min): `contract:check` → typecheck → `check` (Biome:
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories) → gitleaks
-(secrets in the pull request's commits). **The unit
-tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
-see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
-Content-Security-Policy and the WCAG 2.2 AA accessibility scan, rule 12) run locally before a change
+(secrets in the pull request's commits; `.gitleaks.toml` allows only the copied API documents'
+sample values and their generated types). **The unit
+tests (`test:coverage`, thresholds in `vitest.config.ts`), the build and the Playwright specs in
+`tests/e2e` (the session boundary, the
+Content-Security-Policy, the WCAG 2.2 AA accessibility scan with label-in-name and reflow at
+320px wide, the pages with 40% longer words, and keyboard use, rule 12) run locally before a change
 is pushed; CI doesn't repeat them.**
 
 Branches: `develop` (where changes land) and `main` (production). Each month `release/YEAR.MONTH.0`
@@ -301,8 +320,8 @@ the log names the variable. Security response headers live in
 (`vite.config.ts`) for both the image and Vercel. The Content-Security-Policy is set per response
 in `src/start.ts` (`content-security-policy.ts`): scripts run only with that response's nonce,
 which the router puts on every script it renders, so **never add an inline `<script>` or event
-handler** (use `ScriptOnce`, which carries the nonce), never load code from another origin
-(Monaco ships from the console's own bundle), and never relax `script-src` or `connect-src`.
+handler** (use `ScriptOnce`, which carries the nonce), never load code from another origin, and
+never relax `script-src` or `connect-src`.
 `tests/e2e/content-security-policy.spec.ts` fails on any violation.
 
 ## Comments
@@ -342,14 +361,17 @@ repository must make. Types: `feat`, `fix`, `refactor`,
 CI checks only types, formatting, lint and the dependency audit, so run the rest before pushing:
 
 ```bash
-bun run typecheck && bun run check && bun run test:coverage && bun run build && bun run size
+bun run typecheck && bun run check && bun run test:coverage && bun run build
 bun run test:e2e   # the session boundary, the CSP and the accessibility scan, in a real browser
 git diff
 ```
 
 `test:e2e` builds, then runs the Playwright suites in `tests/e2e`, including the accessibility
-scan. Its ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT`
-and `E2E_BACKEND_PORT` to run two copies side by side.
+scan, in parallel: each worker (4 by default, `E2E_WORKERS`) starts its own fake backend and
+console on the base ports plus its slot (`tests/e2e/fixtures.ts`), so import `test` from there.
+The base ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT` and
+`E2E_BACKEND_PORT` to run two copies side by side. A page scan signs the admin in once per worker
+(`signInOnce`); a test about signing in signs in itself.
 
 ## Escalate rather than proceed
 

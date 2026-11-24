@@ -1,8 +1,8 @@
+import { Sparkline } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
 import type { Secret } from "@/modules/developer/api/secrets";
 import { createdByMonth } from "@/modules/developer/machine-model";
-import { Sparkline } from "@/modules/dashboard";
 import { BandCount, BandLooks, BandSplit, useNumbers } from "../parts";
 import {
   CHANGED,

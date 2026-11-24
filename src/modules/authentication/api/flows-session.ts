@@ -1,46 +1,23 @@
 // What the sign-in endpoints answer: a server-owned session, or a second-factor challenge. Shared
 // by every flow in flows.ts and its siblings.
 
-export type SessionResponse = {
-  token_type: string;
-  expires_at: string;
-  user_id: string;
-  session_id: string;
-  tenant_id?: string;
-};
+import type { Schemas } from "@/platform/api/contract";
 
-export type User = {
-  id: string;
-  tenant_id: string;
-  email: string;
-  display_name?: string | null;
-  status: string;
-};
+/** A sign-in's session as the browser sees it: the BFF keeps the two tokens in its cookie. */
+export type SessionResponse = Omit<
+  Schemas<"access">["TokenPair"],
+  "access_token" | "refresh_token"
+>;
 
 /**
  * What /v1/auth/login returns instead of a session when the account holds, or must have, a
- * second factor; complete it at /v1/auth/mfa.
+ * second factor; complete it at /v1/auth/mfa. `factors` are exactly the ones this person can use;
+ * `enrollment_required` asks for an authenticator app to be set up, by `enrollment_due_at`.
  */
-export type MfaChallenge = {
-  mfa_required: true;
-  mfa_token: string;
-  methods: string[];
-  factors?: LoginFactor[]; // Exactly the second factors this person can complete the challenge with
-  /**
-   * The account must have a second factor and holds none: set up an authenticator app
-   * (startMfaEnrollment) and complete with a code from it.
-   */
-  enrollment_required?: boolean;
-  /** When the organisation's grace period ends; until then the setup can be skipped. */
-  enrollment_due_at?: string;
-};
+export type MfaChallenge = Schemas<"access">["MFAChallenge"];
 
-/** One way to complete a sign-in's second-factor challenge. */
-export type LoginFactor = {
-  type: "totp" | "recovery_code" | "email" | "sms" | "passkey" | "push";
-  id?: string; // An email or SMS factor's id, to send it a code
-  destination?: string; // An email or SMS factor's masked address or number
-};
+/** One way to complete a sign-in's second-factor challenge: an email or SMS one has an id. */
+export type LoginFactor = Schemas<"access">["LoginFactor"];
 
 /**
  * How a challenge is completed: a code, a passkey assertion, an approved push or, for an
@@ -48,7 +25,7 @@ export type LoginFactor = {
  */
 export type MfaProof =
   | { code: string }
-  | { passkey: { session_id: string; credential: unknown } }
+  | { passkey: { session_id: string; credential: Record<string, unknown> } }
   | { push: true }
   | { skip: true };
 export type LoginResponse = SessionResponse | MfaChallenge;

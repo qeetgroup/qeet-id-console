@@ -9,15 +9,10 @@
   font: var(--qx-typography-heading-sm);
 }
 
-/* The avatar before the name, in the title, until PageHeader has a leading slot (QTRX-48). */
-.prs-title-name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--qx-space-gap-md);
-}
-
+/* One column that never grows past the page, so a wide table scrolls in its own frame. */
 .prs-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* What's true of them now (suspended, managed elsewhere, not set up), above the sections. */
@@ -31,6 +26,7 @@
 
 .prs-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--qx-space-gap-md);
   min-inline-size: 0;
   padding-block: var(--qx-space-layout-sm);

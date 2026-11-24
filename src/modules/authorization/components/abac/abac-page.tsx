@@ -1,5 +1,5 @@
 import { PlusIcon, SaveIcon, SlidersHorizontalIcon, TrashIcon } from "@qeetrix/icons";
-import { Button, Text } from "@qeetrix/react";
+import { Button, LinkButton, Text } from "@qeetrix/react";
 import { DataState, EmptyState, SearchField } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -137,7 +137,10 @@ export function AbacPage({ policyId, onPolicyChange }: AbacPageProps) {
   }
 
   const attributes = useMemo(
-    () => [...new Set((policies ?? []).flatMap((p) => conditionAttributes(p.condition)))].sort(),
+    () =>
+      [...new Set((policies ?? []).flatMap((p) => conditionAttributes(p.condition)))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
     [policies],
   );
   const shown = useMemo(
@@ -291,9 +294,13 @@ export function AbacPage({ policyId, onPolicyChange }: AbacPageProps) {
           </>
         ) : (
           <>
-            <Button variant="ghost" tone="neutral" render={<Link to="/authorization/versions" />}>
+            <LinkButton
+              variant="ghost"
+              tone="neutral"
+              render={<Link to="/authorization/versions" />}
+            >
               {t("abac.versions")}
-            </Button>
+            </LinkButton>
             {readOnly ? null : (
               <Button icon={PlusIcon} onClick={() => onPolicyChange("new")}>
                 {t("abac.newPolicy")}

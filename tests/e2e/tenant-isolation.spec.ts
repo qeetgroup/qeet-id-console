@@ -1,7 +1,7 @@
 // Two people in two tenants, signed in at once in separate browsers and rendered concurrently by
 // one server process: neither may ever see the other's identity.
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import {
   BACKEND_URL,
   MULTI,

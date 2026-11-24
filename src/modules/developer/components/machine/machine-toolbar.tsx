@@ -21,7 +21,6 @@ import { personName, useNumbers } from "../parts";
 import type { MachineTab } from "./machine-tabs";
 
 const ANY = "";
-// Each option's count is in its label until Select items have a count of their own (QTRX-20).
 
 /**
  * One row above the table: search, then the filters this tab has (kind and what they can do on
@@ -116,7 +115,8 @@ export function MachineToolbar({
               { value: ANY, label: t("machine.filters.anyKind") },
               ...(["key", "identity", "agent"] as const).map((k) => ({
                 value: k,
-                label: `${t(`machine.kindPlural.${k}`)} · ${count((m) => m.kind === k)}`,
+                label: t(`machine.kindPlural.${k}`),
+                meta: count((m) => m.kind === k),
               })),
             ]}
           />
@@ -131,7 +131,8 @@ export function MachineToolbar({
               { value: ANY, label: t("machine.filters.anyReach") },
               ...REACH.map((r) => ({
                 value: r,
-                label: `${t(`machine.reach.${r}`)} · ${count((m) => reachOf(m.scopes) === r)}`,
+                label: t(`machine.reach.${r}`),
+                meta: count((m) => reachOf(m.scopes) === r),
               })),
             ]}
           />
@@ -146,12 +147,13 @@ export function MachineToolbar({
               { value: ANY, label: t("machine.filters.anyUsed") },
               ...USED.map((u) => ({
                 value: u,
-                label: `${t(`machine.used.${u}`)} · ${count(
+                label: t(`machine.used.${u}`),
+                meta: count(
                   (m) =>
                     m.status !== "revoked" &&
                     m.status !== "expired" &&
                     usedOf(m.lastUsedAt, now) === u,
-                )}`,
+                ),
               })),
             ]}
           />
@@ -166,7 +168,8 @@ export function MachineToolbar({
               { value: ANY, label: t("machine.filters.anySponsor") },
               ...sponsorIds.map((id) => ({
                 value: id,
-                label: `${personName(people.get(id)) ?? t("owner.unknown")} · ${count((m) => m.personId === id)}`,
+                label: personName(people.get(id)) ?? t("owner.unknown"),
+                meta: count((m) => m.personId === id),
               })),
             ]}
           />
@@ -181,14 +184,14 @@ export function MachineToolbar({
               { value: ANY, label: t("machine.filters.anyStatus") },
               ...statuses.map((s) => ({
                 value: s,
-                label: `${t(`status.${s}`)} · ${count((m) => m.status === s)}`,
+                label: t(`status.${s}`),
+                meta: count((m) => m.status === s),
               })),
             ]}
           />
         ) : null}
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

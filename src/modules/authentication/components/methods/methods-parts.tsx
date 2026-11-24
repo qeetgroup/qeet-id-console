@@ -4,16 +4,8 @@
 // module doesn't offer them, so they're repeated here until they move to shared console code
 // (redesign findings §1.3); then this file goes and its importers take them from there.
 import { RefreshCwIcon } from "@qeetrix/icons";
-import {
-  Button,
-  formatDate,
-  formatDateTime,
-  formatRelativeTime,
-  Heading,
-  Skeleton,
-  Text,
-} from "@qeetrix/react";
-import { Alert } from "@qeetrix/react/experimental";
+import { Button, formatDate, formatRelativeTime, Heading, Skeleton, Text } from "@qeetrix/react";
+import { Alert, RelativeTime } from "@qeetrix/react/experimental";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -208,21 +200,12 @@ export function LoadFailed({ error, onRetry }: { error: unknown; onRetry: () => 
 
 const MONTH = 30 * 24 * 60 * 60 * 1000;
 
-// Until @qeetrix/react has RelativeTime (redesign findings §5, approved):
 /**
  * A server time as people say it ("3 hours ago", "in 7 days"), with the full date and time on
- * hover; past about a month, the plain date reads better (redesign findings §2).
+ * hover; past about a month, the plain date reads better (Qeetrix's RelativeTime).
  */
-export function When({ iso, now = Date.now() }: { iso: string; now?: number }) {
-  const locale = formatLocale();
-  const at = Date.parse(iso);
-  return (
-    <time dateTime={iso} title={formatDateTime(iso, locale)}>
-      {Math.abs(at - now) > MONTH
-        ? formatDate(iso, locale, { dateStyle: "medium" })
-        : formatRelativeTime(at, locale, now)}
-    </time>
-  );
+export function When({ iso, now }: { iso: string; now?: number }) {
+  return <RelativeTime date={iso} now={now} locale={formatLocale()} />;
 }
 
 /** The words for `iso` that When shows, for a line of text. */

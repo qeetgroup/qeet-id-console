@@ -36,78 +36,6 @@
   background: var(--qx-color-border-subtle);
 }
 
-/*
- * Other providers: one ruled row, cells divided by 1px lines, like a table's cells. The logos are
- * the providers' own artwork. To move into @qeetrix/react as a ProviderButton.
- */
-.entry-providers {
-  /* A fieldset (provider buttons) or a nav (inbox links): neither brings its own box. */
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  border-radius: var(--qx-radius-control);
-  background: var(--qx-color-surface-raised);
-  overflow: hidden;
-}
-
-.entry-provider {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--qx-space-gap-sm);
-  block-size: var(--qx-size-control-lg);
-  padding-inline: var(--qx-space-inset-md);
-  border: 0;
-  background: transparent;
-  color: var(--qx-color-text-default);
-  text-decoration: none;
-  font: var(--qx-typography-label-md);
-  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
-  cursor: pointer;
-  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
-}
-
-.entry-provider + .entry-provider {
-  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
-}
-
-.entry-provider:hover {
-  background: var(--qx-color-bg-neutral-subtle-hover);
-}
-
-.entry-provider:active {
-  background: var(--qx-color-bg-neutral-subtle-pressed);
-}
-
-.entry-provider:focus-visible {
-  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
-  outline-offset: calc(var(--qx-focus-ring-width) * -1);
-}
-
-.entry-provider:disabled {
-  color: var(--qx-color-text-disabled);
-  cursor: not-allowed;
-}
-
-/* Monochrome logos drawn in black (GitHub) or white (Apple) are inverted where they'd vanish. */
-[data-qx-color-scheme="dark"] .entry-provider [data-invert="dark"],
-.entry-provider [data-invert="light"] {
-  filter: invert(1);
-}
-
-[data-qx-color-scheme="dark"] .entry-provider [data-invert="light"] {
-  filter: none;
-}
-
-.entry-provider svg {
-  inline-size: 18px;
-  block-size: 18px;
-  flex: none;
-}
-
 .entry-links {
   display: flex;
   flex-wrap: wrap;
@@ -191,6 +119,26 @@
   color: var(--qx-color-text-subtle);
 }
 
+/* The number to type on the phone for a push sign-in: the step's largest text, in a ruled box. */
+.entry-push-number {
+  display: grid;
+  justify-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-xl);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+.entry-push-number-value {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-display-lg);
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: "GEOM" var(--qx-font-geometry-display);
+  line-height: 1;
+}
+
 /*
  * A ruled list of actions, a row each: other ways to confirm a sign-in, and the organisations to
  * open. To propose as a library ActionList.
@@ -257,10 +205,6 @@
   font: var(--qx-typography-body-sm);
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-.entry-option[data-waiting] {
-  background: var(--qx-color-bg-neutral-subtle);
-  cursor: default;
 }
 /* An invitation row: the organisation, who it was sent to, then Decline and Join at its end. */
 .entry-invite {
@@ -645,4 +589,27 @@
   .entry-panel {
     display: none;
   }
+}
+
+/*
+ * More social providers than fit with their names (provider-buttons.tsx): logos only, at the large
+ * icon size. Each button keeps its full name for screen readers, and its tooltip shows it.
+ * ProviderButtonGroup has no logos-only mode yet (raised with Qeetrix).
+ */
+.entry-providers[data-logos-only] .qx-provider-button {
+  gap: 0;
+}
+
+.entry-providers[data-logos-only] .qx-provider-button-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.entry-providers[data-logos-only] .qx-provider-button-logo :is(svg, img) {
+  inline-size: var(--qx-size-icon-lg);
+  block-size: var(--qx-size-icon-lg);
 }

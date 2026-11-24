@@ -7,7 +7,7 @@ import type { LdapConnection } from "@/modules/authentication";
 import type { PostureFinding } from "@/modules/authorization";
 import type { DirectoryConnection, DirectoryErrorPage, ErrorFilters } from "@/modules/directory";
 import type { Group } from "@/modules/groups";
-import type { User } from "@/modules/users";
+import type { UserStats } from "@/modules/users";
 import { DAY_MS, type OverviewAttention } from "./overview-model";
 import type { SetupItem } from "./overview-setup-model";
 
@@ -21,7 +21,6 @@ export const FAILING_FILTERS: ErrorFilters = {
   resolution: "open",
   q: "",
   limit: 100,
-  offset: 0,
 };
 
 export type Failure = { at: string; message: string; code: string };
@@ -232,12 +231,6 @@ export function directoryAttention(input: {
 
 // ── The organisation's shape ────────────────────────────────────────────────────────────────
 
-const field = (u: Pick<User, "metadata">, key: string) => {
-  const v = u.metadata?.[key];
-  return typeof v === "string" && v.trim() ? v.trim() : null;
-};
-
-/** A department and its teams; `name` null is the people with no department, `team` null no team. */
 export type OrgDepartment = {
   name: string | null;
   count: number;
@@ -245,54 +238,64 @@ export type OrgDepartment = {
 };
 
 /**
- * Departments and the teams within them, biggest first, from what each person's profile says.
- * People without a team are their department's own tile; people without a department are one
- * tile of their own, last.
+ * Departments and the teams within them, biggest first, from the members' counts. A department's
+ * people who name no team are its own tile; people in no department are one tile of their own, last.
  */
-export function orgShape(people: readonly Pick<User, "metadata">[]) {
-  const depts = new Map<string | null, Map<string | null, number>>();
-  for (const p of people) {
-    const dept = field(p, "department");
-    const team = dept ? field(p, "team") : null;
-    const teams = depts.get(dept) ?? new Map<string | null, number>();
-    teams.set(team, (teams.get(team) ?? 0) + 1);
-    depts.set(dept, teams);
+export function orgShape(stats: Pick<UserStats, "total" | "by_department" | "by_team">) {
+  const teamsOf = new Map<string, { team: string | null; count: number }[]>();
+  // A team whose people name no department is counted with the people in no department.
+  for (const { department, team, count } of stats.by_team) {
+    if (department) teamsOf.set(department, [...(teamsOf.get(department) ?? []), { team, count }]);
   }
-  const departments: OrgDepartment[] = [...depts]
-    .map(([name, teams]) => ({
-      name,
-      count: [...teams.values()].reduce((a, b) => a + b, 0),
-      teams: [...teams]
-        .map(([team, count]) => ({ team, count }))
-        .sort((a, b) => b.count - a.count || (a.team ? -1 : 1)),
-    }))
-    .sort(
-      (a, b) =>
-        Number(a.name === null) - Number(b.name === null) ||
-        b.count - a.count ||
-        (a.name ?? "").localeCompare(b.name ?? ""),
-    );
+  const departments: OrgDepartment[] = stats.by_department.map(({ department, count }) => {
+    const teams = teamsOf.get(department) ?? [];
+    const noTeam = count - teams.reduce((a, t) => a + t.count, 0);
+    return {
+      name: department,
+      count,
+      teams: [...teams, ...(noTeam > 0 ? [{ team: null, count: noTeam }] : [])].sort(
+        (a, b) => b.count - a.count || (a.team ? -1 : 1),
+      ),
+    };
+  });
+  const noDepartment = Math.max(
+    0,
+    stats.total - stats.by_department.reduce((a, d) => a + d.count, 0),
+  );
+  if (noDepartment) {
+    departments.push({
+      name: null,
+      count: noDepartment,
+      teams: [{ team: null, count: noDepartment }],
+    });
+  }
+  departments.sort(
+    (a, b) =>
+      Number(a.name === null) - Number(b.name === null) ||
+      b.count - a.count ||
+      (a.name ?? "").localeCompare(b.name ?? ""),
+  );
   const named = departments.filter((d) => d.name !== null);
   return {
     departments,
     /** How many departments people are in. */
     named: named.length,
     noTeam: named.reduce((a, d) => a + (d.teams.find((t) => t.team === null)?.count ?? 0), 0),
-    noDepartment: departments.find((d) => d.name === null)?.count ?? 0,
+    noDepartment,
   };
 }
 
 /** Where people work: each country with its cities, from "City, CC" locations, biggest first. */
-export function placesByCountry(people: readonly Pick<User, "metadata">[]) {
+export function placesByCountry(locations: UserStats["by_location"]) {
   const countries = new Map<string, Map<string, number>>();
-  for (const p of people) {
-    const location = field(p, "location");
+  for (const { location: raw, count } of locations) {
+    const location = raw.trim();
     if (!location) continue;
     const parts = location.split(",").map((s) => s.trim());
     const city = parts[0] ?? location;
     const country = parts.length > 1 ? (parts.at(-1) ?? "") : "";
     const cities = countries.get(country) ?? new Map<string, number>();
-    cities.set(city, (cities.get(city) ?? 0) + 1);
+    cities.set(city, (cities.get(city) ?? 0) + count);
     countries.set(country, cities);
   }
   return [...countries]
@@ -304,59 +307,4 @@ export function placesByCountry(people: readonly Pick<User, "metadata">[]) {
         .sort((a, b) => b.count - a.count),
     }))
     .sort((a, b) => b.count - a.count);
-}
-
-export type Rect = { x: number; y: number; w: number; h: number };
-
-/**
- * A squarified treemap (Bruls, Huizing and van Wijk): rectangles near square, in value order.
- * Until QTRX-24 brings a treemap to the library.
- */
-export function squarify(values: readonly number[], rect: Rect): Rect[] {
-  const total = values.reduce((a, b) => a + b, 0);
-  if (!total) return values.map(() => ({ ...rect, w: 0, h: 0 }));
-  const area = rect.w * rect.h;
-  const sizes = values.map((v) => (v / total) * area);
-  const out: Rect[] = [];
-  const worst = (row: number[], side: number) => {
-    const s = row.reduce((a, b) => a + b, 0);
-    return Math.max(
-      (side * side * Math.max(...row)) / (s * s),
-      (s * s) / (side * side * Math.min(...row)),
-    );
-  };
-  const place = (row: number[], r: Rect): Rect => {
-    const s = row.reduce((a, b) => a + b, 0);
-    if (r.w >= r.h) {
-      const w = s / r.h;
-      let y = r.y;
-      for (const a of row) {
-        out.push({ x: r.x, y, w, h: a / w });
-        y += a / w;
-      }
-      return { x: r.x + w, y: r.y, w: r.w - w, h: r.h };
-    }
-    const h = s / r.w;
-    let x = r.x;
-    for (const a of row) {
-      out.push({ x, y: r.y, w: a / h, h });
-      x += a / h;
-    }
-    return { x: r.x, y: r.y + h, w: r.w, h: r.h - h };
-  };
-  let r = rect;
-  let row: number[] = [];
-  for (let i = 0; i < sizes.length; ) {
-    const next = [...row, sizes[i] ?? 0];
-    const side = Math.min(r.w, r.h);
-    if (!row.length || worst(next, side) <= worst(row, side)) {
-      row = next;
-      i++;
-    } else {
-      r = place(row, r);
-      row = [];
-    }
-  }
-  if (row.length) place(row, r);
-  return out;
 }

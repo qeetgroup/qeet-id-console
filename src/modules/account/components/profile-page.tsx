@@ -1,5 +1,13 @@
 import { TrashIcon, UploadIcon } from "@qeetrix/icons";
-import { Avatar, Badge, Button, formatRelativeTime, Heading, TextField } from "@qeetrix/react";
+import {
+  Avatar,
+  Badge,
+  Button,
+  formatRelativeTime,
+  Heading,
+  LinkButton,
+  TextField,
+} from "@qeetrix/react";
 import { CopyButton } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
@@ -12,7 +20,13 @@ import {
   useEligibleOrganizations,
   useSessions,
 } from "@/modules/authentication";
-import { type Me, useMe, useSessionId, useTenantId, useUserId } from "@/platform/auth/session";
+import {
+  type Me,
+  useMe,
+  useSessionId,
+  useOrganizationId,
+  useUserId,
+} from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useUpdateProfile } from "../api/profile";
 import { Detail, EditingDetail, Failure, LoadFailed, Loading, Section } from "./account-parts";
@@ -41,7 +55,7 @@ async function fileToAvatarDataUrl(file: File, size = AVATAR_PX): Promise<string
   }
 }
 
-const nameOf = (me: Me) => me.display_name?.trim() || me.email.split("@")[0] || me.email;
+const nameOf = (me: Me) => me.display_name?.trim() || me.email?.split("@")[0] || me.email || "";
 
 /**
  * The signed-in person's profile: who they are first (photo, name, email), then the facts others
@@ -175,7 +189,7 @@ function PersonalDetails({ me, onEmailChanged }: { me: Me; onEmailChanged: () =>
         )}
         {editing === "email" ? (
           <EmailChange
-            current={me.email}
+            current={me.email ?? ""}
             onClose={() => setEditing(null)}
             onChanged={() => {
               setEditing(null);
@@ -258,11 +272,11 @@ function NameEditor({ me, onDone }: { me: Me; onDone: () => void }) {
 /** Facts about the account itself: where you belong, this sign-in, its age and its ID. */
 function AboutAccount({ me }: { me: Me }) {
   const { t } = useTranslation("account");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const sessionId = useSessionId();
   const eligible = useEligibleOrganizations(useUserId());
   const organizations = eligible.data ?? [];
-  const open = organizations.find((organization) => organization.id === tenantId);
+  const open = organizations.find((organization) => organization.id === organizationId);
   const here = useSessions().data?.items.find(
     (session) => session.current || session.id === sessionId,
   );
@@ -277,9 +291,9 @@ function AboutAccount({ me }: { me: Me }) {
             label={t("profile.about.organisations")}
             hint={t("profile.about.noneHint")}
             action={
-              <Button variant="ghost" render={<Link to="/select-organization" />}>
+              <LinkButton variant="ghost" render={<Link to="/select-organization" />}>
                 {t("profile.about.choose")}
-              </Button>
+              </LinkButton>
             }
           >
             {t("profile.about.none")}
@@ -291,9 +305,9 @@ function AboutAccount({ me }: { me: Me }) {
             hint={open ? t("profile.about.openNow", { name: open.name }) : undefined}
             action={
               organizations.length > 1 && (
-                <Button variant="ghost" render={<Link to="/select-organization" />}>
+                <LinkButton variant="ghost" render={<Link to="/select-organization" />}>
                   {t("profile.about.switch")}
-                </Button>
+                </LinkButton>
               )
             }
           >
@@ -309,9 +323,9 @@ function AboutAccount({ me }: { me: Me }) {
                 : sessionDevice(here)
             }
             action={
-              <Button variant="ghost" render={<Link to="/account/sessions" />}>
+              <LinkButton variant="ghost" render={<Link to="/account/sessions" />}>
                 {t("profile.about.seeSessions")}
-              </Button>
+              </LinkButton>
             }
           >
             {formatRelativeTime(new Date(here.created_at), locale)}
@@ -326,7 +340,7 @@ function AboutAccount({ me }: { me: Me }) {
           label={t("profile.about.accountId")}
           hint={t("profile.about.accountIdHint")}
           action={
-            <CopyButton value={me.id} label={t("profile.about.copyIdLabel")}>
+            <CopyButton value={me.id ?? ""} label={t("profile.about.copyIdLabel")}>
               {t("profile.about.copyId")}
             </CopyButton>
           }

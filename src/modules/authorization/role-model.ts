@@ -51,7 +51,10 @@ export function resourcesOf(perms: readonly Permission[]): ResourcePermissions[]
 export function actionsOf(resources: readonly ResourcePermissions[]): string[] {
   const all = new Set(resources.flatMap((r) => [...r.actions.keys()]));
   const first = ["read", "write"].filter((a) => all.has(a));
-  return [...first, ...[...all].filter((a) => !first.includes(a)).sort()];
+  return [
+    ...first,
+    ...[...all].filter((a) => !first.includes(a)).sort((a, b) => a.localeCompare(b)),
+  ];
 }
 
 export type PersonRef = { id: string; roles?: readonly string[] | null };

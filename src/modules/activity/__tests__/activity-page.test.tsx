@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "g",
+  useOrganizationId: () => "g",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -108,7 +108,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path: string) => {
     if (path === "/v1/activity") return { events: EVENTS };
     if (path === "/v1/activity/summary") return SUMMARY;
-    if (path === "/v1/tenants") return { items: [{ id: "g", name: "Qeet Group" }] };
+    if (path === "/v1/organizations") return { items: [{ id: "g", name: "Qeet Group" }] };
     const related = path.match(/^\/v1\/activity\/([^/]+)\/related$/);
     if (related) {
       const anchor = EVENTS.find((e) => e.id === related[1]);

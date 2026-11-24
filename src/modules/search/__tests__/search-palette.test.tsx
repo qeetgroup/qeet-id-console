@@ -14,7 +14,7 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
-    tenantId: "t1",
+    organizationId: "t1",
     // Every capability, so every page and command is offered.
     permissions: { has: () => true },
   }),

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
 import {
   organizationSelectionPageSchema,
   type EligibleOrganization,
@@ -17,13 +17,13 @@ export async function loadEligibleOrganizations(
   do {
     if (visited.has(cursor)) throw new Error("Organization pagination did not advance");
     visited.add(cursor);
-    const page = await api<OrganizationSelectionPage>("/v1/me/organizations", {
-      query: { limit: 200, cursor },
+    const page: OrganizationSelectionPage = await backend.get("/v1/me/organizations", {
+      query: { limit: 200, cursor: cursor || undefined },
       signal,
       schema: organizationSelectionPageSchema,
     });
     for (const organization of page.items) organizations.set(organization.id, organization);
-    cursor = page.next_cursor;
+    cursor = page.next_cursor ?? "";
   } while (cursor);
   return [...organizations.values()];
 }

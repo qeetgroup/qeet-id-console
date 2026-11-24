@@ -23,3 +23,6 @@ playwright-report
 
 # Vitest artifacts
 .vitest
+
+# SonarQube scanner working folder (bun run sonar)
+.scannerwork

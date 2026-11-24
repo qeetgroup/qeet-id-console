@@ -5,7 +5,7 @@ import {
   RefreshCwIcon,
   TriangleAlertIcon,
 } from "@qeetrix/icons";
-import { Badge, Button, formatDate, formatNumber, Heading, Text } from "@qeetrix/react";
+import { Badge, Button, formatDate, formatNumber, Heading, LinkButton, Text } from "@qeetrix/react";
 import { Alert } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useId, useState } from "react";
@@ -222,7 +222,7 @@ function ProblemItem({
         </div>
         <div className="sync-fix-actions">
           {link && !fixed ? (
-            <Button
+            <LinkButton
               variant={p.cause === "unreachable" && canWrite ? "solid" : "ghost"}
               icon={p.cause === "unreachable" && canWrite ? PencilIcon : undefined}
               render={<Link to={link.to} search={link.search} />}
@@ -234,7 +234,7 @@ function ProblemItem({
                   : p.cause === "refusedData"
                     ? t("errors.links.checkMappings")
                     : t("errors.links.openConnection")}
-            </Button>
+            </LinkButton>
           ) : null}
           {canWrite && p.retryable.length && !fixed ? (
             <Button

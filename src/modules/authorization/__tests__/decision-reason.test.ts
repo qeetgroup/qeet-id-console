@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import i18n from "@/i18n";
+import type { DecidedBy } from "../api/decision";
 import type { DecisionRecord } from "../api/simulate";
 import {
   explainCode,
@@ -169,7 +170,7 @@ describe("explainCode", () => {
       ["authz.condition_error", "conditionErrorUnnamed"],
       ["authz.no_matching_allow", "noAllow"],
       ["authz.nothing_allows", "nothingAllows"],
-      ["authz.no_tenant", "noTenant"],
+      ["authz.no_organization", "noOrganization"],
       ["authz.engine_error", "engineError"],
     ]) {
       expect(explainCode(code ?? "")).toEqual({
@@ -196,7 +197,7 @@ describe("explainCode", () => {
       "authz.role_grant",
       "authz.relation_grant",
       "authz.nothing_allows",
-      "authz.no_tenant",
+      "authz.no_organization",
       "authz.engine_error",
       "unknown",
     ];
@@ -289,7 +290,7 @@ describe("explainDecision", () => {
   });
 
   it("falls back to decided_by when the engine states no reason", () => {
-    const decided_by = {
+    const decided_by: DecidedBy = {
       model: "rbac",
       reason_code: "authz.role_grant",
       reason_params: { permission: "user.read" },

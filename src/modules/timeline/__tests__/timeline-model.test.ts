@@ -99,7 +99,8 @@ describe("the sign-ins summed up", () => {
     signIn("social_mfa", today, { ip: "203.0.113.10", browser: "Chrome" }),
     signIn("saml", today, { ip: "203.0.113.46", browser: "Chrome" }),
     signIn("passkey", today, { ip: "203.0.113.10", browser: "Edge" }),
-    signIn("tenant_switch", today, { ip: "198.51.100.1" }),
+    signIn("organization_switch", today, { ip: "198.51.100.1" }),
+    signIn("tenant_create", today, { ip: "198.51.100.1" }),
     ev("auth.sign_in_failed", today, {
       metadata: { method: "password", reason: "wrong_password" },
       ip: "203.0.113.99",
@@ -110,7 +111,7 @@ describe("the sign-ins summed up", () => {
   it("counts sign-ins and those with two-step, not the switches into the organisation", () => {
     expect(s.signIns).toBe(4);
     expect(s.twoStep).toBe(3); // the passkeys and the challenged social sign-in
-    expect(s.moves).toBe(1);
+    expect(s.moves).toBe(2); // one under the server's current name, one recorded before it
     expect(s.top).toEqual({ method: "passkey", count: 2 });
   });
 
@@ -143,9 +144,14 @@ describe("what each event says", () => {
       twoStep: true,
     });
     expect(eventTitle(signIn("carrier_pigeon", at), ME)).toMatchObject({ method: "other" });
-    expect(eventTitle(signIn("tenant_switch", at), ME)).toEqual({
+    expect(eventTitle(signIn("organization_switch", at), ME)).toEqual({
       kind: "moved",
-      method: "tenant_switch",
+      method: "organization_switch",
+    });
+    // An event recorded before the server's rename reads as the same move.
+    expect(eventTitle(signIn("tenant_create", at), ME)).toEqual({
+      kind: "moved",
+      method: "organization_create",
     });
   });
 

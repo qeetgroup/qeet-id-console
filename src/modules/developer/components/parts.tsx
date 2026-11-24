@@ -4,14 +4,11 @@ import {
   Drawer,
   DrawerBody,
   DrawerContent,
-  formatDate,
-  formatDateTime,
   formatNumber,
-  formatRelativeTime,
   Skeleton,
   Tooltip,
 } from "@qeetrix/react";
-import { AvatarItem, CopyButton } from "@qeetrix/react/experimental";
+import { AvatarItem, CopyButton, RelativeTime } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,7 +17,7 @@ import { formatLocale } from "@/i18n";
 import { SplitBar } from "@/modules/dashboard";
 import type { User } from "@/modules/users";
 import { OneTimeSecret } from "@/shared/components/one-time-secret";
-import { type CredStatus, DAY } from "../machine-model";
+import type { CredStatus } from "../machine-model";
 
 /** The page's locale and a number formatter in it. */
 export function useNumbers() {
@@ -28,30 +25,15 @@ export function useNumbers() {
   return { locale, n: (value: number) => formatNumber(value, locale) };
 }
 
-const sentence = (text: string) => text.charAt(0).toLocaleUpperCase() + text.slice(1);
-
 /**
- * A date as people read it in a list: relative within a month ("3 days ago", "In 5 days"), a plain
- * date after that (a relative "last year" on every row says nothing), the full date on hover.
- * Nothing reads as `none` ("Never", "—").
+ * A date as people read it in a list (Qeetrix's RelativeTime): relative within a month ("3 days
+ * ago", "in 5 days"), a plain date after that, the full date on hover. Nothing reads as `none`
+ * ("Never", "—").
  */
 export function When({ at, now, none }: { at?: string | null; now: number; none?: ReactNode }) {
   const { locale } = useNumbers();
   if (!at) return <span className="dev-subtle">{none ?? "—"}</span>;
-  const time = Date.parse(at);
-  const text =
-    Math.abs(time - now) <= 30 * DAY
-      ? sentence(formatRelativeTime(time, locale, now))
-      : formatDate(at, locale, { dateStyle: "medium" });
-  return (
-    <time
-      className="dev-nowrap"
-      dateTime={at}
-      title={formatDateTime(at, locale, { dateStyle: "long" })}
-    >
-      {text}
-    </time>
-  );
+  return <RelativeTime date={at} now={now} locale={locale} className="dev-nowrap" />;
 }
 
 /** A credential's name over the identifier people match it by (a prefix, a client ID). */

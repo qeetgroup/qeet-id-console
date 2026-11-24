@@ -67,14 +67,10 @@
       "groupsInside_one": "{{n}} group inside",
       "groupsInside_other": "{{n}} groups inside",
       "atTheTop": "At the top",
-      "continued": "Continued · {{path}}",
       "noOne": "No one",
       "inItsGroups": "+{{n}} in its groups",
       "onlyInItsGroups": "{{n}} in its groups",
-      "noRoles": "None",
-      "show_one": "Show the group in {{name}}",
-      "show_other": "Show the {{n}} groups in {{name}}",
-      "hide": "Hide the groups in {{name}}"
+      "noRoles": "None"
     },
     "actions": {
       "addMembers": "Add members",

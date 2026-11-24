@@ -272,7 +272,8 @@
       "empty": "No linked phones.",
       "platform": {
         "ios": "iPhone or iPad",
-        "android": "Android"
+        "android": "Android",
+        "other": "Phone"
       },
       "linked": "linked {{date}}",
       "lastUsed": "last used {{date}}",

@@ -116,7 +116,7 @@ describe("sign-in, email first", () => {
 
   it("preserves the SSO branch rather than offering a password, passkey or social bypass", () => {
     vi.mocked(useSSODiscovery).mockReturnValue({
-      data: { kind: "saml", provider_name: "Team SSO", redirect_url: "https://sso.example.com" },
+      data: { provider_name: "Team SSO", redirect_url: "https://sso.example.com" },
       isFetching: false,
     } as unknown as ReturnType<typeof useSSODiscovery>);
     render(<LoginForm onPasskeyLogin={vi.fn()} />);
@@ -241,6 +241,28 @@ describe("entry chrome", () => {
     setProviders(["github"]);
     rerender(<ProviderButtons action="signIn" />);
     expect(screen.getByRole("button", { name: "Sign in with GitHub" })).toBeTruthy();
+  });
+
+  it("names three providers, and past three shows logos only, each still named in full", async () => {
+    setProviders([]);
+    const { rerender } = render(<ProviderButtons action="signIn" />);
+    const group = () => screen.getByRole("group", { name: "Other ways to sign in" });
+    expect(group().hasAttribute("data-logos-only")).toBe(false);
+    setProviders(["github"]);
+    rerender(<ProviderButtons action="signIn" />);
+    expect(group().hasAttribute("data-logos-only")).toBe(true);
+    for (const provider of ["Apple", "Google", "Microsoft", "GitHub"]) {
+      expect(screen.getByRole("button", { name: `Sign in with ${provider}` })).toBeTruthy();
+    }
+    // The tooltip says the button's name; it doesn't describe the button with it a second time.
+    const github = screen.getByRole("button", { name: "Sign in with GitHub" });
+    fireEvent.pointerEnter(github, { pointerType: "mouse" });
+    fireEvent.mouseEnter(github);
+    fireEvent.mouseMove(github);
+    expect((await screen.findByRole("tooltip", {}, { timeout: 2000 })).textContent).toBe(
+      "Sign in with GitHub",
+    );
+    expect(github.getAttribute("aria-describedby")).toBeNull();
   });
 
   it("explains a provider that isn't configured instead of opening a broken page", () => {

@@ -4,9 +4,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { api, getApiBaseUrl } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { getApiBaseUrl } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export const scimConfigSchema = z.object({
   token_set: z.boolean(),
@@ -30,19 +31,25 @@ export interface ScimProvisionedUser {
 export const scimBaseUrl = () => `${getApiBaseUrl()}/scim/v2`;
 
 export function useScimConfig(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authKeys.scimConfig(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<ScimConfig>(`/v1/tenants/${tenantId}/scim`),
+    queryKey: authKeys.scimConfig(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/scim", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
 export function useScimProvisionedUsers() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authKeys.scimUsers(tenantId),
-    enabled: !!tenantId,
-    queryFn: () => api<{ items: ScimProvisionedUser[] }>(`/v1/tenants/${tenantId}/scim/users`),
+    queryKey: authKeys.scimUsers(organizationId),
+    enabled: !!organizationId,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/scim/users", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }

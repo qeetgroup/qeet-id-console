@@ -166,7 +166,7 @@ describe("openEventStream", () => {
         expiresAt: "2030-01-01T00:00:00Z",
         sessionId: `session-${Math.random()}`,
         userId: "user-2",
-        tenantId: "tenant-2",
+        organizationId: "tenant-2",
         version: 1,
         impersonationActor: null,
       });

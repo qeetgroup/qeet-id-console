@@ -12,7 +12,6 @@ import {
   ldapItem,
   orgShape,
   placesByCountry,
-  squarify,
 } from "../overview-directory-model";
 
 const NOW = new Date("2026-10-27T10:00:00Z");
@@ -53,15 +52,12 @@ const ldap = (over: Partial<LdapConnection> = {}) =>
 const group = (name: string, member_count: number) =>
   ({
     id: name,
-    tenant_id: "t1",
+    organization_id: "t1",
     name,
     description: "",
     created_at: days(-30),
     member_count,
   }) as Group;
-const person = (department?: string, team?: string, location?: string) => ({
-  metadata: { department, team, location } as Record<string, unknown>,
-});
 
 describe("failingConnections", () => {
   it("keeps open critical connection failures, the newest per connection", () => {
@@ -178,15 +174,21 @@ describe("directoryAttention", () => {
 });
 
 describe("orgShape", () => {
-  it("groups people into departments and teams, biggest first, with no department last", () => {
-    const shape = orgShape([
-      person("Engineering", "Payments"),
-      person("Engineering", "Payments"),
-      person("Engineering"),
-      person("Sales", "Field"),
-      person(),
-      person("  ", "Ignored"),
-    ]);
+  it("groups the counts into departments and teams, biggest first, with no department last", () => {
+    // As the server counts them: a department names no one with none, a team names its department
+    // ("" for none), and the total counts everyone.
+    const shape = orgShape({
+      total: 6,
+      by_department: [
+        { department: "Engineering", count: 3 },
+        { department: "Sales", count: 1 },
+      ],
+      by_team: [
+        { department: "Engineering", team: "Payments", count: 2 },
+        { department: "Sales", team: "Field", count: 1 },
+        { department: "", team: "Ignored", count: 1 },
+      ],
+    });
     expect(shape.departments).toEqual([
       {
         name: "Engineering",
@@ -201,18 +203,28 @@ describe("orgShape", () => {
     ]);
     expect(shape).toMatchObject({ named: 2, noTeam: 1, noDepartment: 2 });
   });
+
+  it("has no department tile when everyone is in one", () => {
+    const shape = orgShape({
+      total: 2,
+      by_department: [{ department: "Design", count: 2 }],
+      by_team: [],
+    });
+    expect(shape.departments).toEqual([
+      { name: "Design", count: 2, teams: [{ team: null, count: 2 }] },
+    ]);
+    expect(shape.noDepartment).toBe(0);
+  });
 });
 
 describe("placesByCountry", () => {
   it("reads 'City, CC' into countries and their cities, biggest first", () => {
     expect(
       placesByCountry([
-        person(undefined, undefined, "Berlin, DE"),
-        person(undefined, undefined, "Bengaluru, IN"),
-        person(undefined, undefined, "Bengaluru, IN"),
-        person(undefined, undefined, "Pune, IN"),
-        person(undefined, undefined, "Remote"),
-        person(),
+        { location: "Bengaluru, IN", count: 2 },
+        { location: "Berlin, DE", count: 1 },
+        { location: "Pune, IN", count: 1 },
+        { location: "Remote", count: 1 },
       ]),
     ).toEqual([
       {
@@ -226,29 +238,5 @@ describe("placesByCountry", () => {
       { country: "DE", count: 1, cities: [{ city: "Berlin", count: 1 }] },
       { country: "", count: 1, cities: [{ city: "Remote", count: 1 }] },
     ]);
-  });
-});
-
-describe("squarify", () => {
-  const area = (r: { w: number; h: number }) => r.w * r.h;
-
-  it("gives each value its share of the area, inside the rectangle", () => {
-    const rect = { x: 0, y: 0, w: 1000, h: 330 };
-    const values = [19, 6, 6, 5, 3, 3, 2, 1];
-    const rects = squarify(values, rect);
-    const total = values.reduce((a, b) => a + b, 0);
-    rects.forEach((r, i) => {
-      expect(area(r)).toBeCloseTo((area(rect) * (values[i] ?? 0)) / total, 6);
-      expect(r.x).toBeGreaterThanOrEqual(-1e-9);
-      expect(r.y).toBeGreaterThanOrEqual(-1e-9);
-      expect(r.x + r.w).toBeLessThanOrEqual(1000 + 1e-9);
-      expect(r.y + r.h).toBeLessThanOrEqual(330 + 1e-9);
-    });
-    expect(rects.reduce((a, r) => a + area(r), 0)).toBeCloseTo(area(rect), 6);
-  });
-
-  it("draws nothing for nothing", () => {
-    expect(squarify([0, 0], { x: 0, y: 0, w: 10, h: 10 }).map(area)).toEqual([0, 0]);
-    expect(squarify([], { x: 0, y: 0, w: 10, h: 10 })).toEqual([]);
   });
 });

@@ -8,7 +8,6 @@ export function dashboardStub(mix: { method: string; value: number }[] = []) {
   return {
     PageBreadcrumb: () => null,
     PageTabList: () => null,
-    PageTabs: ({ children }: { children: ReactNode }) => children,
     SplitBar: ({ label }: { label: string }) => <div role="img" aria-label={label} />,
     useAnalyticsOverview: () => ({ data: { login_methods_mix: mix } }),
   };

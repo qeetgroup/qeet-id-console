@@ -7,7 +7,7 @@ import { fetchActivityPage } from "@/modules/activity";
 import { activityStore } from "@/modules/activity";
 import { acquireSubscription } from "@/modules/activity";
 import { type ActivityEvent, type ConnectionStatus, DEFAULT_FILTERS } from "@/modules/activity";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { dashboardKeys } from "./api/keys";
 
 const DASHBOARD_LIMIT = 10;
@@ -29,16 +29,16 @@ export type DashboardActivityResult = {
 export function useDashboardActivity(_tenantId?: string, enabled = true): DashboardActivityResult {
   const access = useCapabilities();
   const canRead = access.can("audit.read");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const active = enabled && canRead;
 
   const liveEvents = useStore(activityStore, (s) => s.liveEvents);
   const status = useStore(activityStore, (s) => s.status);
 
   const history = useQuery({
-    queryKey: dashboardKeys.activity(tenantId),
+    queryKey: dashboardKeys.activity(organizationId),
     queryFn: () => fetchActivityPage(DEFAULT_FILTERS, "", DASHBOARD_LIMIT),
-    enabled: active && !!tenantId,
+    enabled: active && !!organizationId,
     staleTime: 10_000,
     refetchInterval: REFRESH_MS,
     refetchOnWindowFocus: true,

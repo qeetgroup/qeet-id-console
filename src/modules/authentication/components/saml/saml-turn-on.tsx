@@ -3,7 +3,11 @@ import { Button, formatDate, formatDateTime, formatRelativeTime } from "@qeetrix
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import type { SamlConnection, SamlTestResult } from "@/modules/authentication/api/saml";
+import {
+  type SamlConnection,
+  type SamlTestResult,
+  samlStatus,
+} from "@/modules/authentication/api/saml";
 import {
   type Check,
   CheckList,
@@ -69,7 +73,7 @@ export function SamlTurnOn({
       <dl className="account-details">
         <Detail
           label={t("signIn.status.title")}
-          hint={t(`signIn.status.means.${c.status}`)}
+          hint={t(`signIn.status.means.${samlStatus(c.status)}`)}
           action={
             canWrite ? (
               c.status === "active" ? (
@@ -84,7 +88,7 @@ export function SamlTurnOn({
             ) : undefined
           }
         >
-          {t(`signIn.status.word.${c.status}`)}
+          {t(`signIn.status.word.${samlStatus(c.status)}`)}
           {c.last_login_at ? (
             <small className="cx-none">
               {" · "}

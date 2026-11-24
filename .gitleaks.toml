@@ -1,0 +1,13 @@
+# Gitleaks: the default rules, plus the paths whose matches are reviewed examples, never real secrets.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "the server's API documents, copied, and the types generated from them"
+paths = [
+  # Sample tokens, keys and client secrets in the server's documents (which its own .gitleaks.toml
+  # allows), and their checksums. contract:check refuses a copy that isn't the server's.
+  '''^contract/qeet-id-server/''',
+  # The same examples, in the generated types' comments.
+  '''^src/platform/api/contract/generated/''',
+]

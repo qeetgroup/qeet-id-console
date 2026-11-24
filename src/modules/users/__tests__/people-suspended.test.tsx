@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -100,8 +100,14 @@ beforeEach(() => {
           mfa_enabled: 18,
           mfa_missing: 27,
           new_last_30d: 1,
+          last_seen: { today: 10, week: 20, month: 5, older: 8, never: 2 },
+          admins_without_mfa: 0,
+          email_unverified: 0,
+          by_role: [],
+          by_department: [],
         };
-      if (path === "/v1/tenants/t1/invites") return { items: [] };
+      if (path === "/v1/users/trends") return { total: [], mfa_enabled: [] };
+      if (path === "/v1/organizations/t1/invites") return { items: [] };
     }
     if (path.endsWith("/suspension") && method === "PUT") return undefined;
     if (path.endsWith("/reactivate") && method === "POST") return undefined;
@@ -153,8 +159,7 @@ describe("All users, filtered to Suspended", () => {
       reason: "offboarding",
       risk: "low",
       review: "reviewed",
-      limit: 50,
-      offset: 0,
+      limit: 200,
     });
   });
 

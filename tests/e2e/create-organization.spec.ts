@@ -1,7 +1,7 @@
 // Creating an organisation is one page for every way in, and Cancel goes back to where it was
 // opened from. An account without one goes straight there, unless an invitation is waiting.
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import {
   ADMIN,
   BACKEND_URL,

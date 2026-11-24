@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -95,7 +95,6 @@ const page = (items: unknown[], extra: Record<string, unknown> = {}) => ({
   items,
   total: items.length,
   limit: 100,
-  offset: 0,
   ...extra,
 });
 const state = vi.hoisted(() => ({ connections: [] as unknown[] }));
@@ -107,7 +106,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
     const query = (options?.query ?? {}) as Record<string, unknown>;
-    if (path === "/v1/tenants/t1/directory/connections") return { items: state.connections };
+    if (path === "/v1/organizations/t1/directory/connections") return { items: state.connections };
     if (path === "/v1/users/stats")
       return {
         total: 45,
@@ -118,12 +117,12 @@ beforeEach(() => {
         mfa_missing: 27,
         new_last_30d: 1,
       };
-    if (path === "/v1/tenants/t1/directory/activity")
+    if (path === "/v1/organizations/t1/directory/activity")
       return page(query.status === "failed" ? [failure] : [], {
         summary: { total: 3, successful: 0, warnings: 0, failed: 3, average_duration_ms: 13000 },
         volume: [],
       });
-    if (path === "/v1/tenants/t1/directory/errors")
+    if (path === "/v1/organizations/t1/directory/errors")
       return page([failure], {
         summary: { open: 3, critical: 3, warning: 0, retried: 0, impacted_users: 0 },
         categories: [],
@@ -221,13 +220,13 @@ describe("Directories › Connections", () => {
   it("tests a connection and says how it went", async () => {
     renderPage();
     await chooseRowAction("Test connection");
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/t1/ldap/st/test"]));
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/t1/ldap/st/test"]));
   });
 
   it("turns a draft on without a confirm, and an active one off only after one", async () => {
     renderPage();
     await chooseRowAction("Turn on");
-    await waitFor(() => expect(writes()).toEqual(["PATCH /v1/tenants/t1/ldap/st"]));
+    await waitFor(() => expect(writes()).toEqual(["PATCH /v1/organizations/t1/ldap/st"]));
     cleanup();
     vi.mocked(api).mockClear();
     state.connections = [record({ status: "active", health: "healthy" })];
@@ -249,7 +248,7 @@ describe("Directories › Connections", () => {
     expect(within(dialog).getByText("Delete Staging Directory (test)?")).toBeTruthy();
     expect(within(dialog).getByText(/accounts, groups and roles stay/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete connection" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/t1/ldap/st"]));
+    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/organizations/t1/ldap/st"]));
   });
 
   it("revokes the SCIM token only after the confirm", async () => {
@@ -272,7 +271,7 @@ describe("Directories › Connections", () => {
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText(/The 1,240 people it created stay/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Revoke token" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/t1/scim/token"]));
+    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/organizations/t1/scim/token"]));
   });
 
   it("offers no changes to someone who can only look", async () => {

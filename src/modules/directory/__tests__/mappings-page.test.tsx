@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -76,7 +76,7 @@ import { MappingsPage } from "../components/mappings/mappings-page";
 import type { MappingsFilters } from "../sync-search";
 import { page, record } from "./fixtures";
 
-const MAPPINGS = "/v1/tenants/t1/directory/connections/st/mappings";
+const MAPPINGS = "/v1/organizations/t1/directory/connections/st/mappings";
 const TARGETS = {
   email: "string",
   display_name: "string",
@@ -108,8 +108,8 @@ beforeEach(() => {
   state.connections = [record()];
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t1/directory/connections") return { items: state.connections };
-    if (path === "/v1/tenants/t1/ldap")
+    if (path === "/v1/organizations/t1/directory/connections") return { items: state.connections };
+    if (path === "/v1/organizations/t1/ldap")
       return {
         items: [
           {
@@ -121,7 +121,7 @@ beforeEach(() => {
           },
         ],
       };
-    if (path === "/v1/tenants/t1/directory/errors")
+    if (path === "/v1/organizations/t1/directory/errors")
       return page([], {
         summary: { open: 3, critical: 3, warning: 0, retried: 0, impacted_users: 0 },
         categories: [],

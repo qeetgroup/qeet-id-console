@@ -33,7 +33,7 @@ function readImage(file: File): Promise<string> {
       typeof reader.result === "string" && INLINE_IMAGE.test(reader.result)
         ? resolve(reader.result)
         : reject(new Error("unreadable"));
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error("unreadable"));
     reader.readAsDataURL(file);
   });
 }

@@ -1,5 +1,5 @@
 import { Field } from "@qeetrix/react";
-import { Alert } from "@qeetrix/react/experimental";
+import { Alert, CodeField } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
 import { type CondNode, toConditionJson } from "@/modules/authorization/api/abac";
@@ -9,7 +9,6 @@ import {
   explainedMessage,
 } from "@/modules/authorization/components/explain/decision-reason";
 import { traceSteps } from "@/modules/authorization/components/explain/decision-trace";
-import { MonacoPanel } from "@/modules/authorization/components/shared/monaco-panel";
 import { Answer, TraceList } from "@/modules/authorization/components/workspace/decision-parts";
 import { errorMessage } from "@/platform/errors/user-message";
 import type { Draft } from "./policy-draft";
@@ -109,14 +108,7 @@ export function PolicyTest({
         invalid={invalid}
         description={unsaved ? t("abacTest.unsavedHint") : t("abacTest.savedHint")}
       >
-        <MonacoPanel
-          value={request}
-          language="json"
-          readOnly={false}
-          onChange={onRequestChange}
-          height={168}
-          ariaLabel={t("abacTest.request")}
-        />
+        <CodeField language="json" value={request} onValueChange={onRequestChange} rows={8} />
       </Field>
       <div className="ws-test-result" aria-live="polite">
         {error ? <Alert tone="danger" title={errorMessage(error)} /> : null}

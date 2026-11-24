@@ -16,6 +16,7 @@ import {
   formatDate,
   formatNumber,
   formatRelativeTime,
+  LinkButton,
   Skeleton,
   Switch,
 } from "@qeetrix/react";
@@ -377,9 +378,13 @@ function SignalsSection({ user }: { user: UserDetail }) {
       }
       note={t("person.security.signalsNote", { name: first })}
       action={
-        <Button variant="ghost" size="sm" render={<RouterLink to="/security/threats/anomalies" />}>
+        <LinkButton
+          variant="ghost"
+          size="sm"
+          render={<RouterLink to="/security/threats/anomalies" />}
+        >
           {t("person.security.seeAnomalies")}
-        </Button>
+        </LinkButton>
       }
     >
       {anomalies.isLoading ? (

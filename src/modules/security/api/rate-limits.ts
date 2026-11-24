@@ -4,48 +4,54 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
 
-export interface LimitConfig {
-  rate: number; // requests a second the bucket refills by, from 0.01
-  capacity: number; // the burst a full bucket allows
-}
-
-export interface TenantLimits {
-  tenant: LimitConfig;
-  user: LimitConfig;
-  api_key: LimitConfig;
-}
+// `ceiling` is the most an organisation may set, `defaults` what a reset returns to, `min_rate` the
+// lowest rate it may set. A bucket's `rate` is requests a second it refills by, `capacity` the
+// burst a full bucket allows.
+export type RateLimits = Answer<"/v1/organizations/{organizationID}/rate-limits">;
+export type LimitConfig = RateLimits["organization"];
+export type Bucket = keyof RateLimits["defaults"];
 
 export function useRateLimits() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.rateLimits(tenantId),
-    queryFn: () => api<TenantLimits>(`/v1/tenants/${tenantId}/rate-limits`),
-    enabled: !!tenantId,
+    queryKey: securityKeys.rateLimits(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/rate-limits", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useUpdateRateLimits() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     // A bucket left out stays as it is.
-    mutationFn: (body: Partial<TenantLimits>) =>
-      api<TenantLimits>(`/v1/tenants/${tenantId}/rate-limits`, { method: "PUT", body }),
-    onSuccess: (data) => qc.setQueryData(securityKeys.rateLimits(tenantId), data),
+    mutationFn: (body: Partial<Record<Bucket, LimitConfig>>) =>
+      backend.put("/v1/organizations/{organizationID}/rate-limits", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+      }),
+    onSuccess: (data) => qc.setQueryData(securityKeys.rateLimits(organizationId), data),
     meta: { successMessage: "security:toast.rateLimitsSaved", silentError: true }, // the page shows it
   });
 }
 
 export function useResetRateLimits() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => api<void>(`/v1/tenants/${tenantId}/rate-limits`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.rateLimits(tenantId) }),
+    mutationFn: () =>
+      backend.delete("/v1/organizations/{organizationID}/rate-limits", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.rateLimits(organizationId) }),
     meta: { successMessage: "security:toast.rateLimitsResetTo" },
   });
 }

@@ -130,7 +130,7 @@ authoritative.
 ### Token containment
 
 ```ts
-PublicSession = { isAuthenticated, expiresAt, sessionId, userId, tenantId,
+PublicSession = { isAuthenticated, expiresAt, sessionId, userId, organizationId,
                   version, impersonationActor }
 ```
 
@@ -151,7 +151,7 @@ browser-held-token model the BFF replaced. Do not reintroduce them.
 **Evidence:** `src/platform/security/`
 
 ```text
-GET /v1/users/{userId}/tenants/{tenantId}/permissions
+GET /v1/users/{userId}/organizations/{organizationId}/permissions
    ↓  Zod-validated — "Parsing fails CLOSED"
 25 CONSOLE_CAPABILITIES  →  classifyAccessMode
    ↓
@@ -294,8 +294,13 @@ fake backend serves the pages' records from `tests/e2e/fixtures/fake-tenant-data
 `admin@example.com` with every capability (so actions render) and an `unverified@example.com`.
 Text over the shell's and sidebar's faint gradients is measured against their solid token (axe
 can't measure over a gradient). A violation from inside `@qeetrix/react` is excused for that rule
-on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); none today. Ports default to 43173 and 43101;
-`E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
+on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12). The suites run in
+parallel: each Playwright worker (4 by default, `E2E_WORKERS`) starts its own fake backend and
+production console (`tests/e2e/fixtures.ts`) on the base ports plus its slot, so no two tests share
+sessions or resets. The page scans sign the admin in once per worker and reuse that session
+(`signInOnce` in `support.ts`), again after the backend's sessions are reset or expired (its
+`generation` in `/__test__/stats`) and every 4 minutes, well inside the fake tokens' 10. Base ports
+default to 43173 and 43101; `E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
 
 Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
 contracts, cache refreshes and tenant guards.
@@ -311,12 +316,7 @@ file holds it inert on the server.
 `ci.yml` has one job, **Verify**, run on pull requests into `develop` and `main` (10-minute
 timeout): checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` → `audit` →
 gitleaks. The unit tests with coverage, the
-build, **`size`** and the Playwright specs run locally before a push, not in CI. `size`
-(`scripts/check-bundle-size.mjs`) reads TanStack Start's route manifest from the server build,
-follows each route's static imports through `.output/public/assets`, and fails when the signed-in
-shell's initial JS (the root plus `/_app`) or a route's own JS beyond its parent's exceeds its gzip
-budget in `bundle-budgets.json`, or when a budget names a route that no longer exists; an unlisted
-route is held to `newRoute`. Actions are pinned to commit SHAs; workflows default to
+build and the Playwright specs run locally before a push, not in CI. Actions are pinned to commit SHAs; workflows default to
 read-only permissions.
 
 Releases are monthly: `release/YEAR.MONTH.0` is cut from `develop` and takes fixes only (made on
@@ -334,11 +334,23 @@ seals the session cookie with. Moving past it means choosing a session library a
 cookie (or signing everyone in again), a security-reviewed change of its own; until then, don't
 bump these two.
 
-**`@qeetrix/react` stays at 0.1.1** (with `@qeetrix/icons` 1.0.12 and `@qeetrix/tokens` 0.0.9): from
-0.4.0 a table's row link is named by `rowLabel` but wraps the whole primary cell, so the text it
-shows isn't part of its accessible name (WCAG 2.5.3), and the accessibility scan fails on every
-table whose primary cell shows more than its label. Dependabot ignores 0.4.0 and later until
-Qeetrix names the link by its content.
+**TypeScript stays on 5.x**: TypeScript 7's package has no compiler API (its root exports only the
+version), and `openapi-typescript`, which `contract:sync` and `contract:check` generate the API types
+with, needs it (peer `typescript ^5.x`, no release for 7). Move when it supports 7.
+
+**`@qeetrix/react` is 0.5.2** (with `@qeetrix/icons` 2.1.2 and `@qeetrix/tokens` 0.0.15). Two things
+the library still owes, each held in the accessibility spec rather than worked around:
+- A table's row link is named by `rowLabel` but wraps the whole primary cell, so the text it shows
+  isn't all in its name (WCAG 2.5.3). `DESIGN_SYSTEM_ISSUES` excuses that one rule on
+  `.qx-table-row-link`; take it off when Qeetrix names the link by what the row shows.
+- At 320px a page header's actions don't wrap and a tab list doesn't scroll (a person's page): an
+  expected failure in the reflow checks (`LIBRARY_REFLOW`, which `LIBRARY_LONGER` includes).
+
+Where the console still draws its own part beside a Qeetrix one, the comment there says what the
+library part can't do yet: the list bands (their "Needs a look" cell) and their share bar (ordered
+tones), the copy row in a description list, the daily sign-in and webhook delivery columns (a
+small failure must stay visible), the invitation join chart (axis ticks, an expiry marker), and
+billing's phone columns (cells that change, not just hide).
 
 ## Security-critical areas
 

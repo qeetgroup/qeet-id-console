@@ -1,7 +1,8 @@
 // A minimal stand-in for qeet-id-server: sign-in, refresh rotation (with the server's reuse grace),
-// tenant switch, logout and the reads the console makes (records in fake-tenant-data.mjs), for one
+// organization switch, logout and the reads the console makes (records in fake-tenant-data.mjs), for one
 // operator in each of two tenants, one in both, an admin and an unverified account. Test controls:
-// POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats.
+// POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats (with the
+// session generation, bumped by both).
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
@@ -56,7 +57,15 @@ const users = {
   },
 };
 const PASSWORD = "Password123!";
-const ADMIN_PERMISSIONS = ["tenant", "user", "role", "group", "policy", "apikey", "connection"]
+const ADMIN_PERMISSIONS = [
+  "organization",
+  "user",
+  "role",
+  "group",
+  "policy",
+  "apikey",
+  "connection",
+]
   .concat(["webhook", "secret", "audit", "billing"])
   .flatMap((resource) => [`${resource}.read`, `${resource}.write`])
   .concat(["branding.write", "gdpr.write", "analytics.read"]);
@@ -67,6 +76,9 @@ let keptRotations = new Map(); // spent refresh token -> { pair, at }
 let refreshCalls = 0;
 let rotations = 0;
 let logoutCalls = 0;
+// Bumped whenever sessions are wiped (reset, expire), so a test that reuses a sign-in knows when
+// the session it kept no longer exists.
+let generation = 0;
 
 // As REFRESH_TOKEN_REUSE_GRACE on the server: a rotated refresh token sent again within the grace
 // gets the pair its rotation issued, while that pair's refresh token is unused; any other reuse is
@@ -80,7 +92,7 @@ function issuePair(email, tenantId, sessionId = randomUUID()) {
   const expiresAt = new Date(Date.now() + 10 * 60_000);
   const accessToken = `${base64url({ alg: "none" })}.${base64url({
     sub: user.id,
-    tenant_id: tenantId,
+    organization_id: tenantId,
     sid: sessionId,
     exp: Math.floor(expiresAt.getTime() / 1000),
   })}.signature`;
@@ -92,9 +104,12 @@ function issuePair(email, tenantId, sessionId = randomUUID()) {
     refresh_token: refreshToken,
     token_type: "Bearer",
     expires_at: expiresAt.toISOString(),
+    // The session's own limits, as the server's sign-in policy sets them.
+    session_expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+    idle_expires_at: new Date(Date.now() + 30 * 60_000).toISOString(),
     session_id: sessionId,
     user_id: user.id,
-    tenant_id: tenantId,
+    organization_id: tenantId,
   };
 }
 
@@ -150,10 +165,12 @@ const server = createServer(async (request, response) => {
     refreshCalls = 0;
     rotations = 0;
     logoutCalls = 0;
+    generation += 1;
     return send(response, 200, { ok: true });
   }
   if (path === "/__test__/expire" && method === "POST") {
     accessTokens.clear();
+    generation += 1;
     return send(response, 200, { ok: true });
   }
   if (path === "/__test__/stats") {
@@ -161,11 +178,12 @@ const server = createServer(async (request, response) => {
       refresh_calls: refreshCalls,
       rotations,
       logout_calls: logoutCalls,
+      generation,
     });
   }
 
-  if (path === "/v1/sso/discovery") {
-    return fail(response, 404, "sso.not_found", "No SSO provider is configured.");
+  if (path === "/v1/sso/discovery" && method === "POST") {
+    return send(response, 200, { sso: false, connections: [] });
   }
   if (path === "/v1/auth/login" && method === "POST") {
     const body = await jsonBody(request);
@@ -197,8 +215,11 @@ const server = createServer(async (request, response) => {
     return send(response, 200, pair);
   }
 
-  // Public, as on the server: the sign-in page and the account pages read it.
-  if (path === "/v1/social/platform/providers") return send(response, 200, { providers: [] });
+  // Public, as on the server: the sign-in page and the account pages read it. GitHub makes the
+  // sign-in row's fourth provider, so the browser tests see its logos-only form.
+  if (path === "/v1/social/platform/providers") {
+    return send(response, 200, { providers: ["github"] });
+  }
 
   const authorization = request.headers.authorization ?? "";
   const principal = accessTokens.get(authorization.replace(/^Bearer\s+/i, ""));
@@ -218,34 +239,40 @@ const server = createServer(async (request, response) => {
   if (path === "/v1/me") {
     return send(response, 200, {
       id: user.id,
-      tenant_id: principal.tenantId,
+      organization_id: principal.tenantId,
       email: principal.email,
       display_name: user.name,
       status: "active",
       email_verified_at: user.unverified ? null : "2026-01-01T00:00:00Z",
     });
   }
-  if (path === "/v1/auth/switch-tenant" && method === "POST") {
+  if (path === "/v1/auth/switch-organization" && method === "POST") {
     const body = await jsonBody(request);
-    if (!user.tenantIds.includes(body.tenant_id)) {
-      return fail(response, 403, "auth.not_tenant_member", "Not a member of that tenant.");
+    if (!user.tenantIds.includes(body.organization_id)) {
+      return fail(response, 403, "auth.not_organization_member", "Not a member of it.");
     }
-    return send(response, 200, issuePair(principal.email, body.tenant_id));
+    return send(response, 200, issuePair(principal.email, body.organization_id));
   }
+  // One page: next_cursor is left out on the last page, as the server does.
   if (path === "/v1/me/organizations") {
-    return send(response, 200, { items: user.tenantIds.map(organization), next_cursor: "" });
-  }
-  if (path === "/v1/tenants") {
     return send(response, 200, { items: user.tenantIds.map(organization) });
   }
-  if (path === `/v1/tenants/${principal.tenantId}`) {
+  if (path === "/v1/organizations") {
+    return send(response, 200, { items: user.tenantIds.map(organization) });
+  }
+  if (path === `/v1/organizations/${principal.tenantId}`) {
     return send(response, 200, organization(principal.tenantId));
   }
-  if (/^\/v1\/users\/[^/]+\/tenants\/[^/]+\/permissions$/.test(path)) {
+  // The caller's own, as /v1/me/permissions answers; anyone's, for a person's page.
+  if (
+    path === "/v1/me/permissions" ||
+    /^\/v1\/users\/[^/]+\/organizations\/[^/]+\/permissions$/.test(path)
+  ) {
     return send(response, 200, {
       permissions: user.admin
         ? ADMIN_PERMISSIONS
-        : ["user.read", "tenant.read", "role.read", "audit.read", "analytics.read"],
+        : ["user.read", "organization.read", "role.read", "audit.read", "analytics.read"],
+      grants: [],
     });
   }
   if (path === "/v1/qeetai/status") {
@@ -257,9 +284,9 @@ const server = createServer(async (request, response) => {
     return send(response, 200, {
       items: (user.invitedTo ?? []).map((tenantId) => ({
         id: `invite-${tenantId.slice(0, 8)}`,
-        tenant_id: tenantId,
-        tenant_name: tenants[tenantId].name,
-        tenant_slug: tenants[tenantId].slug,
+        organization_id: tenantId,
+        organization_name: tenants[tenantId].name,
+        organization_slug: tenants[tenantId].slug,
         email: principal.email,
         role_id: null,
         expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
@@ -348,7 +375,7 @@ const server = createServer(async (request, response) => {
     return send(response, 200, {
       items: [
         {
-          id: "passkey-1",
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01",
           user_id: user.id,
           name: "MacBook Pro (Touch ID)",
           transports: ["internal"],
@@ -363,7 +390,7 @@ const server = createServer(async (request, response) => {
     const session = (id, device, device_kind, country, ip, since, seen) => ({
       id,
       user_id: user.id,
-      tenant_id: principal.tenantId ?? "",
+      organization_id: principal.tenantId ?? "",
       ip,
       device,
       device_kind,
@@ -401,7 +428,21 @@ const server = createServer(async (request, response) => {
     // A new account has no organisation: nothing tenant-scoped to read.
     if (!tenant) return send(response, 200, { items: [] });
     const context = { tenantId: principal.tenantId, tenant, principalId: user.id };
-    return send(response, 200, tenantRead(path, url.searchParams, context) ?? { items: [] });
+    const answer = tenantRead(path, url.searchParams, context);
+    // The signed-in person is a member too, as the history's names read them.
+    if (!answer && path === `/v1/users/${user.id}`) {
+      return send(response, 200, {
+        id: user.id,
+        organization_id: principal.tenantId,
+        email: principal.email,
+        display_name: user.name,
+        status: "active",
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+        email_verified_at: user.unverified ? null : "2026-01-01T00:00:00Z",
+      });
+    }
+    return send(response, 200, answer ?? { items: [] });
   }
   return send(response, 200, {});
 });

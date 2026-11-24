@@ -10,7 +10,7 @@ export interface ContextSelection {
 /** What the assistant is told about where the operator is: route, tenant, selection, filters. */
 export interface ConsoleContext {
   route: { pathname: string; title: string; group?: string };
-  tenantId: string | null;
+  organizationId: string | null;
   userId: string | null;
   /** A hint for the model and UI, never authorization: the backend each tool calls decides. */
   capabilities: Capability[];

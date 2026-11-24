@@ -3,10 +3,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface Credential {
   id: string;
@@ -34,16 +33,19 @@ export interface VerifyResult {
 }
 
 export function useCredentials() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: developerKeys.credentials(tenantId),
-    queryFn: () => api<{ items: Credential[] }>(`/v1/tenants/${tenantId}/credentials`),
-    enabled: !!tenantId,
+    queryKey: developerKeys.credentials(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/credentials", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useIssueCredential() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
@@ -53,25 +55,25 @@ export function useIssueCredential() {
       claims: Record<string, unknown>;
       ttl_seconds: number;
     }) =>
-      api(`/v1/tenants/${tenantId}/credentials`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/credentials", {
+        path: { organizationID: organizationId ?? "" },
         body,
         schema: issueResultSchema,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(organizationId) }),
     meta: { successMessage: "developer:toast.credentialIssued", silentError: true },
   });
 }
 
 export function useRevokeCredential() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/credentials/${id}/revoke`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/credentials/{id}/revoke", {
+        path: { organizationID: organizationId ?? "", id },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(organizationId) }),
     meta: { successMessage: "developer:toast.credentialRevoked" },
   });
 }
@@ -79,10 +81,7 @@ export function useRevokeCredential() {
 export function useVerifyCredential() {
   return useMutation({
     mutationFn: (credential: string) =>
-      api<VerifyResult>(`/v1/credentials/verify`, {
-        method: "POST",
-        body: { credential },
-      }),
+      backend.post("/v1/credentials/verify", { body: { credential } }),
     meta: { silent: true },
   });
 }

@@ -35,7 +35,7 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { useRoles } from "@/modules/authorization";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { type Invitation, inviteCalls, useInvitations } from "@/modules/users/api/invitations";
 import { useUserDirectory } from "@/modules/users/api/users";
 import {
@@ -46,7 +46,7 @@ import {
   matchesInvite,
   SENT_WINDOWS,
 } from "@/modules/users/invitations-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { type CsvColumn, exportToCsv } from "@/shared/utils/data-export";
@@ -57,6 +57,7 @@ import "@/modules/users/components/people/people.css";
 import { useKeyedState } from "@/modules/users/components/people/use-keyed-state";
 import { InvitationsBand } from "./invitations-band";
 import { InvitationRowActions, useInvitationColumns } from "./invitations-table";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
 const PAGE_SIZES = [25, 50, 100] as const;
@@ -85,7 +86,7 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
   const access = useCapabilities();
   const canInvite = access.can("user.write");
   const showRole = access.can("role.read");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const [adding, setAdding] = useCreateIntent(canInvite);
   const searchRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(filters.q ?? "");
@@ -98,7 +99,10 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
 
   const invites = invitations.data?.items ?? NONE;
   const now = invitations.dataUpdatedAt || Date.now();
-  const roleName = (id: string) => roles.find((r) => r.id === id)?.name;
+  const roleName = (id: string) => {
+    const name = roles.find((r) => r.id === id)?.name;
+    return name === undefined ? undefined : roleDisplayName(name);
+  };
   const members = new Map((directory.data?.items ?? []).map((u) => [u.email.toLowerCase(), u]));
   const member = (email: string) => members.get(email.toLowerCase());
 
@@ -143,9 +147,13 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
     });
   };
   const inviteAgain = (i: Invitation) =>
-    tenantId &&
+    organizationId &&
     run(t("invites.actions.inviteAgain"), [i.id], () =>
-      inviteCalls.create({ tenant_id: tenantId, email: i.email, role_id: i.role_id ?? undefined }),
+      inviteCalls.create({
+        organization_id: organizationId,
+        email: i.email,
+        role_id: i.role_id ?? undefined,
+      }),
     );
 
   const statusCount = (s: Invitation["status"]) => invites.filter((i) => i.status === s).length;
@@ -243,7 +251,7 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
   );
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("invites.title")}
@@ -392,6 +400,6 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
         </div>
       </PageContent>
       {canInvite ? <AddPeopleDrawer open={adding} onOpenChange={setAdding} mode="invite" /> : null}
-    </PageTabs>
+    </>
   );
 }

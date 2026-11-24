@@ -3,38 +3,37 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
 
-export interface RiskSettings {
-  medium_threshold: number;
-  high_threshold: number;
-  force_mfa_at_level: "medium" | "high";
-  impossible_travel_enabled: boolean;
-  min_travel_hours: number;
-  device_reputation_enabled: boolean;
-}
+const RISK_PATH = "/v1/organizations/{organizationID}/security/risk-settings";
+
+export type RiskSettings = Answer<typeof RISK_PATH>;
 
 export function useRiskSettings() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.riskSettings(tenantId),
-    queryFn: () => api<RiskSettings>(`/v1/tenants/${tenantId}/security/risk-settings`),
-    enabled: !!tenantId,
+    queryKey: securityKeys.riskSettings(organizationId),
+    queryFn: () =>
+      backend.get(RISK_PATH, {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useUpdateRiskSettings() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: RiskSettings) =>
-      api<RiskSettings>(`/v1/tenants/${tenantId}/security/risk-settings`, {
-        method: "PUT",
+      backend.put(RISK_PATH, {
+        path: { organizationID: organizationId ?? "" },
         body,
       }),
-    onSuccess: (data) => qc.setQueryData(securityKeys.riskSettings(tenantId), data),
+    onSuccess: (data) => qc.setQueryData(securityKeys.riskSettings(organizationId), data),
     meta: { successMessage: "security:toast.riskSettingsSaved", silentError: true }, // the page shows it
   });
 }

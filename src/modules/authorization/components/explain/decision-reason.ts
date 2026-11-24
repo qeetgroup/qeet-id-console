@@ -1,5 +1,5 @@
 // Why a decision came out as it did, in the reader's language. The server states it as a stable
-// reason code (QTID-951) and, for older servers only, as an English sentence; the code wins, and
+// reason code and, for older servers only, as an English sentence; the code wins, and
 // anchored patterns map the sentences the console knows. Server text is never shown as written:
 // it may carry internal detail, such as the evaluation error behind a condition that failed.
 
@@ -63,7 +63,7 @@ const REASON_CODES: Record<
     without: "authorization:decisionExplain.reason.relationGrantUnnamed",
   },
   "authz.nothing_allows": { key: "authorization:decisionExplain.reason.nothingAllows" },
-  "authz.no_tenant": { key: "authorization:decisionExplain.reason.noTenant" },
+  "authz.no_organization": { key: "authorization:decisionExplain.reason.noOrganization" },
   "authz.engine_error": { key: "authorization:decisionExplain.reason.engineError" },
 };
 
@@ -113,7 +113,7 @@ function policyStep(key: TranslationKey): (m: RegExpMatchArray) => ExplainedText
 // The sentences an older server sends in place of a code.
 const REASONS: Rule[] = [
   [
-    /^no role grants this permission for this user in this tenant$/,
+    /^no role grants this permission for this user in this (organization|tenant)$/,
     () => ({ key: "authorization:check.deniedReason" }),
   ],
   [

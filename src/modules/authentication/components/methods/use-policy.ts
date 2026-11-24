@@ -4,13 +4,13 @@ import { useTranslation } from "react-i18next";
 import { useAnalyticsOverview } from "@/modules/dashboard";
 import { orgKeys } from "@/modules/organizations";
 import { type AuthPolicy, useUpdateAuthPolicy } from "@/modules/authentication/api/auth-policy";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   type SensitiveActionOptions,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { backend } from "@/platform/api/backend";
 
 /** The part of the policy one change sets. */
 export type PolicyChange = Partial<Omit<AuthPolicy, "lockout_limits">>;
@@ -68,11 +68,14 @@ export function useSignInMix(): SignInMix | undefined {
  * its query, this reads the same endpoint.
  */
 export function useTwoStepRule(enabled: boolean) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: orgKeys.securityPolicy(tenantId),
-    queryFn: () => api<{ mfa_enforcement: string }>(`/v1/tenants/${tenantId}/policy`),
-    enabled: enabled && !!tenantId,
+    queryKey: orgKeys.securityPolicy(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/policy", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: enabled && !!organizationId,
     select: (policy) => policy.mfa_enforcement,
   });
 }

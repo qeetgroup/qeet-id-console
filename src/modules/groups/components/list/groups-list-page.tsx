@@ -52,7 +52,7 @@ import {
 import { useDeleteGroupFlow } from "@/modules/groups/use-delete-group";
 import { useOrgs } from "@/modules/organizations";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
@@ -62,7 +62,7 @@ import { GroupsToolbar } from "./groups-toolbar";
 import "./groups-list.css";
 
 const PAGE_SIZES = [25, 50, 100] as const;
-// Every group's roles are read one group at a time (no list endpoint, QTID-961): all of them up to
+// Every group's roles are read one group at a time (no list endpoint): all of them up to
 // this many groups, so the roles filter and "grant roles to no one" are whole; past it, only the
 // groups on the page, and those two wait for the server.
 const ROLES_FOR_ALL_UP_TO = 100;
@@ -96,7 +96,7 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
   const canWrite = access.can("group.write");
   const canReadRoles = access.can("role.read");
   const canReadPeople = access.can("user.read");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
 
   const [creating, setCreating] = useCreateIntent(canWrite);
   const [inside, setInside] = useState<Group | null>(null);
@@ -113,10 +113,10 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
   const groupsQ = useGroups();
   const groups = groupsQ.data?.items ?? NO_GROUPS;
   const directory = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: canReadPeople && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: canReadPeople && !!organizationId,
   });
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const now = groupsQ.dataUpdatedAt || Date.now();
 
   const roots = useMemo(() => groupTree(groups), [groups]);
@@ -137,7 +137,7 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
       : pageIds
     : [];
   const roleResults = useQueries({
-    queries: roleIds.map((id) => groupRoleQueries.list(tenantId, id)),
+    queries: roleIds.map((id) => groupRoleQueries.list(organizationId, id)),
   });
   const roles = useMemo(() => {
     const out = new Map<string, string[]>();
@@ -158,18 +158,12 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
     [roots, filters, open, roles, sort],
   );
   const start = offset < rows.length ? offset : 0;
-  const onPage: GroupRow[] = pageOf(rows, start, pageSize, flat);
+  const onPage: GroupRow[] = pageOf(rows, start, pageSize);
   const onPageKey = onPage.map((g) => g.id).join(",");
   if (all.length > ROLES_FOR_ALL_UP_TO && onPageKey !== pageIds.join(","))
     setPageIds(onPage.map((g) => g.id));
 
-  const toggle = (id: string) =>
-    setOpened(() => {
-      const next = new Set(open);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  const columns = useGroupColumns({ flat, open, onToggle: toggle, roles });
+  const columns = useGroupColumns({ flat, roles });
   const change = (next: GroupFilters) => {
     setOffset(0);
     onFiltersChange(next);
@@ -264,6 +258,13 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
                 rowId={(g) => g.id}
                 rowLabel={(g) => g.name}
                 columns={canReadRoles ? columns : columns.filter((c) => c.id !== "roles")}
+                // The tree: the rows come folded and paged; Table indents them, folds them and
+                // names a family that runs on from the page before.
+                rowDepth={flat ? undefined : (g) => g.depth}
+                rowHasChildren={flat ? undefined : (g) => g.children.length > 0}
+                expanded={[...open]}
+                onExpandedChange={(ids) => setOpened(new Set(ids))}
+                rowPath={(g) => g.path.join(" › ")}
                 sort={sort}
                 onSortChange={setSort}
                 loading={groupsQ.isLoading}

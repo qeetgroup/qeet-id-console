@@ -12,9 +12,10 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type {
-  EmailTemplate,
-  EmailTemplateInput,
+import {
+  type EmailTemplate,
+  type EmailTemplateInput,
+  sentByOrganization,
 } from "@/modules/organizations/api/email-templates";
 import {
   type EmailBrand,
@@ -129,7 +130,7 @@ export function EmailPreviewPanel({
   const text = useTemplateText()(template);
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   // Only invitations and magic links are sent with the organisation's own template so far.
-  const tenantDelivery = template.delivery_scope === "tenant";
+  const organizationDelivery = sentByOrganization(template);
   return (
     <aside className="mail-preview" aria-label={t("emails.previewPanel")}>
       <div className="mail-preview-head">
@@ -162,7 +163,9 @@ export function EmailPreviewPanel({
         title={t("emails.previewTitle", { name: text.name })}
       />
       <Text tone="subtle" size="sm" className="mail-delivery">
-        {t(tenantDelivery ? "emails.delivery.tenant" : "emails.delivery.platform", { name })}
+        {t(organizationDelivery ? "emails.delivery.organization" : "emails.delivery.platform", {
+          name,
+        })}
       </Text>
     </aside>
   );

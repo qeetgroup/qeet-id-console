@@ -36,12 +36,12 @@ import { OrgSection } from "./org-section";
 type Kind = { icon: QeetrixIcon; tone?: "warning" | "success" };
 // Each change the page names: its icon, and the deletion's colour. Others read from the action.
 const KINDS: Record<string, Kind> = {
-  "tenant.created": { icon: BuildingComplexIcon },
-  "tenant.updated": { icon: PencilIcon },
-  "tenant.deletion_scheduled": { icon: TrashIcon, tone: "warning" },
-  "tenant.deletion_cancelled": { icon: RotateCcwIcon, tone: "success" },
-  "tenant.suspended": { icon: UserXIcon, tone: "warning" },
-  "tenant.reactivated": { icon: RotateCcwIcon },
+  "organization.created": { icon: BuildingComplexIcon },
+  "organization.updated": { icon: PencilIcon },
+  "organization.deletion_scheduled": { icon: TrashIcon, tone: "warning" },
+  "organization.deletion_cancelled": { icon: RotateCcwIcon, tone: "success" },
+  "organization.suspended": { icon: UserXIcon, tone: "warning" },
+  "organization.reactivated": { icon: RotateCcwIcon },
   "branding.updated": { icon: PaletteIcon },
   "security_policy.updated": { icon: ShieldCheckIcon },
   "rate_limits.updated": { icon: GaugeIcon },
@@ -86,7 +86,7 @@ export function HistorySection({
           : "",
     });
   const people = [...new Set(changes.map(who))];
-  const last = changes.find((c) => c.action !== "tenant.created") ?? changes[0];
+  const last = changes.find((c) => c.action !== "organization.created") ?? changes[0];
   const years = [...new Set(changes.map((c) => new Date(c.created_at).getFullYear()))];
   const months = changesByMonth(changes, created, now);
   const monthName = (d: Date) => d.toLocaleDateString(locale, { month: "long", year: "numeric" });

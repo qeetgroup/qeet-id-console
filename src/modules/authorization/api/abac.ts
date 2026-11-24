@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import type { TranslationKey } from "@/i18n";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
-import type { ReasonFields } from "./decision";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
 export const NAMESPACES = ["subject", "resource", "context"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
@@ -88,20 +90,30 @@ function isAttributeRef(value: unknown): value is AttributeRef {
 }
 
 /** A stored ABAC policy. Deny wins, and policies are evaluated by descending priority. */
-export interface AbacPolicy {
-  id: string;
-  tenant_id: string;
-  name: string;
-  description: string;
-  effect: Effect;
-  resource_type: string;
-  action: string;
-  condition: ConditionJson | null;
-  priority: number;
-  enabled: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// A policy without a condition answers null. The editor reads the condition tree, so the read is
+// held to a schema that types it.
+const policySchema = z.object({
+  id: z.string(),
+  organization_id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  effect: z.enum(["allow", "deny"]),
+  resource_type: z.string(),
+  action: z.string(),
+  // The editor reads the tree and refuses what it can't place.
+  condition: z.custom<ConditionJson>((v) => typeof v === "object" && v !== null).nullable(),
+  priority: z.number(),
+  enabled: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+const POLICIES = "/v1/organizations/{organizationID}/abac/policies";
+const policyList = strictly<Answer<typeof POLICIES>>()(
+  z.object({ items: z.array(policySchema), truncated: z.boolean().optional() }),
+);
+const onePolicy =
+  strictly<Answer<"/v1/organizations/{organizationID}/abac/policies/{id}">>()(policySchema);
+export type AbacPolicy = z.infer<typeof policySchema>;
 
 export interface AbacPolicyInput {
   name: string;
@@ -114,13 +126,12 @@ export interface AbacPolicyInput {
   enabled: boolean;
 }
 
-/** POST /abac/evaluate?explain=true response; `reason` is English, `reason_code` its code. */
-export interface AbacDecision extends ReasonFields {
-  allow: boolean;
-  effect: Effect | "";
-  matched_policy_id?: string | null;
-  trace?: string[];
-}
+// Each save replaces the whole policy; one without a condition leaves it out.
+const policyBody = ({ condition, ...rest }: AbacPolicyInput) =>
+  condition ? { ...rest, condition } : rest;
+
+/** POST /abac/evaluate?explain=true: `reason` is English, `reason_code` its code. */
+export type AbacDecision = Answer<"/v1/organizations/{organizationID}/abac/evaluate", "post">;
 
 export interface AbacEvaluationInput {
   subject: Record<string, unknown>;
@@ -286,75 +297,87 @@ export function countLeaves(node: CondNode): number {
 }
 
 export function useAbacPolicies(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authzKeys.abacPolicies(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<{ items: AbacPolicy[] }>(`/v1/tenants/${tenantId}/abac/policies`),
+    queryKey: authzKeys.abacPolicies(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get(POLICIES, { path: { organizationID: organizationId ?? "" }, schema: policyList }),
   });
 }
 
 export function useAbacPolicy(id: string | null) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authzKeys.abacPolicy(tenantId, id),
-    enabled: !!tenantId && !!id,
-    queryFn: () => api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`),
+    queryKey: authzKeys.abacPolicy(organizationId, id),
+    enabled: !!organizationId && !!id,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/abac/policies/{id}", {
+        path: { organizationID: organizationId ?? "", id: id ?? "" },
+        schema: onePolicy,
+      }),
   });
 }
 
 export function useCreateAbacPolicy() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: AbacPolicyInput) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post(POLICIES, {
+        path: { organizationID: organizationId },
+        body: policyBody(body),
+        schema: onePolicy,
+      });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(organizationId) }),
     meta: { successMessage: "authorization:toast.policyCreated", silentError: true }, // its forms show the error
   });
 }
 
 export function useUpdateAbacPolicy(id: string) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: AbacPolicyInput) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`, {
-        method: "PATCH",
-        body,
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.patch("/v1/organizations/{organizationID}/abac/policies/{id}", {
+        path: { organizationID: organizationId, id },
+        body: policyBody(body),
+        schema: onePolicy,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(organizationId) }),
     meta: { successMessage: "authorization:toast.policyUpdated", silentError: true },
   });
 }
 
 export function useDeleteAbacPolicy() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.delete("/v1/organizations/{organizationID}/abac/policies/{id}", {
+        path: { organizationID: organizationId, id },
+      });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(organizationId) }),
     meta: { successMessage: "authorization:toast.policyDeleted" },
   });
 }
 
 /** Evaluates one request against the ABAC policies and returns the decision with its trace. */
 export function useAbacEvaluate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     mutationFn: (input: AbacEvaluationInput) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<AbacDecision>(`/v1/tenants/${tenantId}/abac/evaluate`, {
-        method: "POST",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/abac/evaluate", {
+        path: { organizationID: organizationId },
         body: input,
-        query: { explain: "true" },
+        query: { explain: true },
       });
     },
     meta: { silent: true },

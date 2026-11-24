@@ -22,7 +22,7 @@ const tokenResponse = {
   expires_at: "2030-01-01T00:00:00Z",
   session_id: "session-1",
   user_id: "user-1",
-  tenant_id: "tenant-1",
+  organization_id: "org-1",
 };
 
 describe("session response policy", () => {
@@ -38,12 +38,11 @@ describe("session response policy", () => {
       roles: ["owner"],
       last_used_at: null,
     };
-    expect(requiresOrganizationSelection({ items: [], next_cursor: "" })).toBe(false);
-    expect(requiresOrganizationSelection({ items: [organization], next_cursor: "" })).toBe(false);
+    expect(requiresOrganizationSelection({ items: [] })).toBe(false);
+    expect(requiresOrganizationSelection({ items: [organization] })).toBe(false);
     expect(
       requiresOrganizationSelection({
         items: [organization, { ...organization, id: "22222222-2222-4222-8222-222222222222" }],
-        next_cursor: "",
       }),
     ).toBe(true);
     expect(requiresOrganizationSelection({ items: [organization], next_cursor: "more" })).toBe(
@@ -51,7 +50,7 @@ describe("session response policy", () => {
     );
   });
 
-  it("reads a membership without a role, sent as null, as one with no roles", () => {
+  it("reads the last page, which leaves next_cursor out, as complete", () => {
     const own = {
       id: "11111111-1111-4111-8111-111111111111",
       name: "Example",
@@ -60,12 +59,32 @@ describe("session response policy", () => {
       region: "us-east-1",
       logo_url: "",
       domain: "",
-      roles: null,
+      roles: [],
       last_used_at: null,
     };
-    const page = organizationSelectionPageSchema.parse({ items: [own], next_cursor: "" });
-    expect(page.items[0]?.roles).toEqual([]);
-    expect(requiresOrganizationSelection({ items: [own], next_cursor: "" })).toBe(false);
+    const page = organizationSelectionPageSchema.parse({ items: [own] });
+    expect(page.next_cursor).toBeUndefined();
+    expect(requiresOrganizationSelection({ items: [own] })).toBe(false);
+  });
+
+  it("refuses a membership whose roles aren't a list, so a bad answer keeps selection pending", () => {
+    expect(
+      organizationSelectionPageSchema.safeParse({
+        items: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            name: "Example",
+            slug: "example",
+            plan: "free",
+            region: "us-east-1",
+            logo_url: "",
+            domain: "",
+            roles: null,
+            last_used_at: null,
+          },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
   it("keeps selection pending on missing, failed or malformed membership data", async () => {
@@ -79,7 +98,6 @@ describe("session response policy", () => {
     expect(
       await signInRequiresOrganizationSelection("/v1/auth/mfa", "POST", async () => ({
         items: [],
-        next_cursor: "",
       })),
     ).toBe(false);
   });
@@ -89,8 +107,8 @@ describe("session response policy", () => {
     for (const path of [
       "/v1/auth/signup",
       "/v1/signup/passkey/finish",
-      "/v1/tenants",
-      "/v1/auth/switch-tenant",
+      "/v1/organizations",
+      "/v1/auth/switch-organization",
       "/v1/invites/accept",
     ]) {
       expect(await signInRequiresOrganizationSelection(path, "POST", load)).toBe(false);
@@ -122,13 +140,12 @@ describe("session response policy", () => {
     for (const path of [
       "/v1/auth/signup",
       "/v1/signup/passkey/finish",
-      "/v1/tenants",
-      "/v1/auth/switch-tenant",
+      "/v1/organizations",
+      "/v1/auth/switch-organization",
       "/v1/auth/refresh",
       "/v1/invites/accept",
       "/v1/me/invites/example/accept",
       "/v1/me/invites/accept",
-      "/v1/admin/impersonate",
     ]) {
       expect(isSignInRequest(path, "POST")).toBe(false);
     }
@@ -136,14 +153,23 @@ describe("session response policy", () => {
 
   it("adopts token pairs only from explicit authentication transitions", () => {
     expect(isSessionIssuingRequest("/v1/auth/login", "POST")).toBe(true);
-    expect(isSessionIssuingRequest("/v1/auth/switch-tenant", "POST")).toBe(true);
+    expect(isSessionIssuingRequest("/v1/auth/switch-organization", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/passkeys/login/finish", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/signup/passkey/finish", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/me/invites/invite-1/accept", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/me/invites/accept", "POST")).toBe(true);
-    expect(isSessionIssuingRequest("/v1/tenants", "POST")).toBe(true);
+    expect(isSessionIssuingRequest("/v1/organizations", "POST")).toBe(true);
 
-    expect(isSessionIssuingRequest("/v1/oauth/token-code", "POST")).toBe(false);
+    // Paths the server no longer has never hand the BFF a token pair to keep.
+    for (const removed of [
+      "/v1/auth/switch-tenant",
+      "/v1/tenants",
+      "/v1/admin/impersonate",
+      "/v1/admin/impersonate/exit",
+    ]) {
+      expect(isSessionIssuingRequest(removed, "POST")).toBe(false);
+    }
+    expect(isSessionIssuingRequest("/v1/oauth/token", "POST")).toBe(false);
     expect(isSessionIssuingRequest("/v1/credentials/issue", "POST")).toBe(false);
     expect(isSessionIssuingRequest("/v1/passkeys/signup/finish", "POST")).toBe(false);
     expect(isSessionIssuingRequest("/v1/signup/passkey/begin", "POST")).toBe(false);
@@ -172,7 +198,7 @@ describe("session response policy", () => {
       expiresAt: "2030-01-01T00:00:00Z",
       sessionId: "session-1",
       userId: "user-1",
-      tenantId: "tenant-1",
+      organizationId: "org-1",
       version: 1,
     });
   });

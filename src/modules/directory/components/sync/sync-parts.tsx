@@ -1,10 +1,5 @@
-import {
-  formatDate,
-  formatDateTime,
-  formatNumber,
-  formatRelativeTime,
-  Select,
-} from "@qeetrix/react";
+import { formatDate, formatNumber, formatRelativeTime, Select } from "@qeetrix/react";
+import { RelativeTime } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
@@ -17,15 +12,11 @@ const MONTH = 30 * 86_400_000;
 export const ANY = "";
 
 /**
- * A moment as people read it: "6 days ago" up to a month back, then the date; the full date and
- * time on hover. Until the library's RelativeTime (findings §5).
+ * A moment as people read it (Qeetrix's RelativeTime): "6 days ago" up to a month back, then the
+ * date; the full date and time on hover. A moment a little ahead of the clock reads as now.
  */
 export function When({ at, now }: { at: string; now: number }) {
-  return (
-    <time dateTime={at} title={formatDateTime(at, formatLocale())}>
-      {whenText(at, now)}
-    </time>
-  );
+  return <RelativeTime date={Math.min(Date.parse(at), now)} now={now} locale={formatLocale()} />;
 }
 
 /** When's words alone, for a sentence: "6 days ago", or the date past a month. */

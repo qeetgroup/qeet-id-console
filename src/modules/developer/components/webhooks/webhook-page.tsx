@@ -12,6 +12,7 @@ import {
   Button,
   formatRelativeTime,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -105,9 +106,9 @@ export function WebhookPage({ id }: { id: string }) {
             title={t("webhook.notFound")}
             description={t("webhook.notFoundDescription")}
             actions={
-              <Button variant="soft" render={<RouterLink to="/developer/webhooks" />}>
+              <LinkButton variant="soft" render={<RouterLink to="/developer/webhooks" />}>
                 {t("webhook.backToList")}
-              </Button>
+              </LinkButton>
             }
           />
         )}
@@ -280,7 +281,8 @@ export function WebhookPage({ id }: { id: string }) {
                     { value: ALL, label: t("webhook.deliveries.all", { n: n(deliveries.length) }) },
                     ...OUTCOMES.filter((o) => counts[o]).map((o) => ({
                       value: o,
-                      label: `${t(`delivery.outcome.${o}`)} · ${n(counts[o])}`,
+                      label: t(`delivery.outcome.${o}`),
+                      meta: n(counts[o]),
                     })),
                   ]}
                 />

@@ -18,6 +18,7 @@ import { sessionStore } from "@/platform/auth/session-store";
 import { ERROR_CODES } from "@/platform/errors/error-codes";
 import { errorMessage } from "@/platform/errors/user-message";
 import { ApiError } from "@/platform/api/client";
+import { isMfaChallenge, type MfaChallenge } from "../api/flows";
 import {
   type InvitePreview,
   useAcceptInvite,
@@ -26,6 +27,7 @@ import {
 } from "../api/flows-invitations";
 import { passkeyErrorMessage, useAcceptInviteWithPasskey } from "../api/passkey-flows";
 import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { LazyMfaChallengeStep, preloadMfaChallengeStep } from "./lazy-mfa-challenge-step";
 import { EntryAccount, EntryConsent, EntryOr, EntryShell } from "./entry-shell";
 
 /**
@@ -36,17 +38,28 @@ import { EntryAccount, EntryConsent, EntryOr, EntryShell } from "./entry-shell";
  */
 export function AcceptInvitePage({ token, session }: { token: string; session: PublicSession }) {
   const steps = useEntrySteps();
+  // A new account in an organization that asks for a second factor goes on to it, in its frame.
+  const [challenge, setChallenge] = useState<MfaChallenge>();
+  if (challenge) return <LazyMfaChallengeStep challenge={challenge} />;
   return (
     // Signed in, there's no way to sign in to choose: what's left is joining.
     <EntryShell
       panel={<EntryPanel steps={steps.invite} current={session.isAuthenticated ? 2 : 1} />}
     >
-      <Invitation token={token} session={session} />
+      <Invitation token={token} session={session} onChallenge={setChallenge} />
     </EntryShell>
   );
 }
 
-function Invitation({ token, session }: { token: string; session: PublicSession }) {
+function Invitation({
+  token,
+  session,
+  onChallenge,
+}: {
+  token: string;
+  session: PublicSession;
+  onChallenge: (challenge: MfaChallenge) => void;
+}) {
   const { t } = useTranslation("auth-flow");
   const preview = useInvitePreview(token);
 
@@ -70,7 +83,7 @@ function Invitation({ token, session }: { token: string; session: PublicSession 
   if (session.isAuthenticated)
     return <AcceptAsMe token={token} invite={preview.data} session={session} />;
   if (preview.data.account_exists) return <HasAccount invite={preview.data} />;
-  return <Join token={token} invite={preview.data} />;
+  return <Join token={token} invite={preview.data} onChallenge={onChallenge} />;
 }
 
 function Head({ title, lede }: { title: string; lede?: ReactNode }) {
@@ -116,7 +129,15 @@ function expiryDate(invite: InvitePreview) {
 }
 
 /** A new account for the invited address: a passkey first, a password as the fallback. */
-function Join({ token, invite }: { token: string; invite: InvitePreview }) {
+function Join({
+  token,
+  invite,
+  onChallenge,
+}: {
+  token: string;
+  invite: InvitePreview;
+  onChallenge: (challenge: MfaChallenge) => void;
+}) {
   const { t } = useTranslation("auth-flow");
   const accept = useAcceptInvite();
   const withPasskey = useAcceptInviteWithPasskey();
@@ -162,7 +183,11 @@ function Join({ token, invite }: { token: string; invite: InvitePreview }) {
           const display_name = String(values.display_name ?? "").trim() || undefined;
           if (withPassword) {
             withPasskey.reset();
-            accept.mutate({ token, password: String(values.password ?? ""), display_name });
+            preloadMfaChallengeStep();
+            accept.mutate(
+              { token, password: String(values.password ?? ""), display_name },
+              { onSuccess: (res) => isMfaChallenge(res) && onChallenge(res) },
+            );
           } else {
             accept.reset();
             withPasskey.mutate({ token, display_name });
@@ -278,7 +303,7 @@ function AcceptAsMe({
   const user = me.isError ? undefined : me.data;
   // The server checks the address too; this says so before a click that would fail.
   const otherAddress =
-    user !== undefined && user.email.toLowerCase() !== invite.email.toLowerCase();
+    user?.email !== undefined && user.email.toLowerCase() !== invite.email.toLowerCase();
   const busy = accept.isPending || accept.isSuccess || logout.isPending;
 
   return (

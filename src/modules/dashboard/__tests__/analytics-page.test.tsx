@@ -9,7 +9,10 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1", useUserId: () => "u-me" }));
+vi.mock("@/platform/auth/session", () => ({
+  useOrganizationId: () => "t-1",
+  useUserId: () => "u-me",
+}));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => {
@@ -86,7 +89,9 @@ describe("Analytics", () => {
     expect(queries).toHaveLength(6);
     const signIns = queries.filter((q) => q.q);
     expect(signIns.every((q) => q.types === "auth.login_succeeded")).toBe(true);
-    expect(signIns[0]?.q).toBe("-tenant_switch -tenant_create -invite_accept");
+    expect(signIns[0]?.q).toBe(
+      '-"organization_switch" -"organization_create" -"tenant_switch" -"tenant_create" -"invite_accept"',
+    );
     expect(queries.filter((q) => q.types === "auth.sign_in_failed")).toHaveLength(2);
     expect(queries.every((q) => q.bucket === 86_400)).toBe(true);
     // The range is open-ended; the period before ends where it starts.

@@ -23,7 +23,7 @@ export { ApiError } from "@/platform/errors/api-error";
 type RequestOpts<T = unknown> = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
-  query?: Record<string, string | number | undefined>;
+  query?: Record<string, string | number | readonly string[] | undefined>; // a list repeats it
   signal?: AbortSignal;
   anonymous?: boolean; // no session token, for public endpoints such as sign-up
   schema?: ZodType<T>; // checks the response, throwing ApiError on a mismatch
@@ -134,10 +134,12 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
     await clearBrowserSession();
     throw new ApiError(401, "auth.session_expired", "Your session has expired.");
   }
-  const serializedQuery: Record<string, string | number> = {};
+  const serializedQuery: Record<string, string | number | string[]> = {};
   if (query) {
     for (const [k, v] of Object.entries(query)) {
-      if (v !== undefined && v !== null && v !== "") serializedQuery[k] = v;
+      if (v === undefined || v === null || v === "") continue;
+      if (typeof v !== "object") serializedQuery[k] = v;
+      else if (v.length) serializedQuery[k] = [...v];
     }
   }
 

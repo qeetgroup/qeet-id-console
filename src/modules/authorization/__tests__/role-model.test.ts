@@ -19,7 +19,7 @@ import {
 const perm = (key: string): Permission => ({ id: `p-${key}`, key, description: "" });
 const role = (id: string, name: string, over: Partial<Role> = {}): Role => ({
   id,
-  tenant_id: "t",
+  organization_id: "t",
   name,
   description: "",
   is_system: false,

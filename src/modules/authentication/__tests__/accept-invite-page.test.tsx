@@ -36,6 +36,13 @@ vi.mock("@/modules/authentication/api/passkey-flows", () => ({
     error: null,
   }),
 }));
+// The second-factor step has its own tests; here it only shows which challenge it was handed.
+vi.mock("../components/lazy-mfa-challenge-step", () => ({
+  LazyMfaChallengeStep: ({ challenge }: { challenge: { mfa_token: string } }) => (
+    <p>Second factor for {challenge.mfa_token}</p>
+  ),
+  preloadMfaChallengeStep: vi.fn(),
+}));
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: me.current, isPending: false, isError: false }),
   useLogout: () => ({ mutate: vi.fn(), isPending: false }),
@@ -50,7 +57,7 @@ const SIGNED_OUT = { isAuthenticated: false } as PublicSession;
 const SIGNED_IN = {
   isAuthenticated: true,
   userId: "u1",
-  tenantId: null,
+  organizationId: null,
   sessionId: "s1",
   expiresAt: null,
   version: 1,
@@ -123,10 +130,26 @@ describe("an invitation link, signed out", () => {
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/invites/accept", {
         method: "POST",
-        body: { token: "tok", password: "correct horse", display_name: undefined },
+        body: { token: "tok", password: "correct horse", display_name: "" },
         anonymous: true,
       }),
     );
+  });
+
+  it("goes on to the second factor when the organisation asks for one", async () => {
+    vi.mocked(api).mockImplementation((path: string) =>
+      Promise.resolve(
+        path === "/v1/invites/lookup"
+          ? invitation()
+          : { mfa_required: true, mfa_token: "mfa-1", methods: ["totp"], factors: [] },
+      ),
+    );
+    renderPage("tok");
+    fireEvent.click(await screen.findByRole("button", { name: "Use a password instead" }));
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "correct horse" } });
+    fireEvent.click(screen.getByRole("button", { name: "Join with a password" }));
+    expect(await screen.findByText("Second factor for mfa-1")).toBeTruthy();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("offers only a password where the organisation allows no passkeys", async () => {

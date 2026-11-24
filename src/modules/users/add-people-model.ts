@@ -6,7 +6,7 @@ import type { User } from "./api/users";
 /** The most invitations one send goes out with, so a pasted list can't fan out without bound. */
 export const MAX_INVITES = 50;
 
-const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const EMAIL = /^[^@\s]+@[^@\s.]+(?:\.[^@\s.]+)+$/;
 
 /** Each address once, as typed: one per line, or separated by commas, semicolons or spaces. */
 export function parseAddresses(text: string): string[] {

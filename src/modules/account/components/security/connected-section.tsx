@@ -1,6 +1,5 @@
 import { LinkIcon } from "@qeetrix/icons";
 import { Button } from "@qeetrix/react";
-import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { type ReactNode, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { relative } from "@/modules/account/relative-time";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { Item, LoadFailed, Loading, Section } from "../account-parts";
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -26,10 +26,10 @@ const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // A provider's own mark; one without an entry gets a link glyph. Monochrome marks drawn in white
 // are inverted where they'd vanish (see .account-icon in account.css).
 const PROVIDER_ICONS: Record<string, ReactNode> = {
-  google: <Google />,
-  microsoft: <Microsoft />,
-  github: <Github data-invert="dark" />,
-  apple: <Apple data-invert="light" />,
+  google: <BrandLogo name="google" />,
+  microsoft: <BrandLogo name="microsoft" />,
+  github: <BrandLogo name="github" invert="dark" />,
+  apple: <BrandLogo name="apple" invert="light" />,
 };
 
 /**

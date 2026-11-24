@@ -247,7 +247,7 @@ button.rule-group-head,
 }
 
 /* Where the output is narrow, the result goes under the request. */
-.ws-output-body {
+.qx-workspace-output-body {
   container-type: inline-size;
 }
 

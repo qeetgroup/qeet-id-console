@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -62,7 +62,7 @@ const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 function invite(id: string, overrides: Partial<Invitation>): Invitation {
   return {
     id,
-    tenant_id: "t1",
+    organization_id: "t1",
     email: `${id}@qeet.in`,
     role_id: "role-member",
     status: "pending",
@@ -91,8 +91,8 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path: string, opts?: { method?: string }) => {
     const method = opts?.method ?? "GET";
     if (method === "GET") {
-      if (path === "/v1/tenants/t1/invites") return { items: INVITES };
-      if (path === "/v1/tenants/t1/roles")
+      if (path === "/v1/organizations/t1/invites") return { items: INVITES };
+      if (path === "/v1/organizations/t1/roles")
         return {
           items: [
             { id: "role-member", name: "Member" },
@@ -104,7 +104,7 @@ beforeEach(() => {
           items: [
             {
               id: "u-kabir",
-              tenant_id: "t1",
+              organization_id: "t1",
               email: "kabir@qeet.in",
               display_name: "Kabir Fernandes",
               status: "active",
@@ -214,7 +214,7 @@ describe("the Invitations tab", () => {
     const body = vi
       .mocked(api)
       .mock.calls.find(([p, o]) => p === "/v1/invites" && o?.method === "POST")?.[1]?.body;
-    expect(body).toEqual({ tenant_id: "t1", email: "imran@qeet.in", role_id: "role-member" });
+    expect(body).toEqual({ organization_id: "t1", email: "imran@qeet.in", role_id: "role-member" });
   });
 
   it("is read-only without user.write: no selection, no menus, no Invite people", async () => {

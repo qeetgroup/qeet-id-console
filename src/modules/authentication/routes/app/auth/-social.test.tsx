@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError, getApiBaseUrl: () => "https://api.qeet.example" };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 const can = vi.hoisted(() => ({ write: true }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
@@ -52,7 +52,7 @@ import { Route } from "./social";
 const SocialPage = Route.options.component as () => React.JSX.Element;
 const GOOGLE = {
   id: "sp1",
-  tenant_id: "tenant-1",
+  organization_id: "tenant-1",
   provider: "google",
   client_id: "971520692396-aq7y5xpnpnr8ucbdp7kvnehs9hqcinu3.apps.googleusercontent.com",
   discovery_url: "https://accounts.google.com/.well-known/openid-configuration",
@@ -70,7 +70,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
     calls.push({ method, path, body: options?.body });
-    if (path === "/v1/tenants/tenant-1/social/providers") return { items: [GOOGLE] };
+    if (path === "/v1/organizations/tenant-1/social/providers") return { items: [GOOGLE] };
     if (path === "/v1/social/providers" && method === "POST") return { ...GOOGLE };
     if (path.startsWith("/v1/social/providers/")) return { ...GOOGLE, enabled: false };
     throw new Error(`Unexpected request ${method} ${path}`);
@@ -98,7 +98,7 @@ describe("Authentication › Social", () => {
     expect(within(add).queryByText("Google")).toBeNull();
     expect(within(add).getByText("Apple")).toBeTruthy();
     expect(within(add).queryByText("GitHub")).toBeNull();
-    fireEvent.click(within(add).getByRole("button", { name: "5 more that need a discovery URL" }));
+    fireEvent.click(within(add).getByRole("button", { name: "Show 5 more" }));
     expect(within(add).getByText("GitHub")).toBeTruthy();
     expect(within(add).getByText(/Bitbucket, Spotify,? and Reddit can't be added/)).toBeTruthy();
   });
@@ -121,7 +121,6 @@ describe("Authentication › Social", () => {
         method: "POST",
         path: "/v1/social/providers",
         body: {
-          tenant_id: "tenant-1",
           provider: "apple",
           client_id: "in.qeet.web",
           client_secret: "s3cret",

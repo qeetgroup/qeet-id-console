@@ -18,7 +18,8 @@ function isSecretValue(value: unknown): boolean {
   );
 }
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// Starts only where a run of address characters starts, so a long run is tried once.
+const EMAIL = /(?<![\w.%+-])[\w.%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
 const IPV4 = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
 
 /** Masks emails and IPv4 addresses. Numeric runs are kept: masking would corrupt IDs. */

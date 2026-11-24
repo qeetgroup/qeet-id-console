@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
 import { sessionStore } from "@/platform/auth/session-store";
 import { downloadBlob } from "@/shared/utils/data-export";
 
@@ -10,7 +10,7 @@ import { downloadBlob } from "@/shared/utils/data-export";
 export function useExportAccount() {
   return useMutation({
     mutationFn: async () => {
-      const data = await api<Record<string, unknown>>("/v1/account/export", { method: "POST" });
+      const data = await backend.post("/v1/account/export");
       downloadBlob(
         JSON.stringify(data, null, 2),
         "application/json",
@@ -29,10 +29,7 @@ export function useExportAccount() {
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: (password: string | null) =>
-      api<void>("/v1/account/delete", {
-        method: "POST",
-        body: password === null ? {} : { password },
-      }),
+      backend.post("/v1/account/delete", { body: password === null ? {} : { password } }),
     onSuccess: () => {
       sessionStore.clear();
       window.location.assign("/sign-up");

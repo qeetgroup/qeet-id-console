@@ -5,59 +5,70 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { useOrganizationId } from "@/platform/auth/session";
 import { directoryKeys } from "./keys";
 
-function useConnectionMutation<T>(run: (tenantId: string | null, id: string) => Promise<T>) {
-  const tenantId = useTenantId();
+function useConnectionMutation<T>(run: (organizationId: string | null, id: string) => Promise<T>) {
+  const organizationId = useOrganizationId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => run(tenantId, id),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+    mutationFn: (id: string) => run(organizationId, id),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
   });
 }
 
 /** Tries the LDAP connection: binds as its service account. The server records the result. */
 export function useTestLdapConnection() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<{ ok: boolean }>(`/v1/tenants/${tenantId}/ldap/${id}/test`, { method: "POST" }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/ldap/{id}/test", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
     meta: { silentError: true }, // the page says how the test went
   });
 }
 
 /** Turns an LDAP connection on (people can sign in with it) or off. */
 export function useSetLdapStatus() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, on }: { id: string; on: boolean }) =>
-      api(`/v1/tenants/${tenantId}/ldap/${id}`, {
-        method: "PATCH",
+      backend.patch("/v1/organizations/{organizationID}/ldap/{id}", {
+        path: { organizationID: organizationId ?? "", id },
         body: { status: on ? "active" : "disabled" },
       }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
   });
 }
 
 /** Deletes an LDAP connection; the people who signed in with it keep their accounts. */
 export function useDeleteLdapConnection() {
-  return useConnectionMutation((tenantId, id) =>
-    api<void>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "DELETE" }),
+  return useConnectionMutation((organizationId, id) =>
+    backend.delete("/v1/organizations/{organizationID}/ldap/{id}", {
+      path: { organizationID: organizationId ?? "", id },
+    }),
   );
 }
 
 /** Revokes the SCIM token: the identity provider can no longer send changes. */
 export function useRevokeScimToken() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => api<void>(`/v1/tenants/${tenantId}/scim/token`, { method: "DELETE" }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+    mutationFn: () =>
+      backend.delete("/v1/organizations/{organizationID}/scim/token", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
     meta: { successMessage: "directory:toast.scimTokenRevoked" },
   });
 }

@@ -14,6 +14,7 @@ import {
   formatDateTime,
   formatNumber,
   Link,
+  LinkButton,
   Skeleton,
 } from "@qeetrix/react";
 import { Alert, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
@@ -38,7 +39,7 @@ import {
 } from "@/modules/organizations/orgs-model";
 import { useOrgActions } from "@/modules/organizations/use-org-actions";
 import { TWO_STEP_TARGET, userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { IdentitySection } from "./org-identity";
@@ -58,18 +59,14 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const n = (value: number) => formatNumber(value, locale);
   const names = useOrgLabels();
   const access = useCapabilities();
-  const tenantId = useTenantId();
-  const current = orgId === tenantId;
-  const canWrite = access.can("tenant.write");
+  const organizationId = useOrganizationId();
+  const current = orgId === organizationId;
+  const canWrite = access.can("organization.write");
   const actions = useOrgActions();
   const [switching, setSwitching] = useState(false);
 
   const listQ = useOrgs();
   const mineQ = useQuery(orgQueries.memberships());
-  const recordQ = useQuery({
-    ...orgQueries.record(orgId),
-    enabled: current && access.can("tenant.read"),
-  });
   const historyQ = useQuery({
     ...orgQueries.history(orgId),
     enabled: current && access.can("audit.read"),
@@ -79,10 +76,8 @@ export function OrgPage({ orgId }: { orgId: string }) {
 
   const org = useMemo(
     () =>
-      orgRows(listQ.data?.items ?? [], mineQ.data, tenantId, recordQ.data).find(
-        (row) => row.id === orgId,
-      ),
-    [listQ.data, mineQ.data, tenantId, recordQ.data, orgId],
+      orgRows(listQ.data?.items ?? [], mineQ.data, organizationId).find((row) => row.id === orgId),
+    [listQ.data, mineQ.data, organizationId, orgId],
   );
   const changes = useMemo(() => changesOf(historyQ.data?.items ?? []), [historyQ.data]);
   const actorIds = [
@@ -90,7 +85,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
   ];
   const actorsQ = useQueries({
     queries: access.can("user.read")
-      ? actorIds.map((id) => ({ ...userQueries.detail(tenantId, id), staleTime: 60_000 }))
+      ? actorIds.map((id) => userQueries.name(organizationId, id))
       : [],
   });
   const actorNames = new Map(
@@ -116,9 +111,9 @@ export function OrgPage({ orgId }: { orgId: string }) {
           title={t("page.notFound")}
           description={t("page.notFoundDescription")}
           actions={
-            <Button render={<RouterLink to="/organizations" />} variant="soft">
+            <LinkButton render={<RouterLink to="/organizations" />} variant="soft">
               {t("page.backToList")}
-            </Button>
+            </LinkButton>
           }
         />
       </PageContent>
@@ -128,10 +123,10 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const members = org.member_count ?? 0;
   const share = twoStepShare(org);
   const without = members - (org.mfa_enabled_count ?? 0);
-  const created = changes.find((c) => c.action === "tenant.created");
+  const created = changes.find((c) => c.action === "organization.created");
   const createdBy = created?.actor_user_id ? actorNames.get(created.actor_user_id) : undefined;
   const due = org.deletion_due_at;
-  const inName = listQ.data?.items.find((item) => item.id === tenantId)?.name;
+  const inName = listQ.data?.items.find((item) => item.id === organizationId)?.name;
   const sub = subscriptionQ.data;
   const about = [org.metadata?.industry, org.metadata?.headquarters].filter(
     (v): v is string => typeof v === "string" && !!v.trim(),
@@ -141,8 +136,8 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const onSwitch = async () => {
     setSwitching(true);
     try {
-      const { switchToTenant } = await import("@/modules/authentication");
-      await switchToTenant(org.id);
+      const { switchToOrganization } = await import("@/modules/authentication");
+      await switchToOrganization(org.id);
     } catch (err) {
       setSwitching(false);
       toastSwitchFailure(err);
@@ -153,19 +148,16 @@ export function OrgPage({ orgId }: { orgId: string }) {
     <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
-        title={
-          // The logo sits in the title, unannounced, until PageHeader has a leading slot (QTRX-48).
-          <span className="org-title">
-            <Avatar
-              name={org.name}
-              src={org.logo_url || undefined}
-              shape="square"
-              size="lg"
-              decorative
-            />
-            {org.name}
-          </span>
+        leading={
+          <Avatar
+            name={org.name}
+            src={org.logo_url || undefined}
+            shape="square"
+            size="lg"
+            decorative
+          />
         }
+        title={org.name}
         status={
           due ? (
             <Badge tone="warning">
@@ -195,14 +187,14 @@ export function OrgPage({ orgId }: { orgId: string }) {
         actions={
           current ? (
             canWrite ? (
-              <Button
+              <LinkButton
                 variant="soft"
                 tone="neutral"
                 icon={PencilIcon}
                 render={<RouterLink to="/settings/organization/general" />}
               >
                 {t("page.edit")}
-              </Button>
+              </LinkButton>
             ) : undefined
           ) : org.status === "active" ? (
             <Button icon={ArrowLeftRightIcon} loading={switching} onClick={() => void onSwitch()}>

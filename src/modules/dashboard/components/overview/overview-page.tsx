@@ -6,7 +6,7 @@
 // Nothing here writes: loading the Dashboard never changes the organisation.
 
 import { UserPlusIcon } from "@qeetrix/icons";
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { Alert, DataState, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -15,7 +15,6 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import {
-  authPolicyQueries,
   oidcClientQueries,
   useLdapConnections,
   useOAuthGrants,
@@ -23,16 +22,16 @@ import {
   useSamlProviders,
   useScimConfig,
   useSocialProviders,
-  useTrustedDeviceSummary,
 } from "@/modules/authentication";
 import { useSubscription } from "@/modules/billing";
 import { apiKeyQueries, webhookQueries } from "@/modules/developer";
 import { orgQueries, useDomains } from "@/modules/organizations";
 import { useAnomalies } from "@/modules/security";
-import { invitationQueries, useUserStats } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useUserStats } from "@/modules/users";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
+import { useOrganizationOverview } from "@/modules/dashboard/api/organization-overview";
 import { loginMethodLabel } from "@/modules/dashboard/dashboard-model";
 import { appsInUse, deriveOverviewAttention } from "@/modules/dashboard/overview-model";
 import { deriveSetup } from "@/modules/dashboard/overview-setup-model";
@@ -53,14 +52,14 @@ const providerName = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
 export function OverviewPage() {
   const { t } = useTranslation("dashboard");
   const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = {
     analytics: access.can("analytics.read"),
     users: access.can("user.read"),
     audit: access.can("audit.read"),
     connections: access.can("connection.read"),
     policy: access.can("policy.read"),
-    tenant: access.can("tenant.read"),
+    tenant: access.can("organization.read"),
     keys: access.can("apikey.read"),
     webhooks: access.can("webhook.read"),
     billing: access.can("billing.read"),
@@ -69,36 +68,36 @@ export function OverviewPage() {
 
   const analytics = useAnalyticsOverview(can.analytics);
   const stats = useUserStats(can.users);
-  const invites = useQuery({
-    ...invitationQueries.list(tenantId),
-    enabled: can.users && !!tenantId,
-  });
-  const devices = useTrustedDeviceSummary(can.policy);
-  const policy = useQuery({
-    ...authPolicyQueries.detail(tenantId),
-    enabled: can.policy && !!tenantId,
-  });
+  // The set-up flags and counts the overview answers, each area only where the person may read it.
+  const summary = useOrganizationOverview(can.tenant);
+  const remembered = summary.data?.remembered_devices;
+  const devices = remembered
+    ? { devices: remembered.devices, users: remembered.people }
+    : undefined;
   const social = useSocialProviders(can.connections);
   const saml = useSamlConnections(can.connections);
   const samlApps = useSamlProviders(can.connections);
   const scim = useScimConfig(can.connections);
   const ldap = useLdapConnections(can.connections);
   const clients = useQuery({
-    ...oidcClientQueries.list(tenantId),
-    enabled: can.connections && !!tenantId,
+    ...oidcClientQueries.list(organizationId),
+    enabled: can.connections && !!organizationId,
   });
   const grants = useOAuthGrants(can.connections);
   const domains = useDomains(can.tenant);
-  const keys = useQuery({ ...apiKeyQueries.list(tenantId), enabled: can.keys && !!tenantId });
+  const keys = useQuery({
+    ...apiKeyQueries.list(organizationId),
+    enabled: can.keys && !!organizationId,
+  });
   const webhooks = useQuery({
-    ...webhookQueries.list(tenantId),
-    enabled: can.webhooks && !!tenantId,
+    ...webhookQueries.list(organizationId),
+    enabled: can.webhooks && !!organizationId,
   });
   const anomalies = useAnomalies(can.audit);
   const subscription = useSubscription(can.billing);
   const directory = useDirectoryInsights();
-  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
-    (item) => item.id === tenantId,
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!organizationId }).data?.items.find(
+    (item) => item.id === organizationId,
   )?.name;
 
   // A backend without the analytics endpoint answers with an empty overview: nothing to chart.
@@ -131,12 +130,12 @@ export function OverviewPage() {
     directory.attentionLoading ||
     (can.analytics && analytics.isLoading);
 
-  const p = policy.data;
-  const methods = p
+  const signIn = summary.data?.sign_in;
+  const methods = signIn
     ? [
-        ...(p.passkey_enabled ? [loginMethodLabel("passkey")] : []),
-        ...(p.password_enabled ? [loginMethodLabel("password")] : []),
-        ...(p.magic_link_enabled ? [loginMethodLabel("magic_link")] : []),
+        ...(signIn.passkey ? [loginMethodLabel("passkey")] : []),
+        ...(signIn.password ? [loginMethodLabel("password")] : []),
+        ...(signIn.magic_link ? [loginMethodLabel("magic_link")] : []),
         ...socialNames,
       ]
     : undefined;
@@ -146,7 +145,7 @@ export function OverviewPage() {
     samlApps: samlApps.data?.items,
     methods,
     userStats: stats.data,
-    pendingInvites: invites.data?.items.filter((i) => i.status === "pending").length,
+    pendingInvites: summary.data?.invitations?.pending,
     departments: directory.shape?.named,
     groups: directory.groups,
     domains: domains.data?.items,
@@ -170,8 +169,7 @@ export function OverviewPage() {
   const setupLoading =
     [
       stats,
-      invites,
-      policy,
+      summary,
       social,
       saml,
       samlApps,
@@ -193,7 +191,7 @@ export function OverviewPage() {
     );
   if (stats.data && stats.data.total > 0)
     security.push(
-      <TwoStepPanel key="twoStep" stats={stats.data} overview={overview} devices={devices.data} />,
+      <TwoStepPanel key="twoStep" stats={stats.data} overview={overview} devices={devices} />,
     );
 
   const peopleAndApps: ReactNode[] = [];
@@ -214,7 +212,7 @@ export function OverviewPage() {
     organisation.push(<OrgMapPanel key="map" shape={directory.shape} orgName={orgName} />);
   if (directory.places?.length)
     organisation.push(
-      <PlacesPanel key="places" places={directory.places} people={directory.people?.length ?? 0} />,
+      <PlacesPanel key="places" places={directory.places} people={directory.people ?? 0} />,
     );
 
   return (
@@ -224,9 +222,9 @@ export function OverviewPage() {
         description={t("overview.description")}
         actions={
           canInvite ? (
-            <Button icon={UserPlusIcon} render={<Link to="/invitations" />}>
+            <LinkButton icon={UserPlusIcon} render={<Link to="/invitations" />}>
               {t("overview.invite")}
-            </Button>
+            </LinkButton>
           ) : undefined
         }
       />

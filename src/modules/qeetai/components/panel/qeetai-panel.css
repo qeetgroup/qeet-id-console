@@ -1,84 +1,28 @@
 /*
- * The Qeet AI panel (qeetai-panel.tsx), drawn as the frame's own end-edge panels (AppShell's
- * Notifications and Help): under the top bar, a 1px start rule, a header band on the canvas tone,
- * then the body. It floats over the page, so it carries the overlay shadow (design rules §12).
- * Ruled and flat inside: the transcript, tool cards, history rows and composer are separated by
- * lines and tone. Token values only (--qx-*).
+ * The Qeet AI panel's content (qeetai-panel.tsx), inside the frame's AppShell panel, which draws
+ * its edge, header and resizing. Ruled and flat inside: the transcript, tool cards, history rows and
+ * composer are separated by lines and tone. Token values only (--qx-*).
  */
 
-/* ── The panel ───────────────────────────────────────────────────────────── */
+/* ── The panel's content, inside the frame's AppShell panel ───────────────── */
 
 .qai-panel {
-  position: fixed;
-  /* Over the page's own sticky parts (a table's header is at --qx-z-sticky); it starts under the
-     top bar, so it never meets it. Menus and dialogs stay above. */
-  z-index: calc(var(--qx-z-sticky) + 1);
-  /* The top bar's height, as AppShell's --qx-app-shell-top (the panel is compact, as the frame). */
-  inset-block: calc(var(--qx-size-control-lg) + 16px) 0;
-  inset-inline-end: 0;
   display: flex;
   flex-direction: column;
-  inline-size: min(var(--qai-panel-width, 400px), 100vw);
-  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  background: var(--qx-color-surface-default);
-  box-shadow: var(--qx-shadow-overlay);
+  block-size: 100%;
+  min-block-size: 0;
   color: var(--qx-color-text-default);
-  outline: 0;
 }
 
-.qai-panel-header {
+/* New conversation and History, at the top, under the panel's header. */
+.qai-panel-tools {
   display: flex;
   flex: none;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--qx-space-gap-sm);
-  block-size: calc(var(--qx-size-control-lg) + 8px);
-  padding-inline: var(--qx-space-inset-lg) var(--qx-space-inset-sm);
-  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  background: var(--qx-color-surface-canvas);
-}
-
-.qai-panel-title {
-  margin: 0;
-  font: var(--qx-typography-label-md);
-  font-weight: var(--qx-typography-title-sm-font-weight);
-  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
-}
-
-.qai-panel-tools {
-  display: flex;
-  align-items: center;
+  justify-content: flex-end;
   gap: var(--qx-space-gap-xs);
-}
-
-/* The divider on the start edge: drag it, or use the arrow keys, to resize the panel. */
-.qai-panel-resize {
-  position: absolute;
-  z-index: 1;
-  inset-block: 0;
-  inset-inline-start: -4px;
-  inline-size: 8px;
-  cursor: col-resize;
-  touch-action: none;
-  outline: 0;
-}
-
-.qai-panel-resize::after {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 3px;
-  inline-size: var(--qx-border-width-strong);
-  background: transparent;
-  content: "";
-  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
-}
-
-.qai-panel-resize:hover::after {
-  background: var(--qx-color-border-strong);
-}
-
-.qai-panel-resize:focus-visible::after {
-  background: var(--qx-color-border-focus);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
 }
 
 /* The body's states (checking, off, a failure): on the panel's inset, as the frame's panels. */
@@ -105,17 +49,12 @@
   min-block-size: 0;
 }
 
+/* The transcript (Qeetrix's Conversation) fills the panel between its head and the composer. */
 .qai-transcript {
   flex: 1;
   min-block-size: 0;
-  overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--qx-space-inset-lg);
-}
-
-.qai-log {
-  display: grid;
-  gap: var(--qx-space-gap-lg);
 }
 
 /* A new conversation: what it can do, then prompts to start from, ruled as the Help panel. */
@@ -198,12 +137,9 @@
   font: var(--qx-typography-label-sm);
 }
 
+/* The composer (Qeetrix's) at the panel's foot. */
 .qai-composer {
-  display: grid;
   flex: none;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--qx-space-gap-sm);
   padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
   background: var(--qx-color-surface-default);
 }
@@ -217,69 +153,7 @@
   border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
 }
 
-.qai-composer-note {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: var(--qx-color-text-subtle);
-  font: var(--qx-typography-body-sm);
-}
-
-/* ── Turns ───────────────────────────────────────────────────────────────── */
-
-.qai-turn {
-  display: grid;
-  gap: var(--qx-space-gap-xs);
-  min-inline-size: 0;
-}
-
-/* What the person asked: on the neutral tint at the end, not in Ember (it means nothing here). */
-.qai-turn[data-role="user"] {
-  justify-items: end;
-}
-
-.qai-question {
-  max-inline-size: 85%;
-  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
-  border-radius: var(--qx-radius-control);
-  background: var(--qx-color-bg-neutral-subtle);
-  font: var(--qx-typography-body-md);
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.qai-edit {
-  display: grid;
-  justify-items: end;
-  gap: var(--qx-space-gap-sm);
-  inline-size: 100%;
-}
-
-.qai-edit > :first-child {
-  inline-size: 100%;
-}
-
-.qai-edit-actions,
-.qai-turn-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--qx-space-gap-xs);
-}
-
-/* A turn's own actions show while it's hovered or holds focus; always on touch screens. */
-@media (hover: hover) {
-  .qai-turn:not(:hover, :focus-within) .qai-turn-actions {
-    opacity: 0;
-  }
-}
-
-.qai-thinking {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-  color: var(--qx-color-text-subtle);
-  font: var(--qx-typography-body-sm);
-}
-
+/* A tool that failed, under its card: why, in the danger colour. */
 .qai-turn-error {
   display: flex;
   align-items: flex-start;
@@ -292,6 +166,25 @@
 .qai-turn-error svg {
   flex: none;
   margin-block-start: 2px;
+}
+
+/* ── A question being edited: a full-width field, then Cancel and Send ──────────────────── */
+
+.qai-edit {
+  display: grid;
+  justify-items: end;
+  gap: var(--qx-space-gap-sm);
+  inline-size: 100%;
+}
+
+.qai-edit > :first-child {
+  inline-size: 100%;
+}
+
+.qai-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
 }
 
 /* ── Answers (markdown-message.tsx): headings, lists, quotes, code, links ──── */
@@ -536,37 +429,12 @@
   box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
 }
 
-/* Phones: the panel takes the whole width under the top bar. */
-@media (width < 840px) {
-  .qai-panel {
-    inline-size: 100vw;
-  }
-
-  .qai-panel-resize {
-    display: none;
-  }
-}
-
 @media (forced-colors: active) {
-  .qai-panel,
-  .qai-panel-header,
-  .qai-tool,
-  .qai-question {
+  .qai-tool {
     border-color: canvastext;
   }
 
   .qai-history-row[data-current] {
     box-shadow: inset var(--qx-border-width-accent) 0 0 highlight;
-  }
-}
-
-/*
- * From 1200px up the page makes room for the open panel, as AppShell does for the frame's own
- * panels: its main area (the public `app-shell-main` slot) gives way by the panel's width. Until
- * QTRX-75 lets Qeet AI be an AppShell panel.
- */
-@media (width >= 1200px) {
-  :root[data-qai-open] [data-slot="app-shell-main"] {
-    margin-inline-end: var(--qai-panel-width, 400px);
   }
 }

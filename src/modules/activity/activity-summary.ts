@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-
 import type { ActivityFilters, ActivitySummary } from "./types/activity.types";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { activityKeys } from "./api/keys";
+import { backend } from "@/platform/api/backend";
 
 const LIVE_REFETCH_MS = 30_000;
 
@@ -30,12 +28,12 @@ export function useActivitySummary(
   opts: { live?: boolean; enabled?: boolean } = {},
 ) {
   const { live = true, enabled = true } = opts;
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: activityKeys.summary(tenantId, summaryQuery(filters)),
+    queryKey: activityKeys.summary(organizationId, summaryQuery(filters)),
     queryFn: async (): Promise<ActivitySummary | undefined> => {
       try {
-        return await api<ActivitySummary>("/v1/activity/summary", { query: summaryQuery(filters) });
+        return await backend.get("/v1/activity/summary", { query: summaryQuery(filters) });
       } catch (err) {
         const status = (err as { status?: number }).status;
         if (!status || status === 404 || status === 503) return undefined;

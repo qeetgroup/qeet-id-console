@@ -4,18 +4,16 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ActivityEvent } from "@/modules/activity";
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import type { SuspendedDirectoryUser } from "./suspended";
 import { userKeys } from "./keys";
-
-type ActivityPage = { events: ActivityEvent[]; next_cursor?: string };
 
 /** The activity endpoint is optional: absent or down, the page shows no events, not an error. */
 async function activityPage(query: Record<string, string | number | undefined>) {
   try {
-    return await api<ActivityPage>("/v1/activity", { query });
+    return await backend.get("/v1/activity", { query });
   } catch (err) {
     if (err instanceof ApiError && (err.status === 404 || err.status === 503)) {
       return { events: [], next_cursor: undefined };
@@ -30,7 +28,7 @@ export const SIGN_IN_SAMPLE = 50;
 /** The person's latest sign-ins (`auth.login_succeeded`), newest first; each names its method. */
 export function useSignInHistory(userId: string, enabled: boolean) {
   return useQuery({
-    queryKey: [...userKeys.view(useTenantId(), userId, "activity"), "sign-ins"],
+    queryKey: [...userKeys.view(useOrganizationId(), userId, "activity"), "sign-ins"],
     queryFn: () =>
       activityPage({ subject: userId, types: "auth.login_succeeded", limit: SIGN_IN_SAMPLE }),
     enabled: enabled && !!userId,
@@ -44,16 +42,15 @@ export function useSignInHistory(userId: string, enabled: boolean) {
  * (the list's search matches IDs too); the user record carries neither. Null when they aren't in it.
  */
 export function useSuspension(userId: string, enabled: boolean) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: [...userKeys.suspended(tenantId), "person", userId],
+    queryKey: [...userKeys.suspended(organizationId), "person", userId],
     queryFn: async (): Promise<SuspendedDirectoryUser | null> => {
-      const page = await api<{ items: SuspendedDirectoryUser[] }>("/v1/users/suspended", {
-        query: { q: userId, limit: 25 },
-      });
-      return page.items.find((item) => item.id === userId) ?? null;
+      const page = await backend.get("/v1/users/suspended", { query: { q: userId, limit: 25 } });
+      const found = page.items?.find((item) => item.id === userId);
+      return (found as SuspendedDirectoryUser | undefined) ?? null;
     },
-    enabled: enabled && !!tenantId && !!userId,
+    enabled: enabled && !!organizationId && !!userId,
     staleTime: 30_000,
     meta: { silent: true },
   });
@@ -61,14 +58,16 @@ export function useSuspension(userId: string, enabled: boolean) {
 
 /** Takes a role given to the person directly away from them, in this organisation. */
 export function useUnassignRole() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
-      api<void>(`/v1/users/${userId}/tenants/${tenantId}/roles/${roleId}`, { method: "DELETE" }),
+      backend.delete("/v1/users/{userID}/organizations/{organizationID}/roles/{roleID}", {
+        path: { userID: userId, organizationID: organizationId ?? "", roleID: roleId },
+      }),
     onSuccess: (_, { userId }) => {
-      void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) });
-      void qc.invalidateQueries({ queryKey: userKeys.lists(tenantId) });
+      void qc.invalidateQueries({ queryKey: userKeys.user(organizationId, userId) });
+      void qc.invalidateQueries({ queryKey: userKeys.lists(organizationId) });
     },
     meta: { successMessage: "users:person.toast.roleRemoved" },
   });
@@ -79,15 +78,13 @@ export function useUnassignRole() {
  * sessions, app sign-ins and API keys here. Their account stays with its own organisation.
  */
 export function useRemoveMembership() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
-      api<{ roles_removed: number; sessions_ended: number }>(`/v1/users/${userId}/membership`, {
-        method: "DELETE",
-      }),
+      backend.delete("/v1/users/{id}/membership", { path: { id: userId } }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: userKeys.tenant(tenantId) });
+      void qc.invalidateQueries({ queryKey: userKeys.organization(organizationId) });
     },
     meta: { successMessage: "users:person.toast.removed" },
   });

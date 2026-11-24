@@ -12,9 +12,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   settleSensitiveAction,
@@ -82,15 +82,15 @@ export function MachineAccessPage({ tab, filters, onFiltersChange }: MachineAcce
   const access = useCapabilities();
   const canWrite = access.can("apikey.write");
   const canReadPeople = access.can("user.read");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const runSensitive = useSensitiveAction();
 
   const keysQ = useApiKeys();
   const identitiesQ = useServicePrincipals();
   const agentsQ = useAgents();
   const directory = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: canReadPeople && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: canReadPeople && !!organizationId,
   });
   const unmanagedQ = useUnmanagedClients(tab === "agent" && access.can("connection.read"));
 
@@ -266,7 +266,7 @@ export function MachineAccessPage({ tab, filters, onFiltersChange }: MachineAcce
   ];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t(`machine.title.${tab}`)}
@@ -463,6 +463,6 @@ export function MachineAccessPage({ tab, filters, onFiltersChange }: MachineAcce
           />
         </>
       ) : null}
-    </PageTabs>
+    </>
   );
 }

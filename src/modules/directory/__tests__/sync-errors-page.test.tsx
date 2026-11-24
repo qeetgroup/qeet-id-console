@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -89,9 +89,9 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
     const query = (options?.query ?? {}) as Record<string, unknown>;
-    if (path === "/v1/tenants/t1/directory/connections")
+    if (path === "/v1/organizations/t1/directory/connections")
       return { items: [record(state.connection)] };
-    if (path === "/v1/tenants/t1/directory/errors") {
+    if (path === "/v1/organizations/t1/directory/errors") {
       const items = (state.errors as { resolution: string }[]).filter(
         (e) => !query.resolution || e.resolution === query.resolution,
       );
@@ -174,7 +174,7 @@ describe("Directories › Sync errors", () => {
     renderPage();
     fireEvent.click(within(await problem()).getByRole("button", { name: /Check again/ }));
     await waitFor(() =>
-      expect(writes()).toEqual(["POST /v1/tenants/t1/directory/errors/e3/retry"]),
+      expect(writes()).toEqual(["POST /v1/organizations/t1/directory/errors/e3/retry"]),
     );
     expect(
       await screen.findByText(/^The check passed\. These failures are from before it/),
@@ -191,9 +191,9 @@ describe("Directories › Sync errors", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Mark resolved" }));
     await waitFor(() =>
       expect(writes()).toEqual([
-        "POST /v1/tenants/t1/directory/errors/e3/resolve",
-        "POST /v1/tenants/t1/directory/errors/e2/resolve",
-        "POST /v1/tenants/t1/directory/errors/e1/resolve",
+        "POST /v1/organizations/t1/directory/errors/e3/resolve",
+        "POST /v1/organizations/t1/directory/errors/e2/resolve",
+        "POST /v1/organizations/t1/directory/errors/e1/resolve",
       ]),
     );
   });
@@ -226,7 +226,7 @@ describe("Directories › Sync errors", () => {
     await problem();
     const queries = vi
       .mocked(api)
-      .mock.calls.filter(([path]) => path === "/v1/tenants/t1/directory/errors")
+      .mock.calls.filter(([path]) => path === "/v1/organizations/t1/directory/errors")
       .map(([, options]) => options?.query);
     expect(queries).toContainEqual(
       expect.objectContaining({

@@ -5,6 +5,7 @@ import {
   Checkbox,
   CheckboxGroup,
   formatNumber,
+  LinkButton,
   VisuallyHidden,
 } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
@@ -311,15 +312,14 @@ function TwoStepSection() {
           : t("password.twoStep.where")
       }
       action={
-        <Button
+        <LinkButton
           variant="ghost"
           className="am-head-action"
           icon={ArrowRightIcon}
-          // A Button rendered as a link is announced as a button until QTRX-8.
           render={<Link to="/settings/organization/security-policy" />}
         >
           {t("password.twoStep.link")}
-        </Button>
+        </LinkButton>
       }
     >
       {stats && without > 0 && (

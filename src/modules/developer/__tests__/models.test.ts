@@ -14,6 +14,7 @@ import {
   usedOf,
 } from "../machine-model";
 import {
+  areaOf,
   countOutcomes,
   deliveriesOverTime,
   endpointParts,
@@ -31,7 +32,7 @@ const key = (over: Partial<Parameters<typeof keyRow>[0]> = {}) =>
   keyRow(
     {
       id: "k1",
-      tenant_id: "t1",
+      organization_id: "t1",
       name: "CI deploys",
       prefix: "qk_abcdefgh",
       scopes: ["user.read"],
@@ -99,10 +100,11 @@ describe("machine credentials", () => {
 
 const hook = (over: Partial<Webhook> = {}): Webhook => ({
   id: "w1",
-  tenant_id: "t1",
+  organization_id: "t1",
   url: "https://hooks.acme.in/qeet/events?v=2",
   events: ["user.created", "session.revoked", "group.created"],
   created_at: iso(-90),
+  disabled_at: null,
   ...over,
 });
 const delivery = (over: Partial<WebhookDelivery> = {}): WebhookDelivery => ({
@@ -181,5 +183,7 @@ describe("webhooks", () => {
       { area: "signIn", count: 1 },
       { area: "groups", count: 1 },
     ]);
+    expect(areaOf("organization.suspended")).toBe("organisation");
+    expect(areaOf("test.ping")).toBe("test");
   });
 });

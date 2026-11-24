@@ -34,7 +34,7 @@ const SIGNED_OUT: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };

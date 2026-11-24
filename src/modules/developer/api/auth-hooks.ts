@@ -2,10 +2,9 @@
 // to the hook URL and honours its allow or deny. The secret is write-only.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface AuthHook {
   id: string;
@@ -17,30 +16,33 @@ export interface AuthHook {
 }
 
 export function useAuthHooks() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: developerKeys.authHooks(tenantId),
-    queryFn: () => api<{ items: AuthHook[] }>(`/v1/tenants/${tenantId}/auth-hooks`),
-    enabled: !!tenantId,
+    queryKey: developerKeys.authHooks(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/auth-hooks", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useCreateAuthHook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { url: string; secret: string; fail_open: boolean }) =>
-      api<AuthHook>(`/v1/tenants/${tenantId}/auth-hooks`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/auth-hooks", {
+        path: { organizationID: organizationId ?? "" },
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(organizationId) }),
     meta: { successMessage: "developer:toast.hookAdded", silentError: true },
   });
 }
 
 export function useUpdateAuthHook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -52,24 +54,24 @@ export function useUpdateAuthHook() {
       enabled: boolean;
       fail_open: boolean;
     }) =>
-      api<void>(`/v1/tenants/${tenantId}/auth-hooks/${id}`, {
-        method: "PATCH",
+      backend.patch("/v1/organizations/{organizationID}/auth-hooks/{id}", {
+        path: { organizationID: organizationId ?? "", id },
         body: { enabled, fail_open },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(organizationId) }),
     meta: { successMessage: "developer:toast.authHookUpdated" },
   });
 }
 
 export function useDeleteAuthHook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/auth-hooks/${id}`, {
-        method: "DELETE",
+      backend.delete("/v1/organizations/{organizationID}/auth-hooks/{id}", {
+        path: { organizationID: organizationId ?? "", id },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(organizationId) }),
     meta: { successMessage: "developer:toast.authHookDeleted" },
   });
 }

@@ -4,62 +4,40 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { orgKeys } from "./keys";
 
-export interface TenantDomain {
-  id: string;
-  domain: string;
-  verification_token: string;
-  dns_record_name: string;
-  dns_record_type: string;
-  dns_record_value: string;
-  verified_at?: string | null;
-  created_at: string;
-  last_checked_at?: string | null; // when the latest verification attempt ran
-  last_error?: string; // why that attempt failed
-  sso_enabled: boolean;
-  jit_enabled: boolean;
-  is_default: boolean;
-  status: "verified" | "pending" | "attention"; // server-derived; a failed check is attention
-}
-
-export interface DNSRecord {
-  type: string;
-  name: string;
-  value: string;
-}
-
-export interface LoginDomainStatus {
-  login_domain: string;
-  status: "not_configured" | "pending" | "active";
-  dns_verified: boolean;
-  dns_checked_at?: string | null;
-  dns_detail: string;
-  tls_state: "not_started" | "pending" | "issued";
-  tls_detail: string;
-  endpoint_state: "not_available" | "live";
-  endpoint_url?: string;
-  records: DNSRecord[];
-}
+/** A claimed email domain, with the DNS record that proves it and the latest check. */
+export type OrganizationDomain =
+  Answer<"/v1/organizations/{organizationID}/domains">["items"][number];
+/** The organisation's own sign-in address: its DNS, certificate and endpoint, step by step. */
+export type LoginDomainStatus = Answer<"/v1/organizations/{organizationID}/login-domain">;
+export type DNSRecord = LoginDomainStatus["records"][number];
 
 export function useDomains(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: orgKeys.domains(tenantId),
-    queryFn: () => api<{ items: TenantDomain[] }>(`/v1/tenants/${tenantId}/domains`),
-    enabled: !!tenantId && enabled,
+    queryKey: orgKeys.domains(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/domains", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId && enabled,
   });
 }
 
 /** Provisioning state of the tenant's custom hosted-login hostname. */
 export function useLoginDomain(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: orgKeys.loginDomain(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<LoginDomainStatus>(`/v1/tenants/${tenantId}/login-domain`),
+    queryKey: orgKeys.loginDomain(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/login-domain", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }

@@ -1,5 +1,14 @@
 import { DownloadIcon, RotateCcwIcon, UploadIcon, UsersIcon } from "@qeetrix/icons";
-import { Badge, Button, Field, formatNumber, Table, type TableColumn, Text } from "@qeetrix/react";
+import {
+  Badge,
+  Button,
+  Field,
+  formatNumber,
+  LinkButton,
+  Table,
+  type TableColumn,
+  Text,
+} from "@qeetrix/react";
 import { Alert, FileUpload, PageContent, PageHeader, Steps } from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -23,7 +32,7 @@ import {
   MAX_IMPORT_ROWS,
   parseImportFile,
 } from "@/modules/users/import-file";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference } from "@/platform/components/error-reference";
 import { errorMessage } from "@/platform/errors/user-message";
 import { exportToCsv } from "@/shared/utils/data-export";
@@ -47,8 +56,8 @@ export function ImportUsersPage() {
   const { t } = useTranslation("users");
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId)?.name;
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId)?.name;
   const directory = useUserDirectory();
   const importM = useBulkImportUsers();
   const [step, setStep] = useState<Step>("choose");
@@ -409,9 +418,9 @@ export function ImportUsersPage() {
                 <Button variant="ghost" icon={RotateCcwIcon} onClick={reset}>
                   {t("importPage.another")}
                 </Button>
-                <Button icon={UsersIcon} render={<RouterLink to="/users" />}>
+                <LinkButton icon={UsersIcon} render={<RouterLink to="/users" />}>
                   {t("importPage.viewUsers")}
-                </Button>
+                </LinkButton>
               </div>
             </section>
           ) : null}

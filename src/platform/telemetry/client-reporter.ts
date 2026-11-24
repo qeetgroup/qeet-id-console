@@ -85,12 +85,10 @@ export function createClientReporter({ send, route }: ReporterOptions): ClientRe
     return parsed.success ? parsed.data : null;
   }
 
+  // Reporting is best effort: a send that throws, or rejects, is dropped. The executor calls send
+  // at once (a page being hidden won't wait) and turns a throw into a rejection.
   function dispatch(batch: ClientReportEvent[]): void {
-    try {
-      send(batch).catch(() => undefined);
-    } catch {
-      // Reporting is best effort.
-    }
+    new Promise((resolve) => resolve(send(batch))).catch(() => undefined);
   }
 
   function flush(): void {

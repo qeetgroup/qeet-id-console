@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   type RiskSettings,
   useRiskSettings,
@@ -54,7 +54,7 @@ export function RiskPage() {
   const canWrite = useCapabilities().can("policy.write");
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("risk.title")}
@@ -75,7 +75,7 @@ export function RiskPage() {
           </DataState>
         )}
       </PageContent>
-    </PageTabs>
+    </>
   );
 }
 

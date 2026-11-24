@@ -25,7 +25,7 @@ export function healthCounts(connections: readonly DirectoryConnection[]) {
 
 /**
  * Where the organisation's people come from: SCIM's, LDAP's (null while the server doesn't count
- * them, QTID-964) and the rest, managed in Qeet ID.
+ * them) and the rest, managed in Qeet ID.
  */
 export function peopleSources(connections: readonly DirectoryConnection[], total: number) {
   const scim = connections.find((c) => c.type === "scim")?.userCount ?? 0;

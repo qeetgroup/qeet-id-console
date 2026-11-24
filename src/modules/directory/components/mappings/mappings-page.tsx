@@ -2,6 +2,7 @@ import { ArrowRightIcon, ChevronDownIcon, EyeIcon, NetworkIcon } from "@qeetrix/
 import {
   Badge,
   Button,
+  LinkButton,
   Menu,
   MenuContent,
   MenuRadioGroup,
@@ -15,7 +16,7 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { useLdapConnections } from "@/modules/authentication";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_ERROR_FILTERS,
   useDirectoryConnections,
@@ -71,11 +72,7 @@ export function MappingsPage({ filters, onFiltersChange }: MappingsPageProps) {
         breadcrumb={<PageBreadcrumb />}
         title={t("mappings.title")}
         description={t("mappings.description")}
-        tabs={
-          <PageTabs>
-            <PageTabList badges={{ "/directory/sync-errors": openQ.data?.summary.open }} />
-          </PageTabs>
-        }
+        tabs={<PageTabList badges={{ "/directory/sync-errors": openQ.data?.summary.open }} />}
       />
       <PageContent width="narrow">
         <div className="map">
@@ -95,13 +92,13 @@ export function MappingsPage({ filters, onFiltersChange }: MappingsPageProps) {
               title={t("mappings.none.title")}
               description={t("mappings.none.description")}
               actions={
-                <Button
+                <LinkButton
                   variant="soft"
                   icon={ArrowRightIcon}
                   render={<Link to="/directory/connections" />}
                 >
                   {t("mappings.none.action")}
-                </Button>
+                </LinkButton>
               }
             />
           ) : (
@@ -177,7 +174,6 @@ function ConnectionMappings({
             }
             action={
               connections.length > 1 ? (
-                // A picker that stays open after a choice is QTRX-42; this one closes on its own.
                 <Menu>
                   <MenuTrigger
                     render={
@@ -189,7 +185,7 @@ function ConnectionMappings({
                   <MenuContent align="end">
                     <MenuRadioGroup value={c.id} onValueChange={(id) => onSwitch(String(id))}>
                       {connections.map((x) => (
-                        <MenuRadioItem key={x.id} value={x.id} closeOnClick>
+                        <MenuRadioItem key={x.id} value={x.id}>
                           {nameOf(x)}
                         </MenuRadioItem>
                       ))}
@@ -209,9 +205,9 @@ function ConnectionMappings({
                 : statusHint
             }
             action={
-              <Button variant="ghost" size="sm" render={<Link {...connectionPage(c)} />}>
+              <LinkButton variant="ghost" size="sm" render={<Link {...connectionPage(c)} />}>
                 {t("mappings.connection.open")}
-              </Button>
+              </LinkButton>
             }
           >
             {c.status === "draft" ? (

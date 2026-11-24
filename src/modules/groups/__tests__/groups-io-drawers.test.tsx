@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -46,7 +46,7 @@ import { ImportGroupsDrawer } from "../components/import-groups-drawer";
 
 const group = (id: string, name: string, parent: string | null = null): Group => ({
   id,
-  tenant_id: "t-1",
+  organization_id: "t-1",
   parent_id: parent,
   name,
   description: "",
@@ -60,11 +60,12 @@ const GROUPS = [
 ];
 const template = (id: string, name: string, nodes: GroupTemplate["nodes"]): GroupTemplate => ({
   id,
-  tenant_id: "t-1",
+  organization_id: "t-1",
   name,
   description: "",
   nodes,
   created_at: "2025-09-17T10:00:00Z",
+  updated_at: "2025-09-17T10:00:00Z",
   group_count: nodes.length + nodes.reduce((s, n) => s + (n.children?.length ?? 0), 0),
 });
 let templates: GroupTemplate[];
@@ -72,10 +73,24 @@ let templates: GroupTemplate[];
 beforeEach(() => {
   templates = [
     template("squad", "Product squad", [
-      { name: "Squad", children: [{ name: "Squad Engineering" }, { name: "Squad Design" }] },
+      {
+        name: "Squad",
+        description: "",
+        children: [
+          { name: "Squad Engineering", description: "" },
+          { name: "Squad Design", description: "" },
+        ],
+      },
     ]),
     template("dept", "Department starter", [
-      { name: "Engineering", children: [{ name: "Platform" }, { name: "Payments" }] },
+      {
+        name: "Engineering",
+        description: "",
+        children: [
+          { name: "Platform", description: "" },
+          { name: "Payments", description: "" },
+        ],
+      },
     ]),
   ];
   vi.mocked(api).mockReset();
@@ -170,7 +185,14 @@ describe("New from a template", () => {
             nodes: [
               {
                 name: "Regional office",
-                children: [{ name: "Regional Sales", children: [{ name: "Field", children: [] }] }],
+                description: "",
+                children: [
+                  {
+                    name: "Regional Sales",
+                    description: "",
+                    children: [{ name: "Field", description: "", children: [] }],
+                  },
+                ],
               },
             ],
           },

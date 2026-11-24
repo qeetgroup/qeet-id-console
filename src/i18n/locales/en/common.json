@@ -181,9 +181,9 @@
     "saved": "Saved"
   },
   "capability": {
-    "tenant": {
-      "read": "View organization settings",
-      "write": "Manage organization settings"
+    "organization": {
+      "read": "View organisation settings",
+      "write": "Manage organisation settings"
     },
     "user": {
       "read": "View users",
@@ -296,5 +296,23 @@
     "privacy": "Privacy",
     "trust": "Trust Center",
     "language": "Language"
+  },
+  "role": {
+    "owner": {
+      "name": "Owner",
+      "line": "Everything, including deleting the organisation"
+    },
+    "admin": {
+      "name": "Admin",
+      "line": "Everything but deleting the organisation"
+    },
+    "member": {
+      "name": "Member",
+      "line": "Signs in to the organisation's apps; no administration"
+    },
+    "viewer": {
+      "name": "Viewer",
+      "line": "Reads everything but secrets, and changes nothing"
+    }
   }
 }

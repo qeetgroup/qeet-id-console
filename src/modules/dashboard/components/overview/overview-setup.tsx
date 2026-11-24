@@ -10,7 +10,7 @@ import {
   CircleDotDashedIcon,
 } from "@qeetrix/icons";
 import type { QeetrixIcon } from "@qeetrix/react";
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,17 +90,17 @@ export function SetupPanel({ groups }: { groups: SetupGroup[] }) {
                       <span className="overview-setup-word">
                         {t(`overview.setup.states.${item.state}`)}
                       </span>
-                      {i18n.t(item.detail.key, item.detail.params)}
+                      {i18n.t(item.detail.key, item.detail.params ?? {})}
                     </small>
                   </span>
                   {item.action ? (
-                    <Button
+                    <LinkButton
                       variant="ghost"
                       size="sm"
                       render={<Link to={item.action.to as never} />}
                     >
                       {i18n.t(item.action.label)}
-                    </Button>
+                    </LinkButton>
                   ) : null}
                 </li>
               );

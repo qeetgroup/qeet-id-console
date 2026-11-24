@@ -1,8 +1,9 @@
 // The Content-Security-Policy in a real browser, against the production build: every page carries
-// a fresh nonce on its policy and on each script, nothing the console needs is blocked, and the
-// policy editor (Monaco) loads from the console itself rather than a CDN.
-import { expect, type Page, test } from "@playwright/test";
+// a fresh nonce on its policy and on each script, nothing the console needs is blocked, and
+// everything loads from the console itself rather than a CDN.
+import type { Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { APP_URL, BACKEND_URL, hydrated, signIn } from "./support";
 
 test.beforeEach(async ({ request }) => {
@@ -71,8 +72,11 @@ test("the shell and the policy editor run under the policy, from this origin onl
   await hydrated(page);
   // The Simulator is part of Testing now; its Attributes question takes a JSON request.
   await page.getByRole("button", { name: "Attributes", exact: true }).click();
-  // Monaco mounts its editor, with its workers, in place of the read-only fallback.
-  await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 20_000 });
+  // The JSON request is a code field, coloured as it's typed: it takes text under the policy.
+  const request = page.getByRole("textbox", { name: "Request" });
+  await expect(request).toBeVisible();
+  await request.fill('{ "subject": {} }');
+  await expect(request).toHaveValue('{ "subject": {} }');
   expect(violations).toEqual([]);
   expect(foreign).toEqual([]);
 });

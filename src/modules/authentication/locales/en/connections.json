@@ -97,6 +97,7 @@
     "saml": "SAML sign-in",
     "samlNote": "Add, change, test and delete SAML connections",
     "scim": "SCIM provisioning",
+    "domainVerification": "Domain verification",
     "scimNote": "Make, replace and revoke the SCIM token",
     "state": {
       "active": "Open",

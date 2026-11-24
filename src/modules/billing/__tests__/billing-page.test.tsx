@@ -14,13 +14,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
-  tenantId: "tenant-a" as string | null,
+  organizationId: "tenant-a" as string | null,
   canRead: true,
   canWrite: true,
 }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => context.tenantId,
+  useOrganizationId: () => context.organizationId,
   useMe: () => ({ data: { id: "u1", email: "priya@example.test", display_name: "Priya" } }),
 }));
 vi.mock("@/platform/security/capability-provider", () => ({
@@ -135,7 +135,7 @@ function invoice(index: number, overrides: Partial<Invoice> = {}): Invoice {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   context.canRead = true;
   context.canWrite = true;
   fixtures = {
@@ -163,7 +163,7 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path === "/v1/billing/plans") return { items: catalogue() };
-    if (path === "/v1/tenants")
+    if (path === "/v1/organizations")
       return {
         items: [
           { id: "tenant-a", name: "Example Org" },
@@ -380,7 +380,7 @@ describe("Billing page", () => {
     fireEvent.click(within(dialog()).getByRole("button", { name: "Switch to Starter" }));
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith(
-        "/v1/tenants/tenant-a/billing/checkout",
+        "/v1/organizations/tenant-a/billing/checkout",
         expect.objectContaining({
           method: "POST",
           body: {
@@ -459,7 +459,7 @@ describe("Billing page", () => {
     await openChangePlan();
     fireEvent.click(screen.getByRole("radio", { name: "Starter" }));
     fireEvent.click(button("Switch to Starter"));
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     view.rerender(view.tree());
     await screen.findByText("Other Ltd");
     fireEvent.click(within(dialog()).getByRole("button", { name: "Switch to Starter" }));
@@ -474,7 +474,7 @@ describe("Billing page", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start trial" }));
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith(
-        "/v1/tenants/tenant-a/billing/trial",
+        "/v1/organizations/tenant-a/billing/trial",
         expect.objectContaining({ method: "POST", body: { plan_code: "pro", currency: "INR" } }),
       ),
     );
@@ -486,7 +486,9 @@ describe("Billing page", () => {
     renderPage();
     await screen.findByText("Billing couldn't be loaded");
     expect(
-      vi.mocked(api).mock.calls.filter(([path]) => String(path).includes("/v1/tenants/tenant-a")),
+      vi
+        .mocked(api)
+        .mock.calls.filter(([path]) => String(path).includes("/v1/organizations/tenant-a")),
     ).toHaveLength(0);
   });
 
@@ -517,7 +519,7 @@ describe("Billing details", () => {
     fireEvent.click(button("Save details"));
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith(
-        "/v1/tenants/tenant-a/billing/profile",
+        "/v1/organizations/tenant-a/billing/profile",
         expect.objectContaining({
           method: "PUT",
           body: expect.objectContaining({
@@ -549,8 +551,8 @@ describe("Invoices", () => {
     const rows = within(table).getAllByRole("row");
     expect(rows[1]?.textContent).toContain("1c10217f");
     expect(within(table).getByText("Open")).toBeTruthy();
-    // The row's button is named by its whole primary cell (QTRX-21).
-    fireEvent.click(within(table).getByRole("button", { name: /^1c10217f/ }));
+    // Qeetrix's Table names the row's button by its whole primary cell.
+    fireEvent.click(within(table).getByRole("button", { name: "Invoice 1c10217f" }));
     const drawer = await screen.findByRole("dialog", { name: "Invoice 1c10217f" });
     expect(within(drawer).getByText("IGST 18%")).toBeTruthy();
     expect(within(drawer).getByText("₹9,440.00")).toBeTruthy();

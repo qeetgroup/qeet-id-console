@@ -3,10 +3,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, api } from "@/platform/api/client";
+import { ApiError } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
 import { authKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface SocialIdentity {
   id: string;
@@ -21,7 +22,7 @@ export function useSocialIdentities() {
     queryKey: authKeys.socialIdentities(),
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
-        return await api<{ items: SocialIdentity[] }>(`/v1/me/social/identities`);
+        return await backend.get("/v1/me/social/identities");
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { items: [] };
@@ -38,7 +39,7 @@ export function useSocialIdentities() {
 export function useUnlinkIdentity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/me/social/identities/{id}", { path: { id } }),
     onSuccess: () => {
       void refreshSignInMethods(qc);
       return qc.invalidateQueries({ queryKey: authKeys.socialIdentities() });

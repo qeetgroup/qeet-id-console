@@ -1,12 +1,12 @@
 import { KeyRoundIcon, PlugZapIcon, SparklesIcon } from "@qeetrix/icons";
 import { Badge, Button, formatNumber, Text } from "@qeetrix/react";
-import { Anthropic, MicrosoftAzure, Openai } from "@thesvg/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { formatLocale, type TranslationKey } from "@/i18n";
 import type { QeetAIProviderConfig } from "@/modules/qeetai/api/qeetai";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { type ProviderActions, ProviderForm } from "./provider-form";
 import { Item, Panel, Section } from "./settings-parts";
 
@@ -21,9 +21,9 @@ const PROVIDER_NAME: Record<string, TranslationKey> = {
 
 /** The provider's mark, in its own colours; Anthropic's and OpenAI's are drawn for dark. */
 function ProviderMark({ provider }: { provider?: string }) {
-  if (provider === "anthropic") return <Anthropic data-invert="light" />;
-  if (provider === "openai") return <Openai data-invert="light" />;
-  if (provider === "azure") return <MicrosoftAzure />;
+  if (provider === "anthropic") return <BrandLogo name="anthropic" invert="light" />;
+  if (provider === "openai") return <BrandLogo name="openai" invert="light" />;
+  if (provider === "azure") return <BrandLogo name="microsoft-azure" />;
   return <KeyRoundIcon shape="sharp" />;
 }
 
@@ -49,7 +49,7 @@ export function ProviderSection({
 }) {
   const { t, i18n } = useTranslation("qeetai");
   const [editing, setEditing] = useState(false);
-  const own = config.source === "tenant";
+  const own = config.source === "organization";
   const locale = formatLocale();
   const name = i18n.t(PROVIDER_NAME[config.provider ?? ""] ?? "qeetai:providers.other");
   const facts = [

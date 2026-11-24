@@ -98,7 +98,9 @@ export function EmailContentTab({
                 key={variable}
                 description={t("emails.variableSample", {
                   sample:
-                    variable === "tenant_name" ? t("emails.tenantNameSample") : sampleVar(variable),
+                    variable === "organization_name"
+                      ? t("emails.organizationNameSample")
+                      : sampleVar(variable),
                 })}
                 onClick={() => insertVariable(variable)}
               >

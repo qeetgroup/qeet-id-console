@@ -2,9 +2,7 @@
 // module's barrel) doesn't. A key's secret is returned once, on create.
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import {
   type ApiKeyList,
@@ -13,18 +11,19 @@ import {
   createdApiKeySchema,
 } from "./api-keys";
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 /** Creates an API key and resolves with it and its plaintext secret, returned this once. */
 export function createApiKey(input: CreateApiKeyInput): Promise<CreatedApiKey> {
-  return api("/v1/api-keys", { method: "POST", body: input, schema: createdApiKeySchema });
+  return backend.post("/v1/api-keys", { body: input, schema: createdApiKeySchema });
 }
 
 export function useCreateApiKey() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: createApiKey,
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.apiKeys(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.apiKeys(organizationId) }),
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     meta: { successMessage: "developer:toast.apiKeyCreated", silentError: true }, // the sheet shows the error
   });
@@ -32,11 +31,11 @@ export function useCreateApiKey() {
 
 /** Revokes a key, marking it revoked in the list at once and restoring it if the call fails. */
 export function useRevokeApiKey() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
-  const listKey = developerKeys.apiKeys(tenantId);
+  const listKey = developerKeys.apiKeys(organizationId);
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/api-keys/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/api-keys/{id}", { path: { id } }),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: listKey });
       const previous = qc.getQueryData<ApiKeyList>(listKey);

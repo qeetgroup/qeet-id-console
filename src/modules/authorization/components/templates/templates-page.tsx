@@ -26,7 +26,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import type { Effect } from "@/modules/authorization/api/abac";
 import { setBuilderDoc } from "@/modules/authorization/store/authz-store";
 import { type PolicyDoc, toDsl } from "@/modules/authorization/utils/policy-codegen";
@@ -157,7 +157,7 @@ export function PolicyTemplatesPage({
   const openRow = open ? all.find((r) => r.template.id === open) : undefined;
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("lists.templates.title")}
@@ -254,7 +254,7 @@ export function PolicyTemplatesPage({
           <TemplateDrawerContent row={openRow} appliesTo={appliesTo(openRow.doc)} />
         ) : null}
       </Drawer>
-    </PageTabs>
+    </>
   );
 }
 

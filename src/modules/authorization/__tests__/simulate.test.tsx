@@ -4,10 +4,10 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
-const session = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const session = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => session.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => session.organizationId }));
 
 import { api } from "@/platform/api/client";
 import {
@@ -36,7 +36,7 @@ function expectRecordEnvelope(record: DecisionRecord) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  session.tenantId = "tenant-a";
+  session.organizationId = "tenant-a";
 });
 
 afterEach(cleanup);
@@ -57,7 +57,7 @@ describe("single-engine simulators", () => {
       record = await result.current.mutateAsync(input);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/access/v1/evaluation", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/access/v1/evaluation", {
       method: "POST",
       body: {
         subject: { type: "user", id: "u1" },
@@ -97,7 +97,7 @@ describe("single-engine simulators", () => {
       record = await result.current.mutateAsync(input);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/abac/evaluate", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/abac/evaluate", {
       method: "POST",
       body: input,
       query: { explain: "true" },
@@ -128,7 +128,12 @@ describe("single-engine simulators", () => {
     });
 
     expect(api).toHaveBeenCalledWith("/v1/check", {
-      query: { user_id: "u1", tenant_id: "tenant-a", permission: "users.read", explain: "true" },
+      query: {
+        user_id: "u1",
+        organization_id: "tenant-a",
+        permission: "users.read",
+        explain: "true",
+      },
     });
     assert(record, "record");
     expect(record).toMatchObject({
@@ -154,7 +159,7 @@ describe("single-engine simulators", () => {
       record = await result.current.mutateAsync(input);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples/check", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/relation-tuples/check", {
       method: "POST",
       body: input,
       query: { explain: "true" },
@@ -165,7 +170,7 @@ describe("single-engine simulators", () => {
   });
 
   it("refuses every single-engine evaluation without a tenant instead of calling the API", async () => {
-    session.tenantId = null;
+    session.organizationId = null;
     const authzen = renderHook(() => useAuthzenEvaluate(), { wrapper }).result.current;
     const abac = renderHook(() => useAbacSimulate(), { wrapper }).result.current;
     const rbac = renderHook(() => useRbacSimulate(), { wrapper }).result.current;
@@ -267,7 +272,7 @@ const RESOURCE = { type: "document", id: "doc-1" };
 
 describe("useBatchSimulate", () => {
   it("does nothing without a tenant", async () => {
-    session.tenantId = null;
+    session.organizationId = null;
     const { result } = renderHook(() => useBatchSimulate(), { wrapper });
 
     await act(async () => {
@@ -349,7 +354,7 @@ describe("useBatchSimulate", () => {
 
     expect(transport.calls.map((c) => [c.path, c.body])).toEqual([
       [
-        "/v1/tenants/tenant-a/access/v1/evaluation",
+        "/v1/organizations/tenant-a/access/v1/evaluation",
         {
           subject: { type: "user", id: "u0-ok" },
           resource: RESOURCE,
@@ -358,7 +363,7 @@ describe("useBatchSimulate", () => {
         },
       ],
       [
-        "/v1/tenants/tenant-a/access/v1/evaluation",
+        "/v1/organizations/tenant-a/access/v1/evaluation",
         {
           subject: { type: "user", id: "u1-ok" },
           resource: RESOURCE,

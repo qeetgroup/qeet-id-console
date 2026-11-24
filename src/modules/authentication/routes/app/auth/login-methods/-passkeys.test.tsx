@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));

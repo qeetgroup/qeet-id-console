@@ -1,5 +1,5 @@
 import { GlobeIcon } from "@qeetrix/icons";
-import { Badge, Button, Text, TextField } from "@qeetrix/react";
+import { Badge, Button, LinkButton, Text, TextField } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,9 +55,9 @@ export function BrandingAddress({
           }
           actions={
             canManageDomains && (
-              <Button variant="ghost" render={<Link to="/settings/organization/domains" />}>
+              <LinkButton variant="ghost" render={<Link to="/settings/organization/domains" />}>
                 {t(customDomain ? "address.manage" : "address.useOwn")}
-              </Button>
+              </LinkButton>
             )
           }
         />

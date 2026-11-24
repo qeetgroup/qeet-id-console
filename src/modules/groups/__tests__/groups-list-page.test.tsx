@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -58,7 +58,7 @@ import type { GroupFilters } from "../groups-model";
 
 const group = (id: string, name: string, members: number, parent: string | null = null): Group => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   parent_id: parent,
   name,
   description: parent ? "" : `Everyone in ${name}`,
@@ -76,7 +76,7 @@ const GROUPS = [
 const ROLES: Record<string, string[]> = { grc: ["Auditor"], sre: ["Developer"] };
 const person = (id: string, groups: number) => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   email: `${id}@qeet.in`,
   display_name: id,
   status: "active",
@@ -87,8 +87,8 @@ const person = (id: string, groups: number) => ({
 beforeEach(() => {
   granted.except = new Set();
   vi.mocked(api).mockImplementation(async (path: string) => {
-    if (path === "/v1/tenants/t1/groups") return { items: GROUPS };
-    const roles = /^\/v1\/tenants\/t1\/groups\/([^/]+)\/roles$/.exec(path);
+    if (path === "/v1/organizations/t1/groups") return { items: GROUPS };
+    const roles = /^\/v1\/organizations\/t1\/groups\/([^/]+)\/roles$/.exec(path);
     if (roles)
       return {
         items: (ROLES[roles[1] ?? ""] ?? []).map((name) => ({
@@ -99,7 +99,7 @@ beforeEach(() => {
       };
     if (path === "/v1/users")
       return { items: [person("Priya", 1), person("Arjun", 2), person("Mareedu", 0)] };
-    if (path === "/v1/tenants/t1/roles") return { items: [] };
+    if (path === "/v1/organizations/t1/roles") return { items: [] };
     if (path === "/v1/groups/templates") return { items: [] };
     throw new Error(`unexpected request: ${path}`);
   });
@@ -120,7 +120,10 @@ function renderPage(filters: GroupFilters = {}, onFiltersChange = vi.fn()) {
   );
   return { onFiltersChange };
 }
-const table = () => screen.getByRole("table", { name: "Groups" });
+// The tree is a tree grid; a search lists the matches flat, as a plain table.
+const table = () =>
+  screen.queryByRole("treegrid", { name: "Groups" }) ??
+  screen.getByRole("table", { name: "Groups" });
 
 describe("the Groups list", () => {
   it("leads with the key numbers, each a filter", async () => {
@@ -157,11 +160,12 @@ describe("the Groups list", () => {
       "/groups/pay",
     );
 
-    const fold = within(eng).getByRole("button", { name: "Hide the groups in Engineering" });
-    expect(fold.getAttribute("aria-expanded")).toBe("true");
-    fireEvent.click(fold);
+    // A tree grid: the row says whether it's open, its fold button says what it does.
+    expect(eng.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(within(eng).getByRole("button", { name: "Collapse Engineering" }));
     expect(within(table()).queryByRole("link", { name: "Payments" })).toBeNull();
-    fireEvent.click(within(eng).getByRole("button", { name: "Show the 3 groups in Engineering" }));
+    expect(eng.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(within(eng).getByRole("button", { name: "Expand Engineering" }));
     expect(within(table()).getByRole("link", { name: "Payments" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Collapse all" }));

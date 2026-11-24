@@ -23,7 +23,7 @@ export function parseOutline(text: string): GroupTemplateNode[] {
     if (!raw.trim()) continue;
     const indent = raw.length - raw.trimStart().length;
     const depth = Math.min(Math.floor(indent / 2), stack.length);
-    const node: GroupTemplateNode = { name: raw.trim(), children: [] };
+    const node: GroupTemplateNode = { name: raw.trim(), description: "", children: [] };
     const parent = depth ? stack[depth - 1] : undefined;
     if (parent) {
       parent.children = parent.children ?? [];

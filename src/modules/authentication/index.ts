@@ -17,6 +17,6 @@ export * from "./api/saml-idp";
 export * from "./api/trusted-devices";
 export * from "./api/push-devices";
 export * from "./api/scim";
-export { type LdapConnection, useLdapConnections } from "./api/ldap";
+export { type LdapConnection, ldapStatus, useLdapConnections } from "./api/ldap";
 export * from "./api/sso";
 export * from "./api/sessions";

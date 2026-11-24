@@ -2,13 +2,13 @@
 // local-first, so the server one is created on the first turn and its id kept on the local one.
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
 import { createQeetAIConversation } from "../api/qeetai";
 
 import { conversationActions, conversationStore } from "../store/conversation-store";
-import type { AIProvider, ProviderStatus, SendInput, StreamEvent } from "./ai-provider";
+import type { AIProvider, SendInput, StreamEvent } from "./ai-provider";
 import { buildTurnBody } from "./prompt-builder";
 import { streamQeetAITurn } from "./streaming-client";
+import { backend } from "@/platform/api/backend";
 
 /** Returns the server conversation id for a local one, creating it if needed; null on failure. */
 async function ensureServerConversation(localId: string): Promise<string | null> {
@@ -27,7 +27,7 @@ export const backendProvider: AIProvider = {
   id: "backend",
 
   status(signal) {
-    return api<ProviderStatus>("/v1/qeetai/status", { signal });
+    return backend.get("/v1/qeetai/status", { signal });
   },
 
   async *send(input: SendInput, opts: { signal: AbortSignal }): AsyncIterable<StreamEvent> {

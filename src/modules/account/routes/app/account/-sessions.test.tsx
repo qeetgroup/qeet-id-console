@@ -38,7 +38,7 @@ function session(id: string, revoked = false): Session {
   return {
     id,
     user_id: "user-1",
-    tenant_id: "",
+    organization_id: "",
     ip: "203.0.113.9",
     user_agent: "Mozilla/5.0 Chrome",
     device: `Chrome on ${id}`,

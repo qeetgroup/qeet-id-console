@@ -188,8 +188,7 @@ export function ActivityToolbar({
           ]}
         />
       </div>
-      {/* Only once something narrows the list: with nothing applied, the count is the header's.
-          FilterTags shows its summary even with no tags (QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

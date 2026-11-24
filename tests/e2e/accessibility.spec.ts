@@ -2,16 +2,16 @@
 // screens, creating an organisation and the main console pages in both themes, and the overlays a page scan can't reach
 // (command palette, a create sheet, a confirm dialog, a menu). Any violation fails.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import {
   ADMIN,
-  BACKEND_URL,
   hydrated,
   INVITED,
   MEMBER,
   ORG_TWO,
-  signIn,
+  signInOnce,
   signInToEntry,
   signInToPicker,
   signInUnverified,
@@ -123,6 +123,11 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page: Page) => page.locator("#main-content h1").first(),
   })),
   {
+    name: "infrastructure",
+    path: "/developer/infrastructure",
+    ready: (page) => page.getByText("Email delays").first(),
+  },
+  {
     name: "account profile",
     path: "/account/profile",
     ready: (page) => page.getByText("Member of", { exact: false }),
@@ -146,10 +151,15 @@ const CONSOLE_PAGES: Target[] = [
 
 /**
  * Violations from inside the design system that the console can't fix: each excuses one rule on
- * one element, every other rule still applies to it, and each is raised with Qeetrix (QTRX).
- * None open since @qeetrix/ui left (2026-10-28).
+ * one element, every other rule still applies to it, and its comment names the Qeetrix component
+ * and the issue (raised with Qeetrix as a Jira ticket, whose key never appears here).
  */
-const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [];
+const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [
+  // Table's row link (Qeetrix React 0.5): named by `rowLabel` ("Priya Patel") but wrapped around the
+  // whole primary cell (the email under the name too), so its visible text isn't all in its name.
+  // Label in name needs Qeetrix to name the link by what the row shows.
+  { rule: "label-content-name-mismatch", element: ".qx-table-row-link" },
+];
 
 /** Waits for the content, every panel's data and finite animations, so axe sees the page still. */
 async function settle(page: Page, content: Locator) {
@@ -182,7 +192,12 @@ async function expectAccessible(page: Page) {
       background-image: none !important;
     }`,
   });
-  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
+  // axe ships label-in-name (WCAG 2.5.3, level A) as experimental, off unless asked for. The tags
+  // come after: options() replaces whatever was set before it.
+  const { violations } = await new AxeBuilder({ page })
+    .options({ rules: { "label-content-name-mismatch": { enabled: true } } })
+    .withTags(WCAG_22_AA)
+    .analyze();
   const found = [];
   for (const violation of violations) {
     const known = DESIGN_SYSTEM_ISSUES.filter((issue) => issue.rule === violation.id);
@@ -202,12 +217,10 @@ async function expectAccessible(page: Page) {
   expect(found).toEqual([]);
 }
 
-// Each test signs in, renders a full page and runs axe over all of it.
+// Each test renders a full page and runs axe over all of it. Pages need the admin's session, signed
+// in once per worker and reused (signInOnce); the scans only read, so the backend isn't reset
+// between them. Tests of the sign-in steps themselves sign in each time.
 test.describe.configure({ timeout: 60_000 });
-
-test.beforeEach(async ({ request }) => {
-  await request.post(`${BACKEND_URL}/__test__/reset`);
-});
 
 for (const theme of THEMES) {
   test.describe(`${theme} theme`, () => {
@@ -253,7 +266,7 @@ for (const theme of THEMES) {
     });
 
     test("create-organization", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto("/create-organization?from=organizations");
       await settle(page, page.getByRole("radio", { name: "Pro" }));
       await expectAccessible(page);
@@ -265,7 +278,7 @@ for (const theme of THEMES) {
 
     for (const target of CONSOLE_PAGES) {
       test(target.name, async ({ page }) => {
-        await signIn(page, ADMIN.email);
+        await signInOnce(page, ADMIN.email);
         await page.goto(target.path);
         await settle(page, target.ready(page));
         await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
@@ -274,7 +287,8 @@ for (const theme of THEMES) {
     }
 
     test("command palette", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
+      await page.goto("/");
       await settle(page, page.getByText("1,240"));
       await page.getByRole("button", { name: "Search or jump to…" }).click();
       await settle(page, page.getByRole("dialog"));
@@ -282,7 +296,7 @@ for (const theme of THEMES) {
     });
 
     test("add people drawer", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto("/invitations");
       await settle(page, page.getByRole("button", { name: "Invite people" }));
       await page.getByRole("button", { name: "Invite people" }).click();
@@ -291,7 +305,7 @@ for (const theme of THEMES) {
     });
 
     test("confirm dialog", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto(`/users/${MEMBER.id}`);
       await settle(page, page.getByRole("heading", { name: MEMBER.name }));
       await page.getByRole("button", { name: "Delete user" }).click();
@@ -300,11 +314,118 @@ for (const theme of THEMES) {
     });
 
     test("account menu", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
+      await page.goto("/");
       await settle(page, page.getByText("1,240"));
       await page.getByLabel("Account menu").click();
       await settle(page, page.getByRole("menu"));
       await expectAccessible(page);
     });
+  });
+}
+
+// WCAG 1.4.10 (reflow): at 320 CSS pixels nothing scrolls sideways, save content that needs two
+// dimensions, which scrolls inside its own frame (a data table). A failure names what sticks out.
+//
+// These fail for the library alone: on Qeetrix React 0.5 a page header's actions don't wrap and a
+// tab list doesn't scroll at 320px, so a person's page (three actions, five tabs) scrolls sideways.
+// Tables scroll in their own frame since 0.2, which cleared every list page. Each is an expected
+// failure, so the Qeetrix release that fixes one also fails here until it's taken off the list.
+const LIBRARY_REFLOW = new Set(["user detail"]);
+
+test.describe("phone width", () => {
+  test.use({ viewport: { width: 320, height: 720 } });
+
+  for (const target of CONSOLE_PAGES) {
+    test(target.name, async ({ page }) => {
+      test.fail(LIBRARY_REFLOW.has(target.name), "Qeetrix React 0.5 layout; see LIBRARY_REFLOW");
+      await signInOnce(page, ADMIN.email);
+      await page.goto(target.path);
+      await settle(page, target.ready(page));
+      const sticksOut = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        if (document.documentElement.scrollWidth <= width + 1) return [];
+        const past = (el: Element) => el.getBoundingClientRect().right > width + 1;
+        return [...document.querySelectorAll("body *")]
+          .filter((el) => past(el) && !(el.parentElement && past(el.parentElement)))
+          .slice(0, 5)
+          .map(
+            (el) => `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`,
+          );
+      });
+      expect(sticksOut).toEqual([]);
+    });
+  }
+});
+
+// Longer languages (P2-8): German and Hindi run about 40% longer than English. Each page's words
+// grow by that much, where they are, so a long word stays one word as a German compound does, and
+// then nothing scrolls sideways and no control, label or heading cuts its own words off (an
+// ellipsis is a choice, so it passes). At phone width the pages the library can't yet narrow are
+// expected failures, as above.
+const LONGER = 0.4;
+const LIBRARY_LONGER = new Set([...LIBRARY_REFLOW]);
+
+async function lengthened(page: Page) {
+  return page.evaluate(async (longer) => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const words: Text[] = [];
+    while (walker.nextNode()) words.push(walker.currentNode as Text);
+    for (const node of words) {
+      if (node.parentElement?.closest("script, style, code, pre, svg")) continue;
+      node.textContent = (node.textContent ?? "").replace(
+        /\p{L}+/gu,
+        (word) => word + word.slice(0, Math.ceil(word.length * longer)),
+      );
+    }
+    // Two frames, so what lays itself out by measuring (a table's scroll frame) sees the new words.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const width = document.documentElement.clientWidth;
+    const named = (el: Element) =>
+      `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`;
+    const past = (el: Element) => el.getBoundingClientRect().right > width + 1;
+    const sideways =
+      document.documentElement.scrollWidth > width + 1
+        ? [...document.querySelectorAll("body *")]
+            .filter((el) => past(el) && !(el.parentElement && past(el.parentElement)))
+            .slice(0, 5)
+            .map(named)
+        : [];
+    const cut = [
+      ...document.querySelectorAll(
+        "button, a, label, th, h1, h2, h3, dt, [role=tab], [role=menuitem], [role=option]",
+      ),
+    ]
+      .filter((el): el is HTMLElement => el instanceof HTMLElement)
+      // Shown, on screen, and not visually hidden (as a skip link is until it has focus).
+      .filter((el) => el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
+      .filter((el) => el.clientWidth > 1 && el.getBoundingClientRect().right > 0)
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .filter((el) => getComputedStyle(el).textOverflow !== "ellipsis")
+      .slice(0, 5)
+      .map((el) => `${named(el)}: ${(el.textContent ?? "").trim().slice(0, 40)}`);
+    return { sideways, cut };
+  }, LONGER);
+}
+
+for (const [label, viewport] of [
+  ["desktop", { width: 1280, height: 800 }],
+  ["phone", { width: 320, height: 720 }],
+] as const) {
+  test.describe(`longer languages, ${label}`, () => {
+    test.use({ viewport });
+
+    for (const target of CONSOLE_PAGES) {
+      test(target.name, async ({ page }) => {
+        test.fail(
+          label === "phone" && LIBRARY_LONGER.has(target.name),
+          "Qeetrix React 0.5 layout; see LIBRARY_LONGER",
+        );
+        await signInOnce(page, ADMIN.email);
+        await page.goto(target.path);
+        await settle(page, target.ready(page));
+        expect(await lengthened(page)).toEqual({ sideways: [], cut: [] });
+      });
+    }
   });
 }

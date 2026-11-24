@@ -1,6 +1,10 @@
-import { CircleCheckIcon, CircleDashedIcon, CircleXIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { Badge, Card, Heading, Text } from "@qeetrix/react";
-import { CopyButton, Steps } from "@qeetrix/react/experimental";
+import {
+  CheckItem,
+  CopyButton,
+  CheckList as QeetrixCheckList,
+  Steps,
+} from "@qeetrix/react/experimental";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -93,8 +97,9 @@ export function Mono({ children }: { children: ReactNode }) {
 }
 
 /**
- * A value someone pastes into the other system: what it is, the value, where it goes, Copy.
- * Library gap (new): CopyField (redesign-findings §5).
+ * A value someone pastes into the other system: what it is, the value, where it goes, Copy. A
+ * Detail row, so it shares one description list with the facts beside it (Qeetrix's CopyField row
+ * isn't a description-list item).
  */
 export function CopyRow({
   label,
@@ -133,38 +138,34 @@ export type Check = {
   detail?: ReactNode;
   state: "ok" | "fail" | "todo" | "running";
 };
-const CHECK_ICON = {
-  ok: CircleCheckIcon,
-  fail: CircleXIcon,
-  todo: CircleDashedIcon,
-  running: LoaderCircleIcon,
+const CHECK_STATUS = {
+  ok: "passed",
+  fail: "failed",
+  todo: "pending",
+  running: "running",
 } as const;
 
-/**
- * A test's checks, each with its result in words as well as its icon (Passed, Failed, Not run).
- * Library gap (new): a checks-result list (redesign-findings §5).
- */
+/** A test's checks (Qeetrix's CheckList), each with its result in words as well as its icon. */
 export function CheckList({ checks, footer }: { checks: Check[]; footer?: ReactNode }) {
   const { t } = useTranslation("connections");
+  const messages = {
+    passed: t("parts.check.ok"),
+    failed: t("parts.check.fail"),
+    pending: t("parts.check.todo"),
+    running: t("parts.check.running"),
+  };
   return (
-    <div className="cx-checks">
-      <ul>
-        {checks.map((c) => {
-          const Icon = CHECK_ICON[c.state];
-          return (
-            <li key={c.label} data-state={c.state}>
-              <Icon size={16} aria-hidden="true" />
-              <span className="cx-check-text">
-                <strong>{c.label}</strong>
-                {c.detail ? <small>{c.detail}</small> : null}
-              </span>
-              <span className="cx-check-word">{t(`parts.check.${c.state}`)}</span>
-            </li>
-          );
-        })}
-      </ul>
-      {footer ? <div className="cx-checks-foot">{footer}</div> : null}
-    </div>
+    <QeetrixCheckList footer={footer}>
+      {checks.map((c) => (
+        <CheckItem
+          key={c.label}
+          title={c.label}
+          detail={c.detail}
+          status={CHECK_STATUS[c.state]}
+          messages={messages}
+        />
+      ))}
+    </QeetrixCheckList>
   );
 }
 

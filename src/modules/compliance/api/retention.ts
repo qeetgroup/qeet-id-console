@@ -3,10 +3,9 @@
 // only the Retention page loads.
 
 import { useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { complianceKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface RetentionPolicy {
   deleted_users_enabled: boolean;
@@ -18,10 +17,13 @@ export const RETENTION_DAYS = { min: 1, max: 3650 } as const;
 
 /** The tenant's retention rules; `enabled: false` for someone who can't read them (policy.read). */
 export function useRetentionPolicy(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: complianceKeys.retention(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`),
+    queryKey: complianceKeys.retention(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/retention", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }

@@ -1,6 +1,6 @@
+import { Sparkline } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
-import { Sparkline } from "@/modules/dashboard";
 import type { User } from "@/modules/users";
 import {
   countBy,

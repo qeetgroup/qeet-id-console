@@ -28,7 +28,7 @@ import { formatLocale } from "@/i18n";
 import { ERASURE_GRACE_DAYS, useCreateGdprPurge } from "@/modules/compliance/api/gdpr";
 import { isErased } from "@/modules/compliance/gdpr-model";
 import type { usePeople } from "@/modules/compliance/use-people";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference } from "@/platform/components/error-reference";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -69,7 +69,7 @@ function ErasureForm({
 }) {
   const { t } = useTranslation("compliance");
   const locale = formatLocale();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const runSensitive = useSensitiveAction();
   const create = useCreateGdprPurge();
   const [person, setPerson] = useState("");
@@ -90,7 +90,7 @@ function ErasureForm({
       {
         label: t("gdpr.file.groupPeople"),
         items: people.active.map((u) => {
-          const elsewhere = !!tenantId && u.tenant_id !== tenantId;
+          const elsewhere = !!organizationId && u.organization_id !== organizationId;
           return {
             value: u.id,
             label: u.display_name?.trim() || u.email,
@@ -118,7 +118,7 @@ function ErasureForm({
           })),
       },
     ].filter((g) => g.items.length > 0);
-  }, [people.active, people.deleted, pending, tenantId, t, locale]);
+  }, [people.active, people.deleted, pending, organizationId, t, locale]);
 
   async function submit() {
     const id = person.trim();

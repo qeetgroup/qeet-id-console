@@ -3,20 +3,14 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, getApiBaseUrl } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { getApiBaseUrl } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Schemas } from "@/platform/api/contract";
 
 /** One of the organisation's providers, as the server returns it: never its secret. */
-export interface SocialProvider {
-  id: string;
-  tenant_id: string;
-  provider: string;
-  client_id: string;
-  discovery_url: string | null;
-  enabled: boolean;
-  created_at: string;
-}
+export type SocialProvider = Schemas<"federation">["Provider"];
 
 /**
  * Returns the redirect URI the upstream IdP must allowlist. The backend owns the callback leg of
@@ -27,17 +21,20 @@ export const socialRedirectUri = (provider: string) =>
 
 /** Returns the providers configured for the current tenant. */
 export function useSocialProviders(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authKeys.socialProviders(tenantId),
-    enabled: enabled && !!tenantId,
-    queryFn: () => api<{ items: SocialProvider[] }>(`/v1/tenants/${tenantId}/social/providers`),
+    queryKey: authKeys.socialProviders(organizationId),
+    enabled: enabled && !!organizationId,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/social/providers", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
 /**
  * The fields an upsert sets. The server rejects unknown fields with a 400 and scopes the row to
- * the caller's tenant, ignoring the tenant_id the hook also sends.
+ * the caller's organization.
  */
 export interface UpsertSocialProviderInput {
   provider: string;
@@ -51,15 +48,12 @@ export interface UpsertSocialProviderInput {
  * switched on, and an empty client_secret keeps the stored one.
  */
 export function useUpsertSocialProvider() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: UpsertSocialProviderInput) =>
-      api<SocialProvider>("/v1/social/providers", {
-        method: "POST",
-        body: { tenant_id: tenantId, ...input },
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+      backend.post("/v1/social/providers", { body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(organizationId) }),
     meta: { successMessage: "authentication:toast.socialProviderSaved", silentError: true }, // the sheet shows it
   });
 }
@@ -73,15 +67,12 @@ export interface UpdateSocialProviderInput {
 }
 
 export function useUpdateSocialProvider() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ provider, ...input }: UpdateSocialProviderInput & { provider: string }) =>
-      api<SocialProvider>(`/v1/social/providers/${encodeURIComponent(provider)}`, {
-        method: "PATCH",
-        body: input,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+      backend.patch("/v1/social/providers/{provider}", { path: { provider }, body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(organizationId) }),
     meta: { successMessage: "authentication:toast.socialProviderUpdated", silentError: true }, // the sheet shows it
   });
 }
@@ -91,12 +82,12 @@ export function useUpdateSocialProvider() {
  * (social.provider_in_use) while someone can sign in only through it.
  */
 export function useDeleteSocialProvider() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (provider: string) =>
-      api<void>(`/v1/social/providers/${encodeURIComponent(provider)}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+      backend.delete("/v1/social/providers/{provider}", { path: { provider } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(organizationId) }),
     meta: { successMessage: "authentication:toast.socialProviderRemoved", silentError: true }, // the sheet shows it
   });
 }

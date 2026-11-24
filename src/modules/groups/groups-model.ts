@@ -173,19 +173,11 @@ export function visibleGroups(
   return out;
 }
 
-export type GroupRow = GroupNode & { continued?: boolean };
+export type GroupRow = GroupNode;
 
-/** One page of rows; a family that runs on from the page before marks its first row. */
-export function pageOf(
-  rows: readonly GroupNode[],
-  offset: number,
-  size: number,
-  flat: boolean,
-): GroupRow[] {
-  const page: GroupRow[] = rows.slice(offset, offset + size);
-  const first = page[0];
-  if (!flat && offset > 0 && first && first.depth > 0) page[0] = { ...first, continued: true };
-  return page;
+/** One page of rows (Table names a family that runs on from the page before). */
+export function pageOf(rows: readonly GroupNode[], offset: number, size: number): GroupRow[] {
+  return rows.slice(offset, offset + size);
 }
 
 /** The groups that have groups inside: the ones that fold. */

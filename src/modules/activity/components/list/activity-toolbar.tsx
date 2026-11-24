@@ -169,12 +169,10 @@ export function ActivityToolbar({
           onValueChange={(value) => onChange({ category: value ? String(value) : undefined })}
           items={[
             { value: ANY, label: t("toolbar.anyCategory") },
-            // Each count is part of its label until Select items have one of their own (QTRX-20).
             ...ACTIVITY_CATEGORIES.map((value) => ({
               value,
-              label: byCategory
-                ? `${categoryLabel(value)} · ${n(byCategory[value] ?? 0)}`
-                : categoryLabel(value),
+              label: categoryLabel(value),
+              meta: byCategory ? n(byCategory[value] ?? 0) : undefined,
             })),
           ]}
         />
@@ -182,8 +180,7 @@ export function ActivityToolbar({
           <ActivitySavedViews search={search} onApply={onApplyView} />
         </span>
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || search.q ? (
         <FilterTags
           filters={tags}

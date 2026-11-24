@@ -13,8 +13,8 @@ const STACK = ["delivered", "queued", "retrying", "held", "gaveUp"] as const;
  * The recent deliveries over time, a column a bucket (5 minutes, an hour or a day, by the span they
  * cover) stacked by outcome, every bucket to now (a quiet spell is a gap, not a missing column).
  * Under it, the outcomes with their counts. It shows what the list can't: when the failures started
- * and whether they stopped.
- * Library gap (new): a small stacked column chart.
+ * and whether they stopped. Not Qeetrix's ColumnChart yet: there a few failures among many
+ * deliveries draw under a pixel, and seeing them is the point.
  */
 export function DeliveryHealth({
   deliveries,

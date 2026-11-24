@@ -7,7 +7,6 @@ import { formatLocale } from "@/i18n";
 import { ACCESS, type Access, type GrantFilters, type GrantRow } from "./grants-model";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
 
 /** Search, then the application and access filters, in one row; what's applied under them. */
 export function GrantsToolbar({
@@ -63,7 +62,7 @@ export function GrantsToolbar({
             { value: ANY, label: t("filters.anyApp") },
             ...[...apps.entries()]
               .sort((a, b) => b[1].count - a[1].count)
-              .map(([id, app]) => ({ value: id, label: `${app.name} · ${n(app.count)}` })),
+              .map(([id, app]) => ({ value: id, label: app.name, meta: n(app.count) })),
           ]}
         />
         <Select
@@ -75,13 +74,13 @@ export function GrantsToolbar({
             { value: ANY, label: t("filters.anyAccess") },
             ...ACCESS.map((a) => ({
               value: a,
-              label: `${t(`access.${a}`)} · ${n(accessCount(a))}`,
+              label: t(`access.${a}`),
+              meta: n(accessCount(a)),
             })),
           ]}
         />
       </div>
-      {/* Only once something narrows the list: FilterTags shows its summary even with no tags
-          (QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

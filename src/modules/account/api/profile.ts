@@ -3,19 +3,17 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import type { Body } from "@/platform/api/contract";
 import { meKeys } from "@/platform/auth/session";
 
-export interface ProfileUpdate {
-  display_name?: string;
-  avatar_url?: string; // a data URL, or "" to remove the photo
-  locale?: string;
-}
+/** What the person may change: their name, photo (a data URL, or "" to remove it) and language. */
+export type ProfileUpdate = Pick<Body<"/v1/me", "patch">, "display_name" | "avatar_url" | "locale">;
 
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: ProfileUpdate) => api<unknown>("/v1/me", { method: "PATCH", body }),
+    mutationFn: (body: ProfileUpdate) => backend.patch("/v1/me", { body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: meKeys.all }),
     meta: { successMessage: "account:profile.toast.updated", silentError: true }, // the form shows it
   });

@@ -10,17 +10,13 @@ export const eligibleOrganizationSchema = z.object({
   region: z.string(),
   logo_url: z.string(),
   domain: z.string(),
-  // An organization's own account is a member without a role: [] today, null from an older server.
-  roles: z
-    .array(z.string())
-    .nullable()
-    .transform((roles) => roles ?? []),
+  roles: z.array(z.string()), // [] for an organization's own account, a member without a role
   last_used_at: z.string().datetime({ offset: true }).nullable(),
 });
 
 export const organizationSelectionPageSchema = z.object({
   items: z.array(eligibleOrganizationSchema),
-  next_cursor: z.string(),
+  next_cursor: z.string().optional(), // left out on the last page
 });
 
 export type EligibleOrganization = z.infer<typeof eligibleOrganizationSchema>;
@@ -28,7 +24,7 @@ export type OrganizationSelectionPage = z.infer<typeof organizationSelectionPage
 
 export function requiresOrganizationSelection(value: unknown): boolean {
   const result = organizationSelectionPageSchema.safeParse(value);
-  return !result.success || result.data.next_cursor !== "" || result.data.items.length > 1;
+  return !result.success || !!result.data.next_cursor || result.data.items.length > 1;
 }
 
 export async function signInRequiresOrganizationSelection(

@@ -4,20 +4,9 @@
 // https discovery URL), so a provider that doesn't offer it can't be added at all.
 
 import { QeetLogo } from "@qeetrix/icons";
-import {
-  Apple,
-  Discord,
-  Facebook,
-  Github,
-  Gitlab,
-  Google,
-  Linkedin,
-  Microsoft,
-  Slack,
-  Twitch,
-  X,
-} from "@thesvg/react";
 import type { ReactNode } from "react";
+
+import { BrandLogo } from "@/shared/components/brand-logo";
 
 export type SocialProviderId =
   | "google"
@@ -88,35 +77,26 @@ export function findSocialProvider(id: string): SocialProviderMeta | undefined {
 }
 
 /**
- * A provider's own mark (a third-party logo, so @thesvg's artwork, unmodified), for a row's icon
- * box. Monochrome marks are inverted where they'd vanish, as on My account (`data-invert`, styled
+ * A provider's own mark (a third-party logo, its brand's artwork from public/brand), for a row's
+ * icon box. Monochrome marks are inverted where they'd vanish, as on My account (`data-invert`, styled
  * by account.css); Qeet's own logo has a file per theme.
  */
 export function ProviderMark({ id }: { id: string }): ReactNode {
   switch (id) {
     case "google":
-      return <Google />;
     case "microsoft":
-      return <Microsoft />;
-    case "apple":
-      return <Apple data-invert="light" />;
     case "linkedin":
-      return <Linkedin />;
     case "gitlab":
-      return <Gitlab />;
     case "slack":
-      return <Slack />;
     case "twitch":
-      return <Twitch />;
-    case "github":
-      return <Github data-invert="dark" />;
-    // Facebook's mark ships without its own colour and takes the text colour.
     case "facebook":
-      return <Facebook fill="currentColor" />;
-    case "x":
-      return <X data-invert="dark" />;
     case "discord":
-      return <Discord />;
+      return <BrandLogo name={id} />;
+    case "apple":
+      return <BrandLogo name="apple" invert="light" />;
+    case "github":
+    case "x":
+      return <BrandLogo name={id} invert="dark" />;
     case "qeet":
       return (
         <span className="am-mark">

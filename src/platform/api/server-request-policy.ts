@@ -10,7 +10,7 @@ const EMBEDDED_SCHEME = /:\/\//;
 export function buildBackendUrl(
   apiBaseUrl: string,
   path: string,
-  query: Record<string, string | number> = {},
+  query: Record<string, string | number | readonly string[]> = {},
 ): URL {
   if (
     !path.startsWith("/") ||
@@ -31,8 +31,10 @@ export function buildBackendUrl(
     throw new Error("Backend API path escaped its configured origin.");
   }
 
+  // A list is the parameter repeated (id=a&id=b), as the server reads one.
   for (const [key, value] of Object.entries(query)) {
-    target.searchParams.set(key, String(value));
+    if (Array.isArray(value)) for (const item of value) target.searchParams.append(key, item);
+    else target.searchParams.set(key, String(value));
   }
   return target;
 }

@@ -291,7 +291,8 @@ export function SecretsPage({
                               { value: ANY, label: t("secrets.anyScope") },
                               ...scopes.map((scope) => ({
                                 value: scope,
-                                label: `${scopeLabel(scope)} · ${n(all.filter((s) => scopeOf(s) === scope).length)}`,
+                                label: scopeLabel(scope),
+                                meta: n(all.filter((s) => scopeOf(s) === scope).length),
                               })),
                             ]}
                           />
@@ -307,7 +308,8 @@ export function SecretsPage({
                             { value: ANY, label: t("secrets.anyChanged") },
                             ...CHANGED.map((id) => ({
                               value: id,
-                              label: `${t(`secrets.changed.${id}`)} · ${n(all.filter((s) => changedOf(s, now) === id).length)}`,
+                              label: t(`secrets.changed.${id}`),
+                              meta: n(all.filter((s) => changedOf(s, now) === id).length),
                             })),
                           ]}
                         />

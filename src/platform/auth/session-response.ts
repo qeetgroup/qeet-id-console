@@ -6,7 +6,7 @@ export type BackendTokenResponse = {
   expires_at: string;
   session_id: string;
   user_id: string;
-  tenant_id?: string;
+  organization_id?: string; // absent for a session that belongs to no organization
 };
 
 export type JsonValue =
@@ -37,16 +37,14 @@ export function isSessionIssuingRequest(path: string, method: string): boolean {
     "/v1/auth/mfa",
     "/v1/auth/signup",
     "/v1/auth/magic-link/consume",
-    "/v1/auth/switch-tenant",
+    "/v1/auth/switch-organization",
     "/v1/invites/accept",
     "/v1/invites/accept/passkey/finish",
     "/v1/me/invites/accept",
     "/v1/passkeys/login/finish",
     "/v1/signup/passkey/finish",
     "/v1/social/exchange",
-    "/v1/tenants",
-    "/v1/admin/impersonate",
-    "/v1/admin/impersonate/exit",
+    "/v1/organizations",
     "/saml/exchange",
   ]).has(path);
 }
@@ -77,7 +75,7 @@ export function serverSessionData(value: BackendTokenResponse): ServerSessionDat
     expiresAt: value.expires_at,
     sessionId: value.session_id,
     userId: value.user_id,
-    tenantId: value.tenant_id,
+    organizationId: value.organization_id,
     version: 1,
   };
 }

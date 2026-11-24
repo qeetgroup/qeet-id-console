@@ -9,7 +9,10 @@ import type { Me } from "@/platform/auth/session";
 import type { ReceivedInvite } from "../api/flows-invitations";
 import { EntryAccount, EntryOr } from "./entry-shell";
 
-export type PickerInvitation = Pick<ReceivedInvite, "id" | "tenant_name" | "email" | "expires_at">;
+export type PickerInvitation = Pick<
+  ReceivedInvite,
+  "id" | "organization_name" | "email" | "expires_at"
+>;
 
 /** What the picker is doing with an invitation: joining it or declining it. */
 export type InvitationAction = { id: string; action: "join" | "decline" } | null;
@@ -51,9 +54,9 @@ export function InvitationList({
         const busy = pending?.id === invitation.id;
         return (
           <li key={invitation.id} className="entry-invite">
-            <Avatar name={invitation.tenant_name} shape="square" size="md" decorative />
+            <Avatar name={invitation.organization_name} shape="square" size="md" decorative />
             <span className="entry-option-text">
-              <strong>{invitation.tenant_name}</strong>
+              <strong>{invitation.organization_name}</strong>
               <InvitationMeta invitation={invitation} />
             </span>
             <span className="entry-invite-actions">
@@ -63,7 +66,7 @@ export function InvitationList({
                 disabled={disabled}
                 loading={busy && pending?.action === "decline"}
                 aria-label={t("organizationSelection.declineNamed", {
-                  name: invitation.tenant_name,
+                  name: invitation.organization_name,
                 })}
                 onClick={() => onDecline(invitation)}
               >
@@ -75,7 +78,9 @@ export function InvitationList({
                 icon={ArrowRightIcon}
                 disabled={disabled}
                 loading={busy && pending?.action === "join"}
-                aria-label={t("organizationSelection.joinNamed", { name: invitation.tenant_name })}
+                aria-label={t("organizationSelection.joinNamed", {
+                  name: invitation.organization_name,
+                })}
                 onClick={() => onJoin(invitation)}
               >
                 {t("organizationSelection.join")}
@@ -116,12 +121,12 @@ export function InvitedView(props: {
       <div className="entry-heading">
         <Heading level={1} size="display-sm">
           {single
-            ? t("organizationSelection.joinTitle", { name: only.tenant_name })
+            ? t("organizationSelection.joinTitle", { name: only.organization_name })
             : t("organizationSelection.invitedTitle")}
         </Heading>
         <Text tone="subtle" size="lg">
           {single
-            ? t("organizationSelection.joinLead", { name: only.tenant_name })
+            ? t("organizationSelection.joinLead", { name: only.organization_name })
             : t("organizationSelection.invitedLead")}
         </Text>
       </div>
@@ -134,9 +139,9 @@ export function InvitedView(props: {
         <>
           <ul className="entry-options" aria-label={t("organizationSelection.invitations")}>
             <li className="entry-invite" data-single="">
-              <Avatar name={only.tenant_name} shape="square" size="md" decorative />
+              <Avatar name={only.organization_name} shape="square" size="md" decorative />
               <span className="entry-option-text">
-                <strong>{only.tenant_name}</strong>
+                <strong>{only.organization_name}</strong>
                 <InvitationMeta invitation={only} />
               </span>
             </li>
@@ -150,8 +155,8 @@ export function InvitedView(props: {
             onClick={() => props.onJoin(only)}
           >
             {pending?.action === "join"
-              ? t("organizationSelection.joining", { name: only.tenant_name })
-              : t("organizationSelection.joinTitle", { name: only.tenant_name })}
+              ? t("organizationSelection.joining", { name: only.organization_name })
+              : t("organizationSelection.joinTitle", { name: only.organization_name })}
           </Button>
           <div className="entry-links">
             <button

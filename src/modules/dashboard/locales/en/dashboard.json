@@ -283,6 +283,7 @@
     "searchUnavailable": "Search is available once your access has loaded",
     "qeetAi": "Qeet AI",
     "accountMenu": "Account menu",
+    "accountMenuFor": "{{initials}}, {{name}}, account menu",
     "switchOrganization": "Switch organisation",
     "youAreIn": "You're in {{name}}",
     "myAccount": "My account",
@@ -614,11 +615,6 @@
       "mapNote_one": "{{count}} department and its teams, sized by people",
       "mapNote_other": "{{count}} departments and their teams, sized by people",
       "mapLabel": "Departments and their teams",
-      "tile_one": "{{name}}, {{count}} person",
-      "tile_other": "{{name}}, {{count}} people",
-      "tileTeams_one": "{{name}}, {{count}} person: {{teams}}",
-      "tileTeams_other": "{{name}}, {{count}} people: {{teams}}",
-      "teamCount": "{{team}} {{count}}",
       "noDepartment": "No department",
       "noTeam": "No team",
       "noTeamFoot_one": "{{count}} person is in a department but no team",
@@ -632,8 +628,6 @@
       "placesNoteOneCountry_other": "{{count}} cities in {{country}}, sized by people",
       "people_one": "{{count}} person",
       "people_other": "{{count}} people",
-      "cityPeople_one": "{{city}}, {{count}} person",
-      "cityPeople_other": "{{city}}, {{count}} people",
       "cityShare": "{{share}} of people work in {{city}}",
       "elsewhere": "Elsewhere"
     }

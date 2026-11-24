@@ -1,6 +1,8 @@
-// The decision vocabulary the engines share (QTID-951): a stable reason code with what it names,
+// The decision vocabulary the engines share: a stable reason code with what it names,
 // and the `decided_by` summary every check response carries. All optional: an older server sends
 // only English sentences, which the console never shows as written.
+
+import type { Answer } from "@/platform/api/contract";
 
 /** What a reason code names; each field only for the codes that use it. */
 export interface ReasonParams {
@@ -19,11 +21,5 @@ export interface ReasonFields {
   reason_params?: ReasonParams;
 }
 
-/** The engine that decided a check, and why, as the caller may see it. */
-export interface DecidedBy {
-  model: string; // tenant, abac, rbac, rebac or none
-  rule?: string; // English; never shown
-  reason_code?: string;
-  reason_params?: ReasonParams;
-  policy_id?: string;
-}
+/** The engine that decided a check (organization, abac, rbac, rebac or none), and why. */
+export type DecidedBy = NonNullable<Answer<"/v1/check">["decided_by"]>;

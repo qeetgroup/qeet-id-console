@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "s1",
   useMe: () => ({ data: { id: "u-me", email: "priya@qeet.in", display_name: "Priya Nair" } }),
@@ -103,13 +103,13 @@ beforeEach(() => {
       const method = options?.method ?? "GET";
       calls.push({ method, path, body: options?.body });
       if (method === "GET") {
-        if (path === "/v1/tenants/t1/secrets") return { items: SECRETS };
-        if (path === "/v1/tenants/t1/auth-hooks") return { items: HOOKS };
-        if (path === "/v1/tenants/t1/credentials") return { items: CREDENTIALS };
+        if (path === "/v1/organizations/t1/secrets") return { items: SECRETS };
+        if (path === "/v1/organizations/t1/auth-hooks") return { items: HOOKS };
+        if (path === "/v1/organizations/t1/credentials") return { items: CREDENTIALS };
         if (path === "/v1/oidc/signing-keys") return { keys: KEYS };
       }
       if (method === "POST" && path.endsWith("/reveal")) return { value: "sk_live_revealed" };
-      if (method === "POST" && path === "/v1/tenants/t1/credentials")
+      if (method === "POST" && path === "/v1/organizations/t1/credentials")
         return { credential_id: "vc-new", jwt: "eyJ.shown.once", expires_at: ago(-365) };
       if (method !== "GET") return undefined;
       throw new Error(`Unexpected ${method} ${path}`);
@@ -160,7 +160,7 @@ describe("Secrets", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete secret" }));
     await waitFor(() =>
       expect(
-        calls.some((c) => c.method === "DELETE" && c.path === "/v1/tenants/t1/secrets/s1"),
+        calls.some((c) => c.method === "DELETE" && c.path === "/v1/organizations/t1/secrets/s1"),
       ).toBe(true),
     );
   });

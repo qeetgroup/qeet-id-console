@@ -2,7 +2,7 @@
 // long it has been so (from the runs before it), and the console page that changes its setting.
 
 import { ArrowRightIcon, CircleAlertIcon, CircleDashedIcon } from "@qeetrix/icons";
-import { Badge, Button, formatDate, formatNumber } from "@qeetrix/react";
+import { Badge, formatDate, formatNumber, LinkButton } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -133,7 +133,7 @@ function MissingItem({ control: c, since }: { control: ControlResult; since: str
       }
       actions={
         fix && canOpen ? (
-          <Button
+          <LinkButton
             variant="ghost"
             icon={ArrowRightIcon}
             render={<Link to={fix.to as never} />}
@@ -143,7 +143,7 @@ function MissingItem({ control: c, since }: { control: ControlResult; since: str
             })}
           >
             {t(`evidence.fix.${fix.place}`)}
-          </Button>
+          </LinkButton>
         ) : undefined
       }
     />

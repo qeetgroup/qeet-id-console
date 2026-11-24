@@ -1,11 +1,12 @@
 name: ci
 
-# Verify, on pull requests into develop and main: it compiles (typecheck), is formatted and linted (Biome), has no known
+# Verify, on pull requests into develop, release/* and main: it speaks the server's API contract (contract:check, then the
+# typecheck that holds every typed call to it), compiles, is formatted and linted (Biome), has no known
 # high or critical advisory in its dependencies (bun audit), and the pull request adds no secret (gitleaks). The unit
 # tests, the build and the browser tests run locally before a change is pushed (AGENTS.md, "Before you finish").
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [develop, "release/**", main]
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
@@ -33,6 +34,11 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      # Every call is typed against the server's API documents (the typecheck below checks them, and
+      # lint refuses an untyped one); this checks the copied documents and their generated types.
+      - name: API contract
+        run: bun run contract:check
 
       - name: Compile (typecheck)
         run: bun run typecheck

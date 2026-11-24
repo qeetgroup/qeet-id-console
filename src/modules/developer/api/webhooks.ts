@@ -2,24 +2,18 @@
 // and test or retried deliveries. The server disables an endpoint that keeps failing.
 
 import { queryOptions, useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { developerKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export interface Webhook {
-  id: string;
-  tenant_id: string;
-  url: string;
-  secret?: string; // the signing secret, only in the create response
-  events: string[];
-  disabled_at?: string | null;
-  disabled_reason?: "disabled" | "failing" | null; // by an administrator, or by its failures
-  failing_since?: string | null; // when deliveries started failing
-  previous_secret_expires_at?: string | null; // the old secret signs too until then
-  created_at: string;
-}
+/**
+ * An endpoint: the signing secret only in the create answer; whether an administrator disabled it
+ * or its failures did, when deliveries started failing, and until when the previous secret signs
+ * too after a rotation.
+ */
+export type Webhook = Answer<"/v1/webhooks/{id}">;
 
 /** An event a webhook can subscribe to, from the server's catalogue. */
 export interface WebhookEventType {
@@ -27,69 +21,64 @@ export interface WebhookEventType {
   description: string; // English, never shown: the console words each event itself
 }
 
-/** A rotated signing secret, shown once; the previous one keeps signing until the expiry. */
-export interface RotatedWebhookSecret {
-  secret: string;
-  previous_secret_expires_at: string;
-}
-
 /** One attempt to deliver an event; `error` and `response_body` come from the receiving endpoint. */
-export interface WebhookDelivery {
-  id: string;
-  event_type: string;
-  attempt: number;
-  status_code?: number | null;
-  error?: string | null;
-  payload: string;
-  response_body?: string | null;
-  next_attempt_at?: string | null;
-  delivered_at?: string | null;
-  dead_at?: string | null;
-  created_at: string;
-}
+export type WebhookDelivery = NonNullable<Answer<"/v1/webhooks/{id}/deliveries">["items"]>[number];
+
+// The page works out its rates from the recent deliveries: one page, the most the server sends.
+const RECENT_DELIVERIES = 200;
 
 export const webhookQueries = {
-  events: (tenantId: string | null) =>
+  events: (organizationId: string | null) =>
     queryOptions({
-      queryKey: developerKeys.webhookEvents(tenantId),
-      queryFn: () => api<{ items: WebhookEventType[] }>(`/v1/tenants/${tenantId}/webhooks/events`),
-      enabled: !!tenantId,
+      queryKey: developerKeys.webhookEvents(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/webhooks/events", {
+          path: { organizationID: organizationId ?? "" },
+        }),
+      enabled: !!organizationId,
       staleTime: 60 * 60_000, // the catalogue changes only with a server release
     }),
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: developerKeys.webhooks(tenantId),
-      queryFn: () => api<{ items: Webhook[] }>(`/v1/tenants/${tenantId}/webhooks`),
-      enabled: !!tenantId,
+      queryKey: developerKeys.webhooks(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/webhooks", {
+          path: { organizationID: organizationId ?? "" },
+        }),
+      enabled: !!organizationId,
     }),
-  detail: (tenantId: string | null, id: string) =>
+  detail: (organizationId: string | null, id: string) =>
     queryOptions({
-      queryKey: [...developerKeys.webhook(tenantId, id), "detail"],
-      queryFn: () => api<Webhook>(`/v1/webhooks/${id}`),
-      enabled: !!tenantId && !!id,
+      queryKey: [...developerKeys.webhook(organizationId, id), "detail"],
+      queryFn: () => backend.get("/v1/webhooks/{id}", { path: { id } }),
+      enabled: !!organizationId && !!id,
     }),
-  deliveries: (tenantId: string | null, id: string) =>
+  deliveries: (organizationId: string | null, id: string) =>
     queryOptions({
-      queryKey: [...developerKeys.webhook(tenantId, id), "deliveries"],
-      queryFn: () => api<{ items: WebhookDelivery[] }>(`/v1/webhooks/${id}/deliveries`),
-      enabled: !!tenantId && !!id,
+      queryKey: [...developerKeys.webhook(organizationId, id), "deliveries"],
+      queryFn: () =>
+        backend.get("/v1/webhooks/{id}/deliveries", {
+          path: { id },
+          query: { limit: RECENT_DELIVERIES },
+        }),
+      enabled: !!organizationId && !!id,
       retry: false,
       meta: { silent: true }, // the page shows the log's own empty and error states
     }),
 };
 
 export function useWebhookEvents() {
-  return useQuery(webhookQueries.events(useTenantId()));
+  return useQuery(webhookQueries.events(useOrganizationId()));
 }
 
 export function useWebhooks() {
-  return useQuery(webhookQueries.list(useTenantId()));
+  return useQuery(webhookQueries.list(useOrganizationId()));
 }
 
 export function useWebhook(id: string) {
-  return useQuery(webhookQueries.detail(useTenantId(), id));
+  return useQuery(webhookQueries.detail(useOrganizationId(), id));
 }
 
 export function useWebhookDeliveries(id: string) {
-  return useQuery(webhookQueries.deliveries(useTenantId(), id));
+  return useQuery(webhookQueries.deliveries(useOrganizationId(), id));
 }

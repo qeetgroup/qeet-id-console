@@ -15,7 +15,6 @@ import {
 } from "@/modules/groups/groups-model";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
 
 /**
  * One row above the table: search, size, roles granted and the group to look inside, then Expand
@@ -106,7 +105,8 @@ export function GroupsToolbar({
             { value: ANY, label: t("list.filters.anySize") },
             ...SIZES.map((id) => ({
               value: id,
-              label: `${t(`list.sizes.${id}`)} · ${n(all.filter((g) => sizeOf(g.people) === id).length)}`,
+              label: t(`list.sizes.${id}`),
+              meta: n(all.filter((g) => sizeOf(g.people) === id).length),
             })),
           ]}
         />
@@ -127,15 +127,18 @@ export function GroupsToolbar({
               { value: ANY, label: t("list.filters.anyRoles") },
               {
                 value: "some",
-                label: `${t("list.filters.grantsSome")} · ${n(all.filter((g) => granted(g).length).length)}`,
+                label: t("list.filters.grantsSome"),
+                meta: n(all.filter((g) => granted(g).length).length),
               },
               {
                 value: "none",
-                label: `${t("list.filters.grantsNone")} · ${n(all.filter((g) => !granted(g).length).length)}`,
+                label: t("list.filters.grantsNone"),
+                meta: n(all.filter((g) => !granted(g).length).length),
               },
               ...roleNames.map(([name, count]) => ({
                 value: `role:${name}`,
-                label: `${name} · ${n(count)}`,
+                label: name,
+                meta: n(count),
               })),
             ]}
           />
@@ -148,7 +151,7 @@ export function GroupsToolbar({
             onValueChange={(value) => set({ inside: value ? String(value) : undefined })}
             items={[
               { value: ANY, label: t("list.filters.anywhere") },
-              ...parents.map((g) => ({ value: g.id, label: `${parentLabel(g)} · ${n(g.inside)}` })),
+              ...parents.map((g) => ({ value: g.id, label: parentLabel(g), meta: n(g.inside) })),
             ]}
           />
         ) : null}
@@ -167,8 +170,7 @@ export function GroupsToolbar({
           </span>
         ) : null}
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

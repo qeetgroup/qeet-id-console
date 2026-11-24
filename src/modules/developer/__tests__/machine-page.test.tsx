@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "s1",
   useMe: () => ({ data: { id: "u-me", email: "priya@qeet.in", display_name: "Priya Nair" } }),
@@ -79,16 +79,16 @@ const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 const KEYS = [
   {
     id: "k1",
-    tenant_id: "t1",
+    organization_id: "t1",
     name: "Terraform (prod)",
     prefix: "qk_1FuJQRMX",
-    scopes: ["tenant.read", "role.read"],
+    scopes: ["organization.read", "role.read"],
     last_used_at: ago(0.1),
     created_at: ago(100),
   },
   {
     id: "k2",
-    tenant_id: "t1",
+    organization_id: "t1",
     name: "Rohan's CLI",
     prefix: "qk_TvDp9VzV",
     user_id: "u-rohan",
@@ -98,10 +98,10 @@ const KEYS = [
   },
   {
     id: "k3",
-    tenant_id: "t1",
+    organization_id: "t1",
     name: "Old probe",
     prefix: "qk_mWMvuq7z",
-    scopes: ["tenant.read"],
+    scopes: ["organization.read"],
     revoked_at: ago(30),
     created_at: ago(300),
   },
@@ -109,7 +109,7 @@ const KEYS = [
 const IDENTITIES = [
   {
     id: "c6c4652b-0000-4000-8000-000000000001",
-    tenant_id: "t1",
+    organization_id: "t1",
     name: "qeet-pay-api",
     scopes: ["user.read"],
     created_at: ago(50),
@@ -130,21 +130,21 @@ const AGENTS = [
 const PEOPLE = [
   {
     id: "u-me",
-    tenant_id: "t1",
+    organization_id: "t1",
     email: "priya@qeet.in",
     display_name: "Priya Nair",
     status: "active",
   },
   {
     id: "u-rohan",
-    tenant_id: "t1",
+    organization_id: "t1",
     email: "rohan@qeet.in",
     display_name: "Rohan Gupta",
     status: "active",
   },
   {
     id: "u-sneha",
-    tenant_id: "t1",
+    organization_id: "t1",
     email: "sneha@qeet.in",
     display_name: "Sneha Kulkarni",
     status: "suspended",
@@ -161,12 +161,12 @@ beforeEach(() => {
       const method = options?.method ?? "GET";
       calls.push({ method, path, body: options?.body });
       if (method === "GET") {
-        if (path === "/v1/tenants/t1/api-keys") return { items: KEYS };
-        if (path === "/v1/tenants/t1/service-principals") return { items: IDENTITIES };
-        if (path === "/v1/tenants/t1/agents") return { items: AGENTS };
+        if (path === "/v1/organizations/t1/api-keys") return { items: KEYS };
+        if (path === "/v1/organizations/t1/service-principals") return { items: IDENTITIES };
+        if (path === "/v1/organizations/t1/agents") return { items: AGENTS };
         if (path === "/v1/users") return { items: PEOPLE, next_cursor: "" };
-        if (path === "/v1/tenants/t1/secrets") return { items: [] };
-        if (path === "/v1/tenants/t1/oidc/clients/shadow-ai") return { items: [] };
+        if (path === "/v1/organizations/t1/secrets") return { items: [] };
+        if (path === "/v1/organizations/t1/oidc/clients/shadow-ai") return { items: [] };
       }
       if (method === "POST" && path === "/v1/api-keys")
         return {
@@ -242,7 +242,7 @@ describe("Machine access", () => {
     expect(await screen.findByText("Copy the key now. You won't see it again.")).toBeTruthy();
     const post = calls.find((c) => c.method === "POST" && c.path === "/v1/api-keys");
     expect(post?.body).toMatchObject({
-      tenant_id: "t1",
+      organization_id: "t1",
       name: "Zendesk sync",
       scopes: ["user.read"],
     });
@@ -273,7 +273,7 @@ describe("Machine access", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete agent" }));
     await waitFor(() =>
       expect(
-        calls.some((c) => c.method === "DELETE" && c.path === "/v1/tenants/t1/agents/a1"),
+        calls.some((c) => c.method === "DELETE" && c.path === "/v1/organizations/t1/agents/a1"),
       ).toBe(true),
     );
   });
@@ -287,7 +287,7 @@ describe("Machine access", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Suspend all agents" }));
     await waitFor(() =>
       expect(
-        calls.some((c) => c.method === "POST" && c.path === "/v1/tenants/t1/agents/kill-all"),
+        calls.some((c) => c.method === "POST" && c.path === "/v1/organizations/t1/agents/kill-all"),
       ).toBe(true),
     );
   });

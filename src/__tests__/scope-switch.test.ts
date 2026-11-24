@@ -7,13 +7,13 @@ import { activityActions, activityStore } from "@/modules/activity/activity-stor
 import { authzStore, pushDecision, setBuilderDoc } from "@/modules/authorization/store/authz-store";
 import { timelineActions, timelineStore } from "@/modules/timeline/timeline-store";
 
-function session(tenantId: string): PublicSession {
+function session(organizationId: string): PublicSession {
   return {
     isAuthenticated: true,
     expiresAt: "2030-01-01T00:00:00Z",
-    sessionId: `session-${tenantId}`,
+    sessionId: `session-${organizationId}`,
     userId: "user-1",
-    tenantId,
+    organizationId,
     version: 1,
     impersonationActor: null,
   };

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { InstructionList, InstructionStep } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
 import type { LdapConnection } from "@/modules/authentication/api/ldap";
@@ -22,38 +22,32 @@ export function LdapHowItWorks({
   const { t } = useTranslation("connections");
   const encryption = ldapEncryption(c);
   return (
-    <ol
-      className="cx-flow"
-      aria-label={t("ldap.how.label")}
-      style={{ "--cx-flow-steps": 4 } as CSSProperties}
-    >
-      <li className="cx-flow-step">
-        <p className="cx-flow-cap">{t("ldap.how.bind")}</p>
-        <p className="cx-flow-value">{c.bind_dn}</p>
-        <p className="cx-flow-note">
-          {t("ldap.how.bindNote", {
-            host: hostOf(c.server_url),
-            how: t(`ldap.server.encryptionWord.${encryption}`),
-          })}
-        </p>
-      </li>
-      <li className="cx-flow-step">
-        <p className="cx-flow-cap">{t("ldap.how.find")}</p>
-        <p className="cx-flow-value">{c.user_filter}</p>
-        <p className="cx-flow-value">{c.base_dn}</p>
-        <p className="cx-flow-note">{t("ldap.how.findNote")}</p>
-      </li>
-      <li className="cx-flow-step">
-        <p className="cx-flow-cap">{t("ldap.how.check")}</p>
-        <p className="cx-flow-note">{t("ldap.how.checkNote")}</p>
-      </li>
-      <li className="cx-flow-step">
-        <p className="cx-flow-cap">{t("ldap.how.signIn")}</p>
-        <p className="cx-flow-value">
-          {t("ldap.how.maps", { email: c.email_attribute, name: c.name_attribute })}
-        </p>
-        <p className="cx-flow-note">{t("ldap.how.signInNote", { org })}</p>
-      </li>
-    </ol>
+    <InstructionList orientation="horizontal" aria-label={t("ldap.how.label")}>
+      <InstructionStep
+        title={t("ldap.how.bind")}
+        value={c.bind_dn}
+        note={t("ldap.how.bindNote", {
+          host: hostOf(c.server_url),
+          how: t(`ldap.server.encryptionWord.${encryption}`),
+        })}
+      />
+      <InstructionStep
+        title={t("ldap.how.find")}
+        value={
+          <>
+            {c.user_filter}
+            <br />
+            {c.base_dn}
+          </>
+        }
+        note={t("ldap.how.findNote")}
+      />
+      <InstructionStep title={t("ldap.how.check")} note={t("ldap.how.checkNote")} />
+      <InstructionStep
+        title={t("ldap.how.signIn")}
+        value={t("ldap.how.maps", { email: c.email_attribute, name: c.name_attribute })}
+        note={t("ldap.how.signInNote", { org })}
+      />
+    </InstructionList>
   );
 }

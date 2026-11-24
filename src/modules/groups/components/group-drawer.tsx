@@ -27,7 +27,7 @@ import {
 } from "@/modules/groups/api/groups";
 import { everyGroup, groupTree } from "@/modules/groups/groups-model";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference } from "@/platform/components/error-reference";
 import { ERROR_CODES } from "@/platform/errors/error-codes";
 import { normalizeError } from "@/platform/errors/normalize-error";
@@ -37,6 +37,7 @@ import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const TOP = "__top__";
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -77,8 +78,8 @@ export function GroupDrawer({
   const { t } = useTranslation("groups");
   const access = useCapabilities();
   const canGrant = access.can("role.read") && access.can("role.write");
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
   const runSensitive = useSensitiveAction();
@@ -330,21 +331,26 @@ export function GroupDrawer({
                   onValueChange={(value) => setRoleId(String(value ?? ""))}
                   items={[
                     { value: "", label: t("drawer.noRole") },
-                    ...roles.map((r) => ({ value: r.id, label: r.name })),
+                    ...roles.map((r) => ({ value: r.id, label: roleDisplayName(r.name) })),
                   ]}
                 />
               </Field>
             ) : null}
           </form>
         </DrawerBody>
-        <DrawerFooter>
-          {!editing && onUseTemplate ? (
-            // A start slot for the footer is QTRX-23; the Users drawer's class places it.
-            <Link className="add-import" render={<button type="button" onClick={onUseTemplate} />}>
-              <LayoutTemplateIcon className="add-import-icon" aria-hidden="true" />
-              {t("drawer.useTemplate")}
-            </Link>
-          ) : null}
+        <DrawerFooter
+          start={
+            !editing && onUseTemplate ? (
+              <Link
+                className="add-import"
+                render={<button type="button" onClick={onUseTemplate} />}
+              >
+                <LayoutTemplateIcon className="add-import-icon" aria-hidden="true" />
+                {t("drawer.useTemplate")}
+              </Link>
+            ) : undefined
+          }
+        >
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             {t("drawer.cancel")}
           </Button>

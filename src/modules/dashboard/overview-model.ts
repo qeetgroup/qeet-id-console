@@ -88,7 +88,10 @@ export function deriveOverviewAttention(input: {
       params: { count: failing.length, hosts: failing.map((h) => hostOf(h.url)).join(" · ") },
       to: "/developer/webhooks",
       actionLabel: "dashboard:overview.attention.webhooksFailing.action",
-      since: failing.map((h) => h.failing_since ?? "").sort()[0],
+      // The earliest by time: the server's times may carry different offsets.
+      since: failing
+        .map((h) => h.failing_since ?? "")
+        .sort((a, b) => Date.parse(a) - Date.parse(b))[0],
     });
   }
 

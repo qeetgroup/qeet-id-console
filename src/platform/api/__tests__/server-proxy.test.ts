@@ -57,10 +57,10 @@ const tokens = {
   expires_at: "2030-01-01T00:00:00Z",
   session_id: "session-a",
   user_id: "user-a",
-  tenant_id: "11111111-1111-4111-8111-111111111111",
+  organization_id: "11111111-1111-4111-8111-111111111111",
 };
 const first = {
-  id: tokens.tenant_id,
+  id: tokens.organization_id,
   name: "Example",
   slug: "example",
   plan: "pro",
@@ -101,7 +101,7 @@ describe("Organization-selection session boundary", () => {
   ])("holds the encrypted session after %s when multiple memberships exist", async (path) => {
     store.fetch
       .mockResolvedValueOnce(Response.json(tokens))
-      .mockResolvedValueOnce(Response.json({ items: [first, second], next_cursor: "" }));
+      .mockResolvedValueOnce(Response.json({ items: [first, second] }));
     const result = await request(path);
     expect(store.data.organizationSelectionRequired).toBe(true);
     expect(result.session.organizationSelectionRequired).toBe(true);
@@ -115,7 +115,7 @@ describe("Organization-selection session boundary", () => {
     async ({ items }) => {
       store.fetch
         .mockResolvedValueOnce(Response.json(tokens))
-        .mockResolvedValueOnce(Response.json({ items, next_cursor: "" }));
+        .mockResolvedValueOnce(Response.json({ items }));
       const result = await request("/v1/auth/login");
       expect(result.session.organizationSelectionRequired).toBe(false);
     },
@@ -140,15 +140,17 @@ describe("Organization-selection session boundary", () => {
     expect(store.fetch).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["/v1/auth/signup", "/v1/signup/passkey/finish", "/v1/tenants", "/v1/invites/accept"])(
-    "preserves onboarding for %s",
-    async (path) => {
-      store.fetch.mockResolvedValueOnce(Response.json(tokens));
-      const result = await request(path);
-      expect(result.session.organizationSelectionRequired).toBe(false);
-      expect(store.fetch).toHaveBeenCalledTimes(1);
-    },
-  );
+  it.each([
+    "/v1/auth/signup",
+    "/v1/signup/passkey/finish",
+    "/v1/organizations",
+    "/v1/invites/accept",
+  ])("preserves onboarding for %s", async (path) => {
+    store.fetch.mockResolvedValueOnce(Response.json(tokens));
+    const result = await request(path);
+    expect(result.session.organizationSelectionRequired).toBe(false);
+    expect(store.fetch).toHaveBeenCalledTimes(1);
+  });
 
   it("preserves the selection requirement across refresh-token rotation", async () => {
     store.data = {
@@ -174,17 +176,17 @@ describe("Organization-selection session boundary", () => {
       organizationSelectionRequired: true,
     };
     store.fetch.mockResolvedValueOnce(
-      Response.json({ error: { code: "auth.not_tenant_member" } }, { status: 403 }),
+      Response.json({ error: { code: "auth.not_organization_member" } }, { status: 403 }),
     );
-    expect((await request("/v1/auth/switch-tenant")).session.organizationSelectionRequired).toBe(
-      true,
-    );
+    expect(
+      (await request("/v1/auth/switch-organization")).session.organizationSelectionRequired,
+    ).toBe(true);
     store.fetch
-      .mockResolvedValueOnce(Response.json({ ...tokens, tenant_id: second.id }))
+      .mockResolvedValueOnce(Response.json({ ...tokens, organization_id: second.id }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    const result = await request("/v1/auth/switch-tenant");
+    const result = await request("/v1/auth/switch-organization");
     expect(result.session.organizationSelectionRequired).toBe(false);
-    expect(result.session.tenantId).toBe(second.id);
+    expect(result.session.organizationId).toBe(second.id);
     expect(store.data.accessToken).toBe("access-secret");
   });
 
@@ -195,12 +197,12 @@ describe("Organization-selection session boundary", () => {
       userId: "user-a",
       organizationSelectionRequired: true,
     };
-    store.fetch.mockResolvedValueOnce(Response.json({ items: [first], next_cursor: "" }));
+    store.fetch.mockResolvedValueOnce(Response.json({ items: [first] }));
     expect(
       (await request("/v1/me/organizations", "GET", { cursor: second.id })).session
         .organizationSelectionRequired,
     ).toBe(true);
-    store.fetch.mockResolvedValueOnce(Response.json({ items: [first], next_cursor: "" }));
+    store.fetch.mockResolvedValueOnce(Response.json({ items: [first] }));
     expect(
       (await request("/v1/me/organizations", "GET")).session.organizationSelectionRequired,
     ).toBe(false);
@@ -213,7 +215,7 @@ describe("Sign-out-everywhere session boundary", () => {
     refreshToken: "refresh-secret",
     userId: "user-a",
     sessionId: "session-a",
-    tenantId: tokens.tenant_id,
+    organizationId: tokens.organization_id,
     version: 3,
   };
 

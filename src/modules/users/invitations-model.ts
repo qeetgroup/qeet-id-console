@@ -4,6 +4,7 @@
 import type { z } from "zod";
 
 import { createIntentSearch } from "@/shared/hooks/use-create-intent";
+import { isOneOf } from "@/shared/utils/one-of";
 import { searchEnum, searchText } from "@/shared/utils/search-params";
 
 import type { Invitation } from "./api/invitations";
@@ -11,6 +12,12 @@ import { DAY_MS } from "./people-model";
 
 /** How long an invitation's link lasts: the server sets 14 days, and a resend starts it again. */
 export const LINK_DAYS = 14;
+
+const KNOWN_STATUSES = ["pending", "accepted", "declined", "expired", "revoked"] as const;
+/** An invitation's status in words the list has; "unknown" for one the server adds later. */
+export type InviteStatus = (typeof KNOWN_STATUSES)[number] | "unknown";
+export const inviteStatus = (invite: Pick<Invitation, "status">): InviteStatus =>
+  isOneOf(KNOWN_STATUSES, invite.status) ? invite.status : "unknown";
 
 /** The statuses the list filters by, in the order the band lists them. */
 export const INVITE_STATUSES = ["accepted", "pending", "expired", "revoked"] as const;

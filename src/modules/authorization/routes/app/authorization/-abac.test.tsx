@@ -13,7 +13,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -52,9 +52,24 @@ vi.mock("@/modules/billing", () => ({
   useEntitlements: () => ({ data: { features: { abac: true } } }),
   FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
-// Monaco needs a real browser; the request under test isn't typed.
-vi.mock("@/modules/authorization/components/shared/monaco-panel", () => ({
-  MonacoPanel: () => null,
+
+// A text box stands in for the attribute combobox, which jsdom can't drive reliably: what's typed
+// is chosen, as "Use …" chooses it in the real one.
+vi.mock("@qeetrix/react/experimental", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@qeetrix/react/experimental")>()),
+  Combobox: ({
+    value,
+    onValueChange,
+  }: {
+    value: string | null;
+    onValueChange: (value: string | null) => void;
+  }) => (
+    <input
+      data-testid="attribute"
+      value={value ?? ""}
+      onChange={(e) => onValueChange(e.target.value || null)}
+    />
+  ),
 }));
 
 import type { AbacPolicy } from "@/modules/authorization/api/abac";
@@ -66,7 +81,7 @@ import { SensitiveActionProvider } from "@/platform/security/sensitive-action-pr
 
 const policy: AbacPolicy = {
   id: "p-1",
-  tenant_id: "t-1",
+  organization_id: "t-1",
   name: "deny_contractors_prod",
   description: "",
   effect: "deny",
@@ -85,10 +100,11 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/abac/policies" && method === "GET") return { items: [policy] };
-    if (path === "/v1/tenants/t-1/abac/policies" && method === "POST")
+    if (path === "/v1/organizations/t-1/abac/policies" && method === "GET")
+      return { items: [policy] };
+    if (path === "/v1/organizations/t-1/abac/policies" && method === "POST")
       return { ...policy, id: "p-2", ...(options?.body as object) };
-    if (path === "/v1/tenants/t-1/abac/policies/p-1" && method === "DELETE") return undefined;
+    if (path === "/v1/organizations/t-1/abac/policies/p-1" && method === "DELETE") return undefined;
     if (path === "/v1/users") return { items: [] };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
@@ -147,7 +163,9 @@ describe("ABAC › delete a policy", () => {
     expect(writes()).toEqual([]);
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete policy" }));
 
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/t-1/abac/policies/p-1"]));
+    await waitFor(() =>
+      expect(writes()).toEqual(["DELETE /v1/organizations/t-1/abac/policies/p-1"]),
+    );
     expect(sensitiveCalls[0]?.actionLabel).toBe("Delete this policy");
   });
 
@@ -171,13 +189,12 @@ describe("ABAC › new policy", () => {
     expect(create.getAttribute("aria-disabled")).toBe("true");
     expect(screen.getByText("Pick an attribute for each condition to save.")).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText(/^Attribute/), {
-      target: { value: "subject.department" },
-    });
+    // An attribute no policy uses yet, typed and chosen as the text itself.
+    fireEvent.change(screen.getByTestId("attribute"), { target: { value: "subject.department" } });
     fireEvent.change(screen.getByLabelText(/^Value/), { target: { value: "Engineering" } });
     fireEvent.click(screen.getByRole("button", { name: "Create policy" }));
 
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/t-1/abac/policies"]));
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/t-1/abac/policies"]));
     expect(lastBody()).toMatchObject({
       name: "allow_eng",
       resource_type: "*",
@@ -204,7 +221,9 @@ describe("ABAC › new policy", () => {
     if (remove) fireEvent.click(remove);
     fireEvent.click(screen.getByRole("button", { name: "Create policy" }));
 
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/t-1/abac/policies"]));
-    expect(lastBody()).toMatchObject({ name: "github_repo_admin", condition: null });
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/t-1/abac/policies"]));
+    // With the block gone there is no condition, which a save leaves out.
+    expect(lastBody()).toMatchObject({ name: "github_repo_admin" });
+    expect(lastBody()).not.toHaveProperty("condition");
   });
 });

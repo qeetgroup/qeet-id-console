@@ -42,6 +42,7 @@ import {
   resourcesOf,
 } from "@/modules/authorization/role-model";
 import { personLabel, ResourceName, useActionName, useCount } from "../lists/authz-parts";
+import { roleDescription, roleDisplayName } from "@/shared/utils/role-name";
 
 const SHOW_PEOPLE = 6;
 const isCapability = (key: string): key is Capability =>
@@ -98,7 +99,7 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
   const [draft, setDraft] = useState<Set<string> | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
   // A save refreshes the role: start again from what it grants now.
-  const granted = current ? [...current].sort().join(" ") : "";
+  const granted = current ? [...current].sort((a, b) => a.localeCompare(b)).join(" ") : "";
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset when what it grants changes
   useEffect(() => setDraft(null), [granted]);
   const chosen = draft ?? current ?? new Set<string>();
@@ -136,7 +137,11 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
   };
 
   return (
-    <DrawerContent title={role.name} description={role.description || undefined} size="md">
+    <DrawerContent
+      title={roleDisplayName(role.name)}
+      description={roleDescription(role) || undefined}
+      size="md"
+    >
       <DrawerBody>
         <div className="ppl authz-drawer">
           <p className="authz-drawer-kind">
@@ -194,17 +199,20 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
           ) : null}
         </div>
       </DrawerBody>
-      <DrawerFooter>
+      <DrawerFooter
+        start={
+          editable && changed ? (
+            <Text size="sm" tone="subtle">
+              {t("lists.drawer.permissions.pending", {
+                gain: n(gain.length),
+                lose: n(lose.length),
+              })}
+            </Text>
+          ) : undefined
+        }
+      >
         {editable ? (
           <>
-            {changed ? (
-              <Text size="sm" tone="subtle" className="authz-footer-note">
-                {t("lists.drawer.permissions.pending", {
-                  gain: n(gain.length),
-                  lose: n(lose.length),
-                })}
-              </Text>
-            ) : null}
             <DrawerClose render={<Button variant="ghost">{t("common:actions.cancel")}</Button>} />
             <Button disabled={!changed || saveM.isPending} onClick={save}>
               {t("lists.drawer.save")}

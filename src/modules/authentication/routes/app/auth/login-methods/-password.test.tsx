@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
@@ -47,7 +47,7 @@ import { api } from "@/platform/api/client";
 import { Route } from "./password";
 
 const PasswordPage = Route.options.component as () => React.JSX.Element;
-const POLICY_PATH = "/v1/tenants/tenant-1/auth-policy";
+const POLICY_PATH = "/v1/organizations/tenant-1/auth-policy";
 
 // The policy as the API returns it: the tenant has not set its own lockout, so the three settings
 // are null (the platform defaults), and the read-only limits document the defaults and bounds.
@@ -93,7 +93,7 @@ beforeEach(() => {
       saved = options.body as Record<string, unknown>;
       return { ...stored, ...saved };
     }
-    if (path === "/v1/tenants/tenant-1/policy") return { mfa_enforcement: "optional" };
+    if (path === "/v1/organizations/tenant-1/policy") return { mfa_enforcement: "optional" };
     if (path === "/v1/users/stats") return { total: 45, mfa_enabled: 18 };
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });

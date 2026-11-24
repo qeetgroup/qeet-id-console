@@ -4,17 +4,17 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const session = vi.hoisted(() => ({ tenantId: "org-a" as string | null, userId: "user-1" }));
+const session = vi.hoisted(() => ({ organizationId: "org-a" as string | null, userId: "user-1" }));
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => session.tenantId,
+  useOrganizationId: () => session.organizationId,
   useUserId: () => session.userId,
 }));
-vi.mock("@/modules/authentication", () => ({ switchToTenant: vi.fn(async () => undefined) }));
+vi.mock("@/modules/authentication", () => ({ switchToOrganization: vi.fn(async () => undefined) }));
 vi.mock("../load-page", () => ({ loadPage: vi.fn() }));
 
-import { switchToTenant } from "@/modules/authentication";
+import { switchToOrganization } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { readPendingOnboarding, stashOnboardingProfile } from "../onboarding-profile";
 import { loadPage } from "../load-page";
@@ -29,9 +29,9 @@ function wrapper({ children }: { children: ReactNode }) {
 beforeEach(() => {
   localStorage.clear();
   vi.mocked(api).mockReset();
-  vi.mocked(switchToTenant).mockClear();
+  vi.mocked(switchToOrganization).mockClear();
   vi.mocked(loadPage).mockClear();
-  session.tenantId = "org-a";
+  session.organizationId = "org-a";
   session.userId = "user-1";
 });
 
@@ -78,8 +78,11 @@ describe("useCheckoutReturn", () => {
 
     expect(result.current.state).toBe("finishing");
     expect(clear).toHaveBeenCalledOnce();
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("org-new"), { timeout: 3000 });
-    expect(switchToTenant).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("org-new"), {
+      timeout: 3000,
+    });
+    expect(switchToOrganization).toHaveBeenCalledTimes(1);
+    expect(api).toHaveBeenCalledWith("/v1/organizations", { query: { limit: 200 } });
   });
 
   it("without a stash, waits for an organization that wasn't there before", async () => {
@@ -89,8 +92,10 @@ describe("useCheckoutReturn", () => {
 
     returning({ checkout: "success" });
 
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("org-new"), { timeout: 3000 });
-    expect(switchToTenant).not.toHaveBeenCalledWith("org-b");
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("org-new"), {
+      timeout: 3000,
+    });
+    expect(switchToOrganization).not.toHaveBeenCalledWith("org-b");
   });
 
   it("opens the console when the session is already in the paid organization", async () => {
@@ -98,7 +103,7 @@ describe("useCheckoutReturn", () => {
     vi.mocked(api).mockResolvedValue({ items: existing });
     returning({ checkout: "success" });
     await waitFor(() => expect(loadPage).toHaveBeenCalledWith("/"));
-    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(switchToOrganization).not.toHaveBeenCalled();
   });
 
   it("on a cancelled payment, gives back what was entered and creates nothing", () => {
@@ -125,20 +130,33 @@ describe("useCheckoutReturn", () => {
 
     vi.mocked(api).mockResolvedValue({ items: [...existing, { id: "org-new", slug: "new-org" }] });
     stashOnboardingProfile({ profile: PROFILE, slug: "new-org", userId: "user-1" });
+    // Razorpay's redirect carries all five signed fields.
     returning({
+      razorpay_payment_id: "pay_2",
       razorpay_payment_link_id: "plink_2",
+      razorpay_payment_link_reference_id: "ref_2",
       razorpay_payment_link_status: "paid",
       razorpay_signature: "sig",
     });
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("org-new"));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("org-new"));
     expect(api).toHaveBeenCalledWith("/v1/billing/razorpay/verify", {
       method: "POST",
       body: {
+        razorpay_payment_id: "pay_2",
         razorpay_payment_link_id: "plink_2",
+        razorpay_payment_link_reference_id: "ref_2",
         razorpay_payment_link_status: "paid",
         razorpay_signature: "sig",
       },
     });
+  });
+
+  it("sends no verification without the signed fields, and still waits for the organisation", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [...existing, { id: "org-new", slug: "new-org" }] });
+    stashOnboardingProfile({ profile: PROFILE, slug: "new-org", userId: "user-1" });
+    returning({ razorpay_payment_link_id: "plink_3", razorpay_payment_link_status: "paid" });
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("org-new"));
+    expect(api).not.toHaveBeenCalledWith("/v1/billing/razorpay/verify", expect.anything());
   });
 
   it("says when it is taking long, and checks again on request", async () => {
@@ -152,7 +170,7 @@ describe("useCheckoutReturn", () => {
     act(() => (result.current as { checkAgain: () => void }).checkAgain());
     expect(result.current.state).toBe("finishing");
     await act(() => vi.advanceTimersByTimeAsync(10));
-    expect(switchToTenant).toHaveBeenCalledWith("org-new");
+    expect(switchToOrganization).toHaveBeenCalledWith("org-new");
   });
 
   it("does nothing on a plain visit", () => {

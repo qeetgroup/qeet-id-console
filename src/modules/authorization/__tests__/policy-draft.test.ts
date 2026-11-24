@@ -19,7 +19,7 @@ import { sampleRequest } from "../components/abac/policy-test";
 
 const policy = (over: Partial<AbacPolicy> = {}): AbacPolicy => ({
   id: "p-1",
-  tenant_id: "t-1",
+  organization_id: "t-1",
   name: "Contractors: business hours only",
   description: "",
   effect: "deny",

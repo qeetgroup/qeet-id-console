@@ -10,7 +10,10 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1", useUserId: () => "u-me" }));
+vi.mock("@/platform/auth/session", () => ({
+  useOrganizationId: () => "t-1",
+  useUserId: () => "u-me",
+}));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => {
@@ -91,11 +94,12 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(
     async (path: string, options?: { method?: string; body?: unknown }) => {
       const method = options?.method ?? "GET";
-      if (path === "/v1/tenants/t-1/retention" && method === "GET") return policy;
-      if (path === "/v1/tenants/t-1/retention" && method === "PUT") return options?.body;
-      if (path === "/v1/tenants/t-1/retention/preview" && method === "POST")
+      if (path === "/v1/organizations/t-1/retention" && method === "GET") return policy;
+      if (path === "/v1/organizations/t-1/retention" && method === "PUT") return options?.body;
+      if (path === "/v1/organizations/t-1/retention/preview" && method === "POST")
         return { ripe_deleted_users: due, deleted_users_days: policy.deleted_users_days };
-      if (path === "/v1/tenants/t-1/retention/run" && method === "POST") return { purged: due };
+      if (path === "/v1/organizations/t-1/retention/run" && method === "POST")
+        return { purged: due };
       if (path === "/v1/users") return { items: [] };
       if (path === "/v1/users/deleted") return { items: DELETED };
       if (path.endsWith("/evidence")) return { items: [] };
@@ -152,7 +156,7 @@ describe("Compliance › Retention", () => {
     expect(changes()).toEqual([]);
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove for good" }));
-    await waitFor(() => expect(changes()).toEqual(["POST /v1/tenants/t-1/retention/run"]));
+    await waitFor(() => expect(changes()).toEqual(["POST /v1/organizations/t-1/retention/run"]));
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Remove deleted people");
   });
 
@@ -186,8 +190,8 @@ describe("Compliance › Retention", () => {
     expect(within(dialog).getByText(/1 more person, deleted more than 7 days ago/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Save and remove" }));
 
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/retention"]));
-    expect(vi.mocked(api)).toHaveBeenCalledWith("/v1/tenants/t-1/retention", {
+    await waitFor(() => expect(changes()).toEqual(["PUT /v1/organizations/t-1/retention"]));
+    expect(vi.mocked(api)).toHaveBeenCalledWith("/v1/organizations/t-1/retention", {
       method: "PUT",
       body: { deleted_users_enabled: true, deleted_users_days: 7 },
     });

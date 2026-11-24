@@ -9,6 +9,7 @@ import {
   formatDateTime,
   formatNumber,
   Heading,
+  LinkButton,
   Text,
 } from "@qeetrix/react";
 import { DescriptionItem, DescriptionList } from "@qeetrix/react/experimental";
@@ -21,7 +22,7 @@ import { userQueries } from "@/modules/users";
 import { type Anomaly, isAnomalyResolved } from "@/modules/security/api/anomalies";
 import { useBotOverview } from "@/modules/security/api/bots";
 import { anomalyFacts, sourceAddress } from "@/modules/security/anomaly-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { AnomalySeverityBadge } from "../anomaly-badges";
 import { When } from "../when";
@@ -102,15 +103,15 @@ function AnomalyBody({
   const text = useAnomalyText();
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
   const f = anomalyFacts(a);
   const ip = sourceAddress(a);
   const denial = useDenyAddress();
   const bots = useBotOverview();
   const stats = useQuery({
-    ...userQueries.stats(tenantId),
-    enabled: !!tenantId && access.can("user.read"),
+    ...userQueries.stats(organizationId),
+    enabled: !!organizationId && access.can("user.read"),
     meta: { silent: true },
   });
 
@@ -237,19 +238,18 @@ function AnomalyBody({
                 </Button>
               </li>
             ) : null}
-            {/* A Button as a router link is announced as a button until QTRX-8. */}
             {a.user_id ? (
               <li>
                 <strong>{t("anomalies.drawer.checkTitle")}</strong>
                 <small>{t("anomalies.drawer.checkLine")}</small>
-                <Button
+                <LinkButton
                   variant="ghost"
                   size="sm"
                   icon={ArrowRightIcon}
                   render={<Link to="/users/$userId" params={{ userId: a.user_id }} />}
                 >
                   {t("anomalies.actions.account")}
-                </Button>
+                </LinkButton>
               </li>
             ) : null}
             <li>
@@ -258,14 +258,14 @@ function AnomalyBody({
                 {t("anomalies.drawer.twoStepLine")}
                 {twoStep ? ` ${twoStep}` : ""}
               </small>
-              <Button
+              <LinkButton
                 variant="ghost"
                 size="sm"
                 icon={ArrowRightIcon}
                 render={<Link to="/settings/organization/security-policy" />}
               >
                 {t("anomalies.drawer.twoStepLink")}
-              </Button>
+              </LinkButton>
             </li>
           </ol>
         </section>

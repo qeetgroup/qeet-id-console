@@ -21,9 +21,9 @@ describe("OneTimeSecret", () => {
         onDismiss={onDismiss}
       />,
     );
-    expect(screen.getByText("client_secret=sp_secret_value")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Copy client_secret=" })).toBeTruthy();
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Copy client_id=" }));
+    expect(screen.getByText("sp_secret_value")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy client_secret" })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Copy client_id" }));
     fireEvent.click(screen.getByRole("button", { name: "I've stored it" }));
     expect(onDismiss).toHaveBeenCalled();
   });

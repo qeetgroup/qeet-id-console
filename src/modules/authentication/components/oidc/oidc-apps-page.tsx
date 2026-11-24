@@ -403,7 +403,10 @@ function sortApps(rows: OidcClient[], sort: TableSort | null, people: (c: OidcCl
   return [...rows].sort((a, b) => by(a, b) * dir);
 }
 
-/** Search on name and client ID, then the kind of app, each kind with its count (QTRX-20). */
+/**
+ * Search on name and client ID, then the kind of app, each kind's count in its label until
+ * Qeetrix's Select items have a count of their own.
+ */
 function AppsToolbar({
   filters,
   onFiltersChange,
@@ -439,7 +442,8 @@ function AppsToolbar({
             { value: ANY, label: t("list.anyKind") },
             ...APP_KINDS.filter((k) => clients.some((c) => appKind(c) === k)).map((k) => ({
               value: k,
-              label: `${t(`kinds.${k}`)} · ${n(clients.filter((c) => appKind(c) === k).length)}`,
+              label: t(`kinds.${k}`),
+              meta: n(clients.filter((c) => appKind(c) === k).length),
             })),
           ]}
         />

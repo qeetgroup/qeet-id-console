@@ -23,17 +23,20 @@ import {
   canResend,
   canRevoke,
   daysLeft,
+  type InviteStatus,
+  inviteStatus,
   joinDays,
 } from "@/modules/users/invitations-model";
 import { DAY_MS, personName } from "@/modules/users/people-model";
-import { roleLabel } from "@/modules/users/components/people/people-table";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
-const STATUS_TONE: Record<Invitation["status"], BadgeTone> = {
+const STATUS_TONE: Record<InviteStatus, BadgeTone> = {
   pending: "info",
   accepted: "success",
   expired: "warning",
   revoked: "neutral",
   declined: "neutral",
+  unknown: "neutral",
 };
 
 /** The columns: who was invited, the role they'll get, where it stands, when it went, and how it ended. */
@@ -117,7 +120,7 @@ export function useInvitationColumns({
             sortable: true,
             cell: (i: Invitation) => {
               const name = i.role_id ? roleName(i.role_id) : undefined;
-              return name ? roleLabel(t, name) : <Text tone="subtle">{t("people.noRole")}</Text>;
+              return name ? roleDisplayName(name) : <Text tone="subtle">{t("people.noRole")}</Text>;
             },
           } satisfies TableColumn<Invitation>,
         ]
@@ -126,8 +129,8 @@ export function useInvitationColumns({
       id: "status",
       header: t("invites.columns.status"),
       cell: (i) => (
-        <Badge tone={STATUS_TONE[i.status]} size="sm">
-          {t(`invites.status.${i.status}`)}
+        <Badge tone={STATUS_TONE[inviteStatus(i)]} size="sm">
+          {t(`invites.status.${inviteStatus(i)}`)}
         </Badge>
       ),
     },

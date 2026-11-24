@@ -3,24 +3,17 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 import { developerKeys } from "./keys";
 
-export interface SigningKey {
-  kid: string;
-  alg: string;
-  use: string;
-  /**
-   * `candidate`: published so apps can cache it, signs nothing yet; `active`: the one key that
-   * signs; `retired`: signs nothing, still verifies, published until `retire_at`.
-   */
-  status: "active" | "candidate" | "retired";
-  retire_at?: string;
-}
+// `candidate`: published so apps can cache it, signs nothing yet; `active`: the one key that signs;
+// `retired`: signs nothing, still verifies, published until `retire_at`.
+export type SigningKey = Answer<"/v1/oidc/signing-keys">["keys"][number];
 
 export function useSigningKeys() {
   return useQuery({
     queryKey: developerKeys.signingKeys(),
-    queryFn: () => api<{ keys: SigningKey[] }>("/v1/oidc/signing-keys"),
+    queryFn: () => backend.get("/v1/oidc/signing-keys"),
   });
 }

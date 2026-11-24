@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_app")({
     }
     // Without an organisation there is no console to show: the picker offers the person's
     // invitations, or takes them on to create one. My account stays open to them.
-    if (!session.tenantId && !isAccountPath(location.pathname)) {
+    if (!session.organizationId && !isAccountPath(location.pathname)) {
       throw redirect({ to: "/select-organization", replace: true });
     }
     return { session };

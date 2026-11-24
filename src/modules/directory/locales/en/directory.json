@@ -174,7 +174,8 @@
     "triggers": {
       "push": "Sent by your identity provider",
       "manual": "Run by an admin",
-      "sign-in": "At sign-in"
+      "sign-in": "At sign-in",
+      "scheduled": "On a schedule"
     },
     "changed": {
       "people_one": "{{n}} person",

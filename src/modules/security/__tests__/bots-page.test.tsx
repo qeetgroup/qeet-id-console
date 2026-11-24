@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -69,15 +69,16 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/security/bots")
+    if (path === "/v1/organizations/t-1/security/bots")
       return {
-        recent: [
+        items: [
           {
             id: "b1",
             ip: "203.0.113.9",
             user_agent: "curl/8.7.1",
             score: 0.95,
             verdict: "blocked",
+            outcome: "unknown",
             created_at: ago(5),
           },
           {
@@ -86,6 +87,7 @@ beforeEach(() => {
             user_agent: "curl/8.7.1",
             score: 0.95,
             verdict: "blocked",
+            outcome: "unknown",
             created_at: ago(9),
           },
           {
@@ -94,14 +96,18 @@ beforeEach(() => {
             user_agent: "okhttp/4.12.0",
             score: 0.55,
             verdict: "challenged",
+            outcome: "unknown",
             created_at: ago(30),
           },
         ],
+        total: 3,
         stats: { blocked_24h: 2, challenged_24h: 1, threshold: 0.7 },
       };
-    if (path === "/v1/tenants/t-1/security/bots/settings" && method === "GET") return SETTINGS;
-    if (path === "/v1/tenants/t-1/security/bots/settings" && method === "PUT") return options?.body;
-    if (path === "/v1/tenants/t-1/ip-rules") return { enabled: false, items: [] };
+    if (path === "/v1/organizations/t-1/security/bots/settings" && method === "GET")
+      return SETTINGS;
+    if (path === "/v1/organizations/t-1/security/bots/settings" && method === "PUT")
+      return options?.body;
+    if (path === "/v1/organizations/t-1/ip-rules") return { enabled: false, items: [] };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -139,7 +145,9 @@ describe("Threats › Bots", () => {
     const scoring = await screen.findByRole("switch", { name: "Score sign-ins" });
     await waitFor(() => expect(scoring.getAttribute("aria-checked")).toBe("true"));
     fireEvent.click(scoring);
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/security/bots/settings"]));
+    await waitFor(() =>
+      expect(changes()).toEqual(["PUT /v1/organizations/t-1/security/bots/settings"]),
+    );
     const put = vi.mocked(api).mock.calls.find(([, o]) => o?.method === "PUT");
     expect(put?.[1]?.body).toEqual({ ...SETTINGS, ua_check: false });
   });
